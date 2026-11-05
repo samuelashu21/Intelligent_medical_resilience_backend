@@ -8,3 +8,38 @@ INFO 2026-11-05 04:22:18,074 django.server "GET /api/v1/health/ HTTP/1.1" 200 14
 INFO 2026-11-05 04:22:18,083 mediresilience.api method=GET path=/api/v1/ready/ status=200 duration_ms=1.64
 INFO 2026-11-05 04:22:18,085 django.server "GET /api/v1/ready/ HTTP/1.1" 200 158
 INFO 2026-11-05 04:22:24,698 django.server - Broken pipe from ('127.0.0.1', 59590)
+INFO 2026-11-05 05:05:47,615 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-11-05 05:05:58,515 mediresilience.api method=GET path=/ status=404 duration_ms=114.68
+WARNING 2026-11-05 05:05:58,518 django.request Not Found: /
+WARNING 2026-11-05 05:05:58,519 django.server "GET / HTTP/1.1" 404 3451
+INFO 2026-11-05 05:06:10,006 mediresilience.api method=GET path=/admin/ status=302 duration_ms=136.81
+INFO 2026-11-05 05:06:10,013 django.server "GET /admin/?utm_source=chatgpt.com HTTP/1.1" 302 0
+INFO 2026-11-05 05:06:10,161 mediresilience.api method=GET path=/admin/login/ status=200 duration_ms=129.24
+INFO 2026-11-05 05:06:10,165 django.server "GET /admin/login/?next=/admin/%3Futm_source%3Dchatgpt.com HTTP/1.1" 200 4224
+INFO 2026-11-05 05:06:10,686 django.server "GET /static/admin/css/base.css HTTP/1.1" 200 22120
+INFO 2026-11-05 05:06:10,692 django.server "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+INFO 2026-11-05 05:06:10,708 django.server "GET /static/admin/css/login.css HTTP/1.1" 200 951
+INFO 2026-11-05 05:06:10,732 django.server "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2808
+INFO 2026-11-05 05:06:10,749 django.server "GET /static/admin/css/responsive.css HTTP/1.1" 200 16565
+INFO 2026-11-05 05:06:10,767 django.server "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+INFO 2026-11-05 05:06:10,772 django.server "GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+INFO 2026-11-05 05:06:24,951 mediresilience.api method=POST path=/admin/login/ status=200 duration_ms=1284.30
+INFO 2026-11-05 05:06:24,954 django.server "POST /admin/login/?next=/admin/%3Futm_source%3Dchatgpt.com HTTP/1.1" 200 4406
+INFO 2026-11-05 05:06:41,132 mediresilience.api method=POST path=/admin/login/ status=200 duration_ms=1347.28
+INFO 2026-11-05 05:06:41,134 django.server "POST /admin/login/?next=/admin/%3Futm_source%3Dchatgpt.com HTTP/1.1" 200 4406
+INFO 2026-11-05 05:07:52,136 mediresilience.api method=POST path=/admin/login/ status=200 duration_ms=1424.30
+INFO 2026-11-05 05:07:52,138 django.server "POST /admin/login/?next=/admin/%3Futm_source%3Dchatgpt.com HTTP/1.1" 200 4406
+INFO 2026-11-05 05:08:10,204 mediresilience.api method=POST path=/admin/login/ status=200 duration_ms=1153.76
+INFO 2026-11-05 05:08:10,206 django.server "POST /admin/login/?next=/admin/%3Futm_source%3Dchatgpt.com HTTP/1.1" 200 4406
+INFO 2026-11-05 05:08:24,416 mediresilience.api method=POST path=/admin/login/ status=200 duration_ms=1144.32
+INFO 2026-11-05 05:08:24,418 django.server "POST /admin/login/?next=/admin/%3Futm_source%3Dchatgpt.com HTTP/1.1" 200 4406
+INFO 2026-11-05 05:12:14,568 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-11-05 05:12:53,199 mediresilience.api method=POST path=/admin/login/ status=200 duration_ms=1354.15
+INFO 2026-11-05 05:12:53,201 django.server "POST /admin/login/?next=/admin/%3Futm_source%3Dchatgpt.com HTTP/1.1" 200 4406
+INFO 2026-11-05 05:13:18,341 mediresilience.api method=POST path=/admin/login/ status=302 duration_ms=1277.57
+INFO 2026-11-05 05:13:18,373 django.server "POST /admin/login/?next=/admin/%3Futm_source%3Dchatgpt.com HTTP/1.1" 302 0
+INFO 2026-11-05 05:13:18,424 mediresilience.api method=GET path=/admin/ status=200 duration_ms=39.15
+INFO 2026-11-05 05:13:18,425 django.server "GET /admin/?utm_source=chatgpt.com HTTP/1.1" 200 7293
+INFO 2026-11-05 05:13:18,825 django.server "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 331
+INFO 2026-11-05 05:13:18,854 django.server "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 380
+INFO 2026-11-05 05:13:18,856 django.server "GET /static/admin/css/dashboard.css HTTP/1.1" 200 441
