@@ -87,12 +87,21 @@ INSTALLED_APPS = (
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
+
     "corsheaders.middleware.CorsMiddleware",
+
     "django.middleware.common.CommonMiddleware",
+
+    "config.common.middleware.RequestLoggingMiddleware",
+
     "django.middleware.csrf.CsrfViewMiddleware",
+
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+
     "django.contrib.messages.middleware.MessageMiddleware",
+
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -128,20 +137,40 @@ ASGI_APPLICATION = "config.asgi.application"
 # 8. DATABASE CONFIGURATION
 # =====================================================
 
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
+
         "NAME": env("DB_NAME"),
+
         "USER": env("DB_USER"),
+
         "PASSWORD": env("DB_PASSWORD"),
-        "HOST": env("DB_HOST", default="localhost"),
-        "PORT": env("DB_PORT", default="5432"),
-        "CONN_MAX_AGE": 60,
+
+        "HOST": env(
+            "DB_HOST",
+            default="localhost"
+        ),
+
+        "PORT": env(
+            "DB_PORT",
+            default="5432"
+        ),
+
+        "CONN_MAX_AGE": env.int(
+            "DB_CONN_MAX_AGE",
+            default=60
+        ),
+
+        "CONN_HEALTH_CHECKS": True,
+
         "OPTIONS": {
             "connect_timeout": 10,
         },
     }
 }
+
 
 # =====================================================
 # 9. PASSWORD VALIDATION
@@ -211,7 +240,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # 13. DJANGO REST FRAMEWORK
 # =====================================================
 
+
 REST_FRAMEWORK = {
+
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
@@ -227,10 +258,13 @@ REST_FRAMEWORK = {
     ],
 
     "DEFAULT_PAGINATION_CLASS": (
-        "rest_framework.pagination.PageNumberPagination"
+        "config.api.pagination.StandardResultsPagination"
     ),
 
-    "PAGE_SIZE": 20,
+    "PAGE_SIZE": env.int(
+        "API_PAGE_SIZE",
+        default=20
+    ),
 
     "DEFAULT_SCHEMA_CLASS": (
         "drf_spectacular.openapi.AutoSchema"
@@ -247,9 +281,30 @@ REST_FRAMEWORK = {
     "VERSION_PARAM": "version",
 
     "EXCEPTION_HANDLER": (
-        "rest_framework.views.exception_handler"
+        "config.api.exceptions.custom_exception_handler"
     ),
+
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",
+        "user": "1000/hour",
+    },
+
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ],
 }
+
+API_MAX_PAGE_SIZE = env.int(
+    "API_MAX_PAGE_SIZE",
+    default=100
+)
+
 
 # =====================================================
 # 14. JWT CONFIGURATION
@@ -290,6 +345,13 @@ CORS_ALLOWED_ORIGINS = env.list(
     default=["http://localhost:3000"]
 )
 
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=["http://localhost:3000"]
+)
+
+CORS_ALLOW_CREDENTIALS = True
+
 # =====================================================
 # 16. API DOCUMENTATION
 # =====================================================
@@ -304,6 +366,57 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
+
+# =====================================================
+# LOGGING CONFIGURATION
+# =====================================================
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "standard": {
+            "format": (
+                "{levelname} {asctime} "
+                "{name} {message}"
+            ),
+            "style": "{",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "standard",
+        },
+
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs" / "application.log",
+            "formatter": "standard",
+        },
+    },
+
+    "loggers": {
+        "mediresilience.api": {
+            "handlers": ["console", "file"],
+            "level": env(
+                "LOG_LEVEL",
+                default="INFO"
+            ),
+            "propagate": False,
+        },
+
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
+
 # =====================================================
 # 17. APPLICATION SETTINGS
 # =====================================================
@@ -317,3 +430,94 @@ REDIS_URL = env(
     "REDIS_URL",
     default="redis://localhost:6379/0"
 )
+
+
+
+# =====================================================
+# SECURITY SETTINGS
+# =====================================================
+
+SECURE_SSL_REDIRECT = env.bool(
+    "SECURE_SSL_REDIRECT",
+    default=False
+)
+
+SESSION_COOKIE_SECURE = env.bool(
+    "SESSION_COOKIE_SECURE",
+    default=False
+)
+
+CSRF_COOKIE_SECURE = env.bool(
+    "CSRF_COOKIE_SECURE",
+    default=False
+)
+
+SESSION_COOKIE_HTTPONLY = True
+
+CSRF_COOKIE_HTTPONLY = False
+
+X_FRAME_OPTIONS = "DENY"
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
+if not DEBUG:
+
+    SECURE_HSTS_SECONDS = 31536000
+
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+    SECURE_HSTS_PRELOAD = True
+
+
+
+# =====================================================
+# LOGGING CONFIGURATION
+# =====================================================
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "standard": {
+            "format": (
+                "{levelname} {asctime} "
+                "{name} {message}"
+            ),
+            "style": "{",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "standard",
+        },
+
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs" / "application.log",
+            "formatter": "standard",
+        },
+    },
+
+    "loggers": {
+        "mediresilience.api": {
+            "handlers": ["console", "file"],
+            "level": env(
+                "LOG_LEVEL",
+                default="INFO"
+            ),
+            "propagate": False,
+        },
+
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+

@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django.urls import path, include
 
@@ -8,41 +7,35 @@ from drf_spectacular.views import (
     SpectacularRedocView,
 )
 
-from config.health import health_check
+from config.health import health_check, readiness_check
 
 
 urlpatterns = [
 
-    # Django administration
     path("admin/", admin.site.urls),
 
-    # System health
-    path("api/health/", health_check, name="health-check"),
+    path("api/health/", health_check),
 
-    # API documentation
-    path(
-        "api/schema/",
-        SpectacularAPIView.as_view(),
-        name="schema",
-    ),
+    path("api/ready/", readiness_check),
+
+    path("api/v1/health/", health_check),
+
+    path("api/v1/ready/", readiness_check),
+
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
 
     path(
         "api/docs/",
-        SpectacularSwaggerView.as_view(
-            url_name="schema"
-        ),
+        SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
 
     path(
         "api/redoc/",
-        SpectacularRedocView.as_view(
-            url_name="schema"
-        ),
+        SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
 
-    # Versioned REST API
     path(
         "api/<str:version>/",
         include("config.api_urls"),

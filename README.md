@@ -166,3 +166,214 @@ The broader concern is real: UNAIDS documented supply-chain management challenge
 
 # CELL 2.24
 .\backend\.venv\Scripts\Activate.ps1
+
+
+4.3 Design identity and access management
+Table	Purpose
+users	Application users
+roles	System roles
+permissions	Granular permissions
+user_roles	Assign multiple roles
+role_permissions	Role-to-permission mapping
+user_organization_access	Organization-level access
+user_facility_access	Facility-level access
+user_sessions	Session tracking, if required
+
+
+The system will support both role-based and scope-based permissions.
+
+For example:
+- A regional administrator can access assigned regional facilities.
+- A district pharmacist can access inventory within their assigned district.
+- A facility pharmacist can manage only authorized facility inventory.
+We will not rely on frontend navigation restrictions for security. Django will enforce access at the API and database-query levels.
+4.4 Design medicine catalog
+This module defines the medicines that can be managed by the system.
+Table	Purpose
+medicine_categories	Antibiotics, antimalarials, etc.
+medicines	Medicine master catalog
+dosage_forms	Tablet, capsule, injection, etc.
+units_of_measure	Tablet, bottle, vial, box, etc.
+medicine_units	Conversion between units
+medicine_alternatives	Approved alternative medicines
+medicine_facility_settings	Facility-specific stock policies
+
+
+4.5 Design inventory and warehouse database
+This is one of the most important parts of the entire platform.
+Table	Purpose
+warehouses	Physical storage locations
+warehouse_locations	Shelves and storage areas
+stock_batches	Batch and expiry information
+stock_balances	Current stock by location and batch
+stock_movements	Immutable inventory transaction ledger
+stock_adjustments	Approved inventory corrections
+stock_counts	Physical inventory counts
+stock_count_items	Counted medicine quantities
+
+# Inventory relationship
+FACILITY
+   |
+   v
+WAREHOUSE
+   |
+   v
+STOCK BATCH
+   |
+   +----------------+
+   |                |
+   v                v
+STOCK BALANCE   STOCK MOVEMENT
+   |                |
+   v                v
+AVAILABLE       TRANSACTION HISTORY
+QUANTITY
+
+
+
+# 4.11 Complete database entity relationship diagram
+The following is our initial conceptual ER diagram. We will refine individual attributes and cardinalities during Django model implementation.
+
+# 4.14 Create the database design documentation
+
+
+# MediResilience AI — Database Design
+
+## Database
+- PostgreSQL
+- Database: mediresilience_db
+- Encoding: UTF8
+
+## Design Principles
+- Relational database architecture
+- UUID identifiers for major business entities
+- Foreign-key constraints
+- Normalized transactional data
+- Immutable inventory transaction ledger
+- Indexed reporting queries
+- Organization-scoped data access
+- Transactional stock updates
+
+## Database Domains
+
+1. Identity and Access Management
+2. Organizations and Administrative Areas
+3. Health Facilities
+4. Medicine Catalog
+5. Suppliers and Warehouses
+6. Inventory and Stock Movements
+7. Medicine Consumption
+8. Replenishment
+9. Procurement
+10. Redistribution
+11. Logistics and Deliveries
+12. AI Forecasting and Predictions
+13. Notifications
+14. Analytics and Auditing
+
+## Inventory Rules
+
+Available stock = Quantity on hand - Quantity reserved.
+
+Stock in transit is tracked separately.
+
+Stock movements are recorded through
+validated transactional operations.
+
+Batch expiry is managed using FEFO.
+
+## Security
+
+- Scoped organization access
+- Facility-level authorization
+- Audit trail
+- Protected inventory transactions
+
+## Migration Strategy
+
+The custom Django user model must be
+implemented before the first database migration.
+
+First migrations will be executed in Phase 6.
+
+
+
+
+
+
+
+
+
+
+
+
+
+# MediResilience AI Backend
+
+## Framework
+Django 5.2 LTS
+
+## API
+Django REST Framework
+
+## Database
+PostgreSQL
+
+## Architecture
+Modular Django application architecture.
+
+## Applications
+
+- accounts
+- organizations
+- facilities
+- medicines
+- suppliers
+- warehouses
+- inventory
+- consumption
+- replenishment
+- procurement
+- redistribution
+- logistics
+- forecasting
+- notifications
+- analytics
+- audit
+
+## Development
+
+Activate virtual environment:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Start server:
+
+```powershell
+python manage.py runserver
+```
+
+Check configuration:
+
+```powershell
+python manage.py check
+```
+
+## API Endpoints
+
+- /api/health/
+- /api/ready/
+- /api/v1/health/
+- /api/v1/ready/
+- /api/schema/
+- /api/docs/
+
+## Database
+
+Database: mediresilience_db
+
+Database migrations are intentionally
+deferred until Phase 6, when the
+custom user model is implemented.

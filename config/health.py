@@ -8,36 +8,44 @@ from django.views.decorators.http import require_GET
 @require_GET
 def health_check(request):
 
-    database_status = "connected"
+    return JsonResponse(
+        {
+            "success": True,
+            "application": "MediResilience AI",
+            "status": "healthy",
+            "timestamp": timezone.now().isoformat(),
+            "version": "1.0.0",
+        }
+    )
+
+
+@require_GET
+def readiness_check(request):
+
+    checks = {}
 
     try:
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             cursor.fetchone()
 
+        checks["database"] = "connected"
+
     except Exception:
-        database_status = "disconnected"
+        checks["database"] = "disconnected"
 
-    overall_status = (
-        "healthy"
-        if database_status == "connected"
-        else "degraded"
-    )
-
-    response_status = (
-        200
-        if database_status == "connected"
-        else 503
+    healthy = all(
+        value == "connected"
+        for value in checks.values()
     )
 
     return JsonResponse(
         {
-            "success": database_status == "connected",
+            "success": healthy,
             "application": "MediResilience AI",
-            "status": overall_status,
-            "database": database_status,
+            "status": "ready" if healthy else "not_ready",
+            "checks": checks,
             "timestamp": timezone.now().isoformat(),
-            "version": "1.0.0",
         },
-        status=response_status,
+        status=200 if healthy else 503,
     )
