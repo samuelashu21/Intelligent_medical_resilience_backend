@@ -2,6 +2,6 @@ from django.apps import AppConfig
 
 
 class ConsumptionConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'consumption'
-    verbose_name = "Consumption"
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.consumption"
+    verbose_name = "Medicine Consumption"
