@@ -25,6 +25,17 @@ ENV/
 *.sublime-workspace
 *.sublime-project
 
+# Django
+staticfiles/
+media
+
+# ML
+*.pt
+*.pth
+*.pkl
+*.joblib
+ml-service/models/
+
 # OS Generated Files
 .DS_Store
 .DS_Store?
