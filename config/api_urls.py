@@ -9,6 +9,8 @@ urlpatterns = [
 
     path("ready/", readiness_check),
 
+     path("v1/accounts/", include("apps.accounts.urls")),
+
     path(
         "accounts/",
         include("apps.accounts.urls"),
