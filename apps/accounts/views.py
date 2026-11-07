@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import update_session_auth_hash
 
 from rest_framework import generics, status
@@ -10,6 +12,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 
 from apps.accounts.permissions import HasSystemPermission
 from apps.accounts.serializers.auth_serializers import (
@@ -43,42 +46,73 @@ class RefreshView(TokenRefreshView):
 class LogoutView(APIView):
     """
     Blacklist the supplied refresh token.
+
+    Requires an authenticated user and a valid refresh token
+    belonging to that user.
     """
 
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
             return Response(
-                {"detail": "Refresh token is required."},
+                {
+                    "detail": "Refresh token is required."
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
             token = RefreshToken(refresh_token)
 
-            # Prevent a user from blacklisting another user's token.
-            if str(token["user_id"]) != str(request.user.id):
+            # Verify token ownership.
+            user_id = (
+                token.payload.get("user_id")
+                or token.payload.get("sub")
+            )
+
+            if user_id and str(user_id) != str(request.user.id):
                 return Response(
-                    {"detail": "Invalid refresh token."},
+                    {
+                        "detail": "Invalid refresh token."
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            # Blacklist refresh token.
             token.blacklist()
 
             return Response(
-                {"detail": "Successfully logged out."},
+                {
+                    "detail": "Successfully logged out."
+                },
                 status=status.HTTP_205_RESET_CONTENT,
             )
 
-        except TokenError:
+        except TokenError as exc:
             return Response(
-                {"detail": "Invalid or expired refresh token."},
+                {
+                    "detail": (
+                        str(exc)
+                        or "Invalid or expired refresh token."
+                    )
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        except Exception:
+            logger = logging.getLogger("mediresilience.api")
+            logger.exception("Unexpected error during logout.")
+
+            return Response(
+                {
+                    "detail": "An error occurred during logout."
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+ 
 
 class CurrentUserView(generics.RetrieveAPIView):
     """
@@ -92,29 +126,31 @@ class CurrentUserView(generics.RetrieveAPIView):
         return self.request.user
 
 
-class PasswordChangeView(APIView):
+class PasswordChangeView(generics.GenericAPIView):
     """
     Allow an authenticated user to change their password.
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = PasswordChangeSerializer
 
-    def post(self, request):
-        serializer = PasswordChangeSerializer(
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
             data=request.data,
             context={"request": request},
         )
-
         serializer.is_valid(raise_exception=True)
+        
+        # If the serializer defines a save method, use it; otherwise update user directly.
+        if hasattr(serializer, "save") and callable(getattr(serializer, "save")):
+            serializer.save()
+        else:
+            user = request.user
+            new_password = serializer.validated_data.get("new_password")
+            user.set_password(new_password)
+            user.save(update_fields=["password"])
+            update_session_auth_hash(request, user)
 
-        request.user.set_password(
-            serializer.validated_data["new_password"]
-        )
-
-        request.user.save(update_fields=["password"])
-
-        # Password changes invalidate existing password-derived
-        # authentication sessions, but JWTs need explicit revocation.
         return Response(
             {
                 "detail": (

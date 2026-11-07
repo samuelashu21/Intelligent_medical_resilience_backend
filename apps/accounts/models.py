@@ -1,11 +1,11 @@
-
 import uuid
 
 from django.contrib.auth.models import AbstractUser
-from django.db import models
+from django.db import models 
+
 
 from .managers import UserManager
-
+from django.core.exceptions import ValidationError 
 
 class User(AbstractUser):
 
@@ -306,6 +306,22 @@ class UserRole(models.Model):
         auto_now_add=True,
     )
 
+    organization = models.ForeignKey(
+        "organizations.Organization",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="user_role_assignments",
+    )
+
+    facility = models.ForeignKey(
+        "facilities.Facility",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="user_role_assignments",
+    )
+
     class Meta:
 
         db_table = "accounts_user_role"
@@ -313,7 +329,26 @@ class UserRole(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "role"],
-                name="unique_user_role",
+                condition=models.Q(
+                    organization__isnull=True,
+                    facility__isnull=True,
+                ),
+                name="unique_global_user_role",
+            ),
+            models.UniqueConstraint(
+                fields=["user", "role", "organization"],
+                condition=models.Q(
+                    organization__isnull=False,
+                    facility__isnull=True,
+                ),
+                name="unique_org_user_role",
+            ),
+            models.UniqueConstraint(
+                fields=["user", "role", "facility"],
+                condition=models.Q(
+                    facility__isnull=False,
+                ),
+                name="unique_facility_user_role",
             ),
         ]
 
@@ -322,8 +357,47 @@ class UserRole(models.Model):
                 fields=["user", "is_active"],
                 name="user_role_active_idx",
             ),
+            models.Index(
+                fields=["organization", "is_active"],
+                name="userrole_org_active_idx",
+            ),
+            models.Index(
+                fields=["facility", "is_active"],
+                name="userrole_fac_active_idx",
+            ),
         ]
 
-    def __str__(self):
+    def clean(self):
+        super().clean()
+        if self.organization_id and self.facility_id:
+            if self.facility.organization_id != self.organization_id:
+                raise ValidationError(
+                    {
+                        "facility": (
+                            "The facility must belong directly to the "
+                            "selected organization."
+                        )
+                    }
+                ) 
 
+        if self.facility_id and not self.facility.is_active:
+            raise ValidationError(
+                {"facility": "Cannot assign a role to an inactive facility."}
+            )
+
+        if self.organization_id and not self.organization.is_active:
+            raise ValidationError(
+                {"organization": "Cannot assign a role to an inactive organization."}
+            )
+
+        if self.role_id and not self.role.is_active:
+            raise ValidationError(
+                {"role": "Cannot assign an inactive role."}
+            )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+ 
+    def __str__(self):
         return f"{self.user.email} - {self.role.code}"

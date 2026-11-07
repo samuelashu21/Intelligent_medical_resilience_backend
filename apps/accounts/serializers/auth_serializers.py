@@ -1,4 +1,5 @@
-from django.contrib.auth import authenticate, password_validation
+
+from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 
 from rest_framework import serializers
@@ -10,6 +11,13 @@ from apps.accounts.models import User, UserProfile
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Email/password authentication with additional account checks.
+
+    Features:
+    - Email-based authentication.
+    - Normalized email addresses.
+    - Inactive account protection.
+    - JWT access and refresh token generation.
+    - Additional user information in login response.
     """
 
     username_field = User.USERNAME_FIELD
@@ -19,9 +27,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         password = attrs.get("password", "")
 
         if not email or not password:
-            raise serializers.ValidationError(
-                {"detail": "Email and password are required."}
-            )
+            raise serializers.ValidationError({
+                "detail": "Email and password are required."
+            })
 
         user = authenticate(
             request=self.context.get("request"),
@@ -30,17 +38,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         )
 
         if user is None:
-            raise serializers.ValidationError(
-                {"detail": "Invalid email or password."}
-            )
+            raise serializers.ValidationError({
+                "detail": "Invalid email or password."
+            })
 
         if not user.is_active:
-            raise serializers.ValidationError(
-                {"detail": "This account is inactive."}
-            )
+            raise serializers.ValidationError({
+                "detail": "This account is inactive."
+            })
 
+        # Generate JWT tokens using SimpleJWT.
         data = super().validate(attrs)
 
+        # Include authenticated user information.
         data["user"] = {
             "id": str(user.id),
             "email": user.email,
@@ -53,6 +63,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Serialize additional user profile information.
+    """
+
     class Meta:
         model = UserProfile
         fields = [
@@ -64,12 +78,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
+    """
+    Return authenticated user information, profile,
+    assigned roles, and effective permissions.
+    """
+
     profile = UserProfileSerializer(read_only=True)
+
     roles = serializers.SerializerMethodField()
+
     permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = User
+
         fields = [
             "id",
             "email",
@@ -83,17 +105,29 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "roles",
             "permissions",
         ]
+
         read_only_fields = fields
 
     def get_roles(self, obj):
+        """
+        Return active roles assigned to the user.
+        """
+
         return list(
             obj.role_assignments.filter(
                 is_active=True,
                 role__is_active=True,
-            ).values_list("role__code", flat=True)
+            ).values_list(
+                "role__code",
+                flat=True,
+            )
         )
 
     def get_permissions(self, obj):
+        """
+        Return effective permissions for the authenticated user.
+        """
+
         from apps.accounts.services import get_user_permissions
 
         permissions = get_user_permissions(obj)
@@ -105,6 +139,17 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 
 
 class PasswordChangeSerializer(serializers.Serializer):
+    """
+    Secure password change serializer.
+
+    Features:
+    - Verify current password.
+    - Require new password confirmation.
+    - Enforce Django password validation.
+    - Prevent reuse of current password.
+    - Update password using Django's secure password hashing.
+    """
+
     current_password = serializers.CharField(
         write_only=True,
         required=True,
@@ -124,6 +169,10 @@ class PasswordChangeSerializer(serializers.Serializer):
     )
 
     def validate_current_password(self, value):
+        """
+        Verify the user's existing password.
+        """
+
         user = self.context["request"].user
 
         if not user.check_password(value):
@@ -134,18 +183,57 @@ class PasswordChangeSerializer(serializers.Serializer):
         return value
 
     def validate(self, attrs):
-        if attrs["new_password"] != attrs["confirm_new_password"]:
-            raise serializers.ValidationError({
-                "confirm_new_password": "The new passwords do not match."
-            })
+        """
+        Validate password confirmation and password strength.
+        """
 
         user = self.context["request"].user
 
-        validate_password(attrs["new_password"], user=user)
-
-        if attrs["current_password"] == attrs["new_password"]:
+        # Check password confirmation.
+        if attrs["new_password"] != attrs["confirm_new_password"]:
             raise serializers.ValidationError({
-                "new_password": "Choose a password different from your current password."
+                "confirm_new_password": (
+                    "The new passwords do not match."
+                )
             })
 
+        # Prevent using the existing password again.
+        if attrs["current_password"] == attrs["new_password"]:
+            raise serializers.ValidationError({
+                "new_password": (
+                    "Choose a password different from your current password."
+                )
+            })
+
+        # Apply configured Django password validators.
+        validate_password(
+            attrs["new_password"],
+            user=user,
+        )
+
         return attrs
+
+    def save(self, **kwargs):
+        """
+        Change the authenticated user's password.
+
+        Uses Django's set_password() to ensure the password
+        is securely hashed before database persistence.
+        """
+
+        if not hasattr(self, "validated_data"):
+            raise AssertionError(
+                "Call is_valid() before calling save()."
+            )
+
+        user = self.context["request"].user
+
+        new_password = self.validated_data["new_password"]
+
+        user.set_password(new_password)
+
+        user.save(
+            update_fields=["password"]
+        )
+
+        return user

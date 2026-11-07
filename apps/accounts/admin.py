@@ -214,7 +214,11 @@ class UserRoleAdmin(admin.ModelAdmin):
         "is_active",
         "assigned_by",
         "assigned_at",
-    )
+        "organization",
+        "facility",
+        "valid_from",
+        "valid_until",
+      )
 
     list_filter = (
         "role",
