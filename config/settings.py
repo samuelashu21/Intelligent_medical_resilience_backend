@@ -307,36 +307,6 @@ REST_FRAMEWORK = {
 }
 
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=int(os.getenv("JWT_ACCESS_TOKEN_MINUTES", 30))
-    ),
-
-    "REFRESH_TOKEN_LIFETIME": timedelta(
-        days=int(os.getenv("JWT_REFRESH_TOKEN_DAYS", 7))
-    ),
-
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
-
-    "UPDATE_LAST_LOGIN": True,
-
-    "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
-
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-
-    "USER_ID_FIELD": "id",
-    "USER_ID_CLAIM": "user_id",
-
-    "TOKEN_TYPE_CLAIM": "token_type",
-
-    "JTI_CLAIM": "jti",
-    "LEEWAY": 0,
-}
-
-
 
 API_MAX_PAGE_SIZE = env.int(
     "API_MAX_PAGE_SIZE",
@@ -352,26 +322,23 @@ from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=env.int(
-            "JWT_ACCESS_TOKEN_MINUTES",
-            default=30
-        )
+        minutes=env.int("JWT_ACCESS_TOKEN_MINUTES", default=30)
     ),
-
     "REFRESH_TOKEN_LIFETIME": timedelta(
-        days=env.int(
-            "JWT_REFRESH_TOKEN_DAYS",
-            default=7
-        )
+        days=env.int("JWT_REFRESH_TOKEN_DAYS", default=7)
     ),
-
     "ROTATE_REFRESH_TOKENS": True,
-
-    "BLACKLIST_AFTER_ROTATION": False,
-
-    "AUTH_HEADER_TYPES": ("Bearer",),
-
+    "BLACKLIST_AFTER_ROTATION": True, # Set to True if using token_blacklist
     "UPDATE_LAST_LOGIN": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "JTI_CLAIM": "jti",
+    "LEEWAY": 0,
 }
 
 # =====================================================
@@ -511,7 +478,7 @@ if not DEBUG:
 
 
 # =====================================================
-# LOGGING CONFIGURATION
+# LOGGING CONFIGURATION1
 # =====================================================
 
 LOGGING = {

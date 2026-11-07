@@ -44,3 +44,69 @@ INFO 2026-11-05 05:13:18,825 django.server "GET /static/admin/img/icon-addlink.s
 INFO 2026-11-05 05:13:18,854 django.server "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 380
 INFO 2026-11-05 05:13:18,856 django.server "GET /static/admin/css/dashboard.css HTTP/1.1" 200 441
 INFO 2026-11-07 01:16:13,494 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-11-07 02:02:43,038 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=3840.00
+INFO 2026-11-07 02:02:43,039 django.server "POST /api/v1/accounts/auth/login/ HTTP/1.1" 200 719
+INFO 2026-11-07 02:07:23,372 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=500 duration_ms=230.88
+ERROR 2026-11-07 02:07:23,420 django.request Internal Server Error: /api/v1/accounts/auth/change-password/
+ERROR 2026-11-07 02:07:23,421 django.server "POST /api/v1/accounts/auth/change-password/ HTTP/1.1" 500 80
+INFO 2026-11-07 02:08:06,633 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=500 duration_ms=93.01
+ERROR 2026-11-07 02:08:06,634 django.request Internal Server Error: /api/v1/accounts/auth/change-password/
+ERROR 2026-11-07 02:08:06,636 django.server "POST /api/v1/accounts/auth/change-password/ HTTP/1.1" 500 80
+INFO 2026-11-07 02:09:23,190 mediresilience.api method=POST path=/api/v1/accounts/auth/logout/ status=500 duration_ms=208.97
+ERROR 2026-11-07 02:09:23,191 django.request Internal Server Error: /api/v1/accounts/auth/logout/
+ERROR 2026-11-07 02:09:23,192 django.server "POST /api/v1/accounts/auth/logout/ HTTP/1.1" 500 80
+INFO 2026-11-07 02:10:05,580 mediresilience.api method=POST path=/api/v1/accounts/auth/logout/ status=500 duration_ms=148.58
+ERROR 2026-11-07 02:10:05,582 django.request Internal Server Error: /api/v1/accounts/auth/logout/
+ERROR 2026-11-07 02:10:05,583 django.server "POST /api/v1/accounts/auth/logout/ HTTP/1.1" 500 80
+INFO 2026-11-07 02:10:58,648 mediresilience.api method=POST path=/api/v1/accounts/auth/logout/ status=500 duration_ms=191.47
+ERROR 2026-11-07 02:10:58,649 django.request Internal Server Error: /api/v1/accounts/auth/logout/
+ERROR 2026-11-07 02:10:58,650 django.server "POST /api/v1/accounts/auth/logout/ HTTP/1.1" 500 80
+INFO 2026-11-07 02:30:29,316 mediresilience.api method=GET path=/api/v1/v1/accounts/auth/me/ status=401 duration_ms=3.51
+WARNING 2026-11-07 02:30:29,318 django.request Unauthorized: /api/v1/v1/accounts/auth/me/
+INFO 2026-11-07 02:30:32,821 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=200 duration_ms=2216.63
+INFO 2026-11-07 02:30:33,312 mediresilience.api method=GET path=/api/v1/v1/accounts/auth/me/ status=200 duration_ms=489.88
+INFO 2026-11-07 02:30:35,617 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=400 duration_ms=1106.82
+WARNING 2026-11-07 02:30:35,617 django.request Bad Request: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:30:38,704 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=400 duration_ms=1511.01
+WARNING 2026-11-07 02:30:38,705 django.request Bad Request: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:30:42,533 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=200 duration_ms=2633.05
+INFO 2026-11-07 02:30:42,536 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/logout/ status=500 duration_ms=2.32
+ERROR 2026-11-07 02:30:42,537 django.request Internal Server Error: /api/v1/v1/accounts/auth/logout/
+INFO 2026-11-07 02:30:47,419 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=200 duration_ms=3357.59
+INFO 2026-11-07 02:30:47,422 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/change-password/ status=500 duration_ms=2.58
+ERROR 2026-11-07 02:30:47,423 django.request Internal Server Error: /api/v1/v1/accounts/auth/change-password/
+INFO 2026-11-07 02:30:48,815 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=429 duration_ms=0.67
+WARNING 2026-11-07 02:30:48,815 django.request Too Many Requests: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:30:50,285 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=429 duration_ms=0.59
+WARNING 2026-11-07 02:30:50,286 django.request Too Many Requests: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:30:51,684 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=429 duration_ms=0.62
+WARNING 2026-11-07 02:30:51,684 django.request Too Many Requests: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:30:53,614 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=429 duration_ms=0.58
+WARNING 2026-11-07 02:30:53,614 django.request Too Many Requests: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:33:14,028 mediresilience.api method=GET path=/api/v1/v1/accounts/auth/me/ status=401 duration_ms=3.57
+WARNING 2026-11-07 02:33:14,030 django.request Unauthorized: /api/v1/v1/accounts/auth/me/
+INFO 2026-11-07 02:33:17,471 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=200 duration_ms=2334.40
+INFO 2026-11-07 02:33:17,502 mediresilience.api method=GET path=/api/v1/v1/accounts/auth/me/ status=200 duration_ms=29.43
+INFO 2026-11-07 02:33:20,466 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=400 duration_ms=1585.39
+WARNING 2026-11-07 02:33:20,467 django.request Bad Request: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:33:22,714 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=400 duration_ms=1080.90
+WARNING 2026-11-07 02:33:22,715 django.request Bad Request: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:33:26,061 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=200 duration_ms=2213.23
+INFO 2026-11-07 02:33:26,064 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/logout/ status=500 duration_ms=2.45
+ERROR 2026-11-07 02:33:26,065 django.request Internal Server Error: /api/v1/v1/accounts/auth/logout/
+INFO 2026-11-07 02:33:29,542 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=200 duration_ms=2134.08
+INFO 2026-11-07 02:33:29,545 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/change-password/ status=500 duration_ms=2.19
+ERROR 2026-11-07 02:33:29,545 django.request Internal Server Error: /api/v1/v1/accounts/auth/change-password/
+INFO 2026-11-07 02:33:30,703 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=429 duration_ms=0.77
+WARNING 2026-11-07 02:33:30,703 django.request Too Many Requests: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:33:31,838 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=429 duration_ms=0.57
+WARNING 2026-11-07 02:33:31,838 django.request Too Many Requests: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:33:33,162 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=429 duration_ms=1.08
+WARNING 2026-11-07 02:33:33,163 django.request Too Many Requests: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:33:34,374 mediresilience.api method=POST path=/api/v1/v1/accounts/auth/login/ status=429 duration_ms=0.54
+WARNING 2026-11-07 02:33:34,374 django.request Too Many Requests: /api/v1/v1/accounts/auth/login/
+INFO 2026-11-07 02:38:17,358 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-11-07 02:52:34,416 django.utils.autoreload D:\nextjs\Intelligent_medical_resilience\backend\config\settings.py changed, reloading.
+INFO 2026-11-07 02:52:40,985 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-11-07 02:53:17,317 django.utils.autoreload D:\nextjs\Intelligent_medical_resilience\backend\config\settings.py changed, reloading.
+INFO 2026-11-07 02:53:18,781 django.utils.autoreload Watching for file changes with StatReloader
