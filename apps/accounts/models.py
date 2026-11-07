@@ -101,3 +101,229 @@ class UserProfile(models.Model):
     def __str__(self):
 
         return f"Profile: {self.user.email}"
+
+
+class Role(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    code = models.CharField(
+        max_length=60,
+        unique=True,
+    )
+
+    name = models.CharField(
+        max_length=150,
+    )
+
+    description = models.TextField(
+        blank=True,
+    )
+
+    is_system_role = models.BooleanField(
+        default=True,
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    permissions = models.ManyToManyField(
+        "accounts.AccessPermission",
+        through="accounts.RolePermission",
+        related_name="roles",
+        blank=True,
+    )
+
+    class Meta:
+
+        db_table = "accounts_role"
+
+        ordering = ["name"]
+
+        indexes = [
+            models.Index(
+                fields=["code", "is_active"],
+                name="role_code_active_idx",
+            ),
+        ]
+
+    def __str__(self):
+
+        return f"{self.name} ({self.code})"
+
+
+
+
+class AccessPermission(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    code = models.CharField(
+        max_length=100,
+        unique=True,
+    )
+
+    name = models.CharField(
+        max_length=150,
+    )
+
+    module = models.CharField(
+        max_length=80,
+    )
+
+    description = models.TextField(
+        blank=True,
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+
+        db_table = "accounts_access_permission"
+
+        ordering = ["module", "code"]
+
+        indexes = [
+            models.Index(
+                fields=["module", "is_active"],
+                name="permission_module_idx",
+            ),
+        ]
+
+    def __str__(self):
+
+        return self.code
+
+
+
+class RolePermission(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    role = models.ForeignKey(
+        "accounts.Role",
+        on_delete=models.CASCADE,
+        related_name="role_permissions",
+    )
+
+    permission = models.ForeignKey(
+        "accounts.AccessPermission",
+        on_delete=models.CASCADE,
+        related_name="role_permissions",
+    )
+
+    granted_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+
+        db_table = "accounts_role_permission"
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["role", "permission"],
+                name="unique_role_permission",
+            ),
+        ]
+
+    def __str__(self):
+
+        return f"{self.role.code} -> {self.permission.code}"
+
+
+
+class UserRole(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    user = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.CASCADE,
+        related_name="role_assignments",
+    )
+
+    role = models.ForeignKey(
+        "accounts.Role",
+        on_delete=models.PROTECT,
+        related_name="user_assignments",
+    )
+
+    assigned_by = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="roles_assigned",
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+    )
+
+    valid_from = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    valid_until = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    assigned_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+
+        db_table = "accounts_user_role"
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "role"],
+                name="unique_user_role",
+            ),
+        ]
+
+        indexes = [
+            models.Index(
+                fields=["user", "is_active"],
+                name="user_role_active_idx",
+            ),
+        ]
+
+    def __str__(self):
+
+        return f"{self.user.email} - {self.role.code}"
