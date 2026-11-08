@@ -475,3 +475,130 @@ INFO 2026-11-08 04:25:49,636 mediresilience.api method=POST path=/api/v1/account
 INFO 2026-11-08 04:25:52,332 mediresilience.api method=GET path=/api/v1/accounts/users/ status=200 duration_ms=16.15
 INFO 2026-11-08 04:25:54,893 mediresilience.api method=GET path=/api/v1/accounts/users/ status=401 duration_ms=0.63
 WARNING 2026-11-08 04:25:54,893 django.request Unauthorized: /api/v1/accounts/users/
+INFO 2026-11-08 08:59:55,575 mediresilience.api method=POST path=/api/v1/medicines/catalog/ status=400 duration_ms=107.23
+WARNING 2026-11-08 08:59:55,618 django.request Bad Request: /api/v1/medicines/catalog/
+INFO 2026-11-08 08:59:56,802 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=200 duration_ms=57.19
+INFO 2026-11-08 08:59:57,974 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=401 duration_ms=0.62
+WARNING 2026-11-08 08:59:57,974 django.request Unauthorized: /api/v1/medicines/catalog/
+INFO 2026-11-08 09:10:44,475 mediresilience.api method=POST path=/api/v1/medicines/catalog/ status=400 duration_ms=27.49
+WARNING 2026-11-08 09:10:44,476 django.request Bad Request: /api/v1/medicines/catalog/
+INFO 2026-11-08 09:10:45,616 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=200 duration_ms=20.14
+INFO 2026-11-08 09:10:46,712 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=401 duration_ms=0.59
+WARNING 2026-11-08 09:10:46,713 django.request Unauthorized: /api/v1/medicines/catalog/
+INFO 2026-11-08 09:11:17,982 mediresilience.api method=POST path=/api/v1/medicines/catalog/ status=400 duration_ms=20.74
+WARNING 2026-11-08 09:11:17,984 django.request Bad Request: /api/v1/medicines/catalog/
+INFO 2026-11-08 09:11:19,170 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=200 duration_ms=24.01
+INFO 2026-11-08 09:11:20,382 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=401 duration_ms=0.63
+WARNING 2026-11-08 09:11:20,383 django.request Unauthorized: /api/v1/medicines/catalog/
+INFO 2026-11-08 09:20:21,377 mediresilience.api method=POST path=/api/v1/medicines/catalog/ status=400 duration_ms=24.90
+WARNING 2026-11-08 09:20:21,379 django.request Bad Request: /api/v1/medicines/catalog/
+INFO 2026-11-08 09:20:23,231 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=200 duration_ms=107.34
+INFO 2026-11-08 09:20:25,527 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=401 duration_ms=0.94
+WARNING 2026-11-08 09:20:25,528 django.request Unauthorized: /api/v1/medicines/catalog/
+INFO 2026-11-08 09:23:04,398 mediresilience.api method=POST path=/api/v1/medicines/catalog/ status=400 duration_ms=31.45
+WARNING 2026-11-08 09:23:04,401 django.request Bad Request: /api/v1/medicines/catalog/
+INFO 2026-11-08 09:23:05,606 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=200 duration_ms=23.59
+INFO 2026-11-08 09:23:06,794 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=401 duration_ms=0.57
+WARNING 2026-11-08 09:23:06,794 django.request Unauthorized: /api/v1/medicines/catalog/
+INFO 2026-11-08 09:25:08,382 mediresilience.api method=POST path=/api/v1/medicines/catalog/ status=400 duration_ms=27.16
+WARNING 2026-11-08 09:25:08,384 django.request Bad Request: /api/v1/medicines/catalog/
+INFO 2026-11-08 09:25:09,661 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=200 duration_ms=20.73
+INFO 2026-11-08 09:25:10,753 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=401 duration_ms=0.69
+WARNING 2026-11-08 09:25:10,754 django.request Unauthorized: /api/v1/medicines/catalog/
+INFO 2026-11-08 11:06:58,298 mediresilience.api method=POST path=/api/v1/medicines/catalog/ status=400 duration_ms=42.36
+WARNING 2026-11-08 11:06:58,304 django.request Bad Request: /api/v1/medicines/catalog/
+INFO 2026-11-08 11:07:01,121 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=200 duration_ms=29.36
+INFO 2026-11-08 11:07:02,325 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=401 duration_ms=0.57
+WARNING 2026-11-08 11:07:02,326 django.request Unauthorized: /api/v1/medicines/catalog/
+INFO 2026-11-08 11:11:11,968 mediresilience.api method=POST path=/api/v1/medicines/catalog/ status=201 duration_ms=56.14
+INFO 2026-11-08 11:11:13,246 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=200 duration_ms=16.97
+INFO 2026-11-08 11:11:14,470 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=401 duration_ms=1.25
+WARNING 2026-11-08 11:11:14,472 django.request Unauthorized: /api/v1/medicines/catalog/
+INFO 2026-11-08 11:13:38,598 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2704.49
+INFO 2026-11-08 11:13:38,621 mediresilience.api method=POST path=/api/v1/accounts/auth/refresh/ status=200 duration_ms=21.60
+INFO 2026-11-08 11:13:38,628 mediresilience.api method=POST path=/api/v1/accounts/auth/refresh/ status=401 duration_ms=5.05
+WARNING 2026-11-08 11:13:38,631 django.request Unauthorized: /api/v1/accounts/auth/refresh/
+INFO 2026-11-08 11:13:39,993 mediresilience.api method=GET path=/api/v1/accounts/auth/me/ status=401 duration_ms=0.88
+WARNING 2026-11-08 11:13:39,993 django.request Unauthorized: /api/v1/accounts/auth/me/
+INFO 2026-11-08 11:13:44,270 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2968.52
+INFO 2026-11-08 11:13:44,393 mediresilience.api method=GET path=/api/v1/accounts/auth/me/ status=200 duration_ms=121.68
+INFO 2026-11-08 11:13:47,006 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=400 duration_ms=1237.20
+WARNING 2026-11-08 11:13:47,007 django.request Bad Request: /api/v1/accounts/auth/login/
+INFO 2026-11-08 11:13:50,282 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=400 duration_ms=1220.26
+WARNING 2026-11-08 11:13:50,283 django.request Bad Request: /api/v1/accounts/auth/login/
+INFO 2026-11-08 11:13:53,905 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2235.66
+INFO 2026-11-08 11:13:53,918 mediresilience.api method=POST path=/api/v1/accounts/auth/logout/ status=205 duration_ms=11.87
+INFO 2026-11-08 11:13:57,214 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2123.89
+INFO 2026-11-08 11:13:57,215 mediresilience.api method=POST path=/api/v1/accounts/auth/logout/ status=401 duration_ms=0.57
+WARNING 2026-11-08 11:13:57,216 django.request Unauthorized: /api/v1/accounts/auth/logout/
+INFO 2026-11-08 11:14:00,705 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2327.26
+INFO 2026-11-08 11:14:00,708 mediresilience.api method=POST path=/api/v1/accounts/auth/logout/ status=400 duration_ms=2.15
+WARNING 2026-11-08 11:14:00,709 django.request Bad Request: /api/v1/accounts/auth/logout/
+INFO 2026-11-08 11:14:04,128 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2231.46
+INFO 2026-11-08 11:14:06,348 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=200 duration_ms=2219.32
+INFO 2026-11-08 11:14:11,952 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2118.31
+INFO 2026-11-08 11:14:13,100 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=400 duration_ms=1147.18
+WARNING 2026-11-08 11:14:13,101 django.request Bad Request: /api/v1/accounts/auth/change-password/
+INFO 2026-11-08 11:14:16,436 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2144.70
+INFO 2026-11-08 11:14:17,585 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=400 duration_ms=1148.14
+WARNING 2026-11-08 11:14:17,586 django.request Bad Request: /api/v1/accounts/auth/change-password/
+INFO 2026-11-08 11:14:21,041 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2251.88
+INFO 2026-11-08 11:14:22,187 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=400 duration_ms=1145.08
+WARNING 2026-11-08 11:14:22,188 django.request Bad Request: /api/v1/accounts/auth/change-password/
+INFO 2026-11-08 11:14:24,465 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=401 duration_ms=0.53
+WARNING 2026-11-08 11:14:24,466 django.request Unauthorized: /api/v1/accounts/auth/change-password/
+INFO 2026-11-08 11:14:27,733 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2126.38
+INFO 2026-11-08 11:14:27,750 mediresilience.api method=POST path=/api/v1/accounts/auth/refresh/ status=200 duration_ms=16.06
+INFO 2026-11-08 11:14:29,958 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=400 duration_ms=1065.46
+WARNING 2026-11-08 11:14:29,958 django.request Bad Request: /api/v1/accounts/auth/login/
+INFO 2026-11-08 11:14:33,256 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2129.09
+INFO 2026-11-08 11:14:36,886 mediresilience.api method=POST path=/api/v1/accounts/users/ status=201 duration_ms=1258.75
+INFO 2026-11-08 11:14:39,133 mediresilience.api method=GET path=/api/v1/accounts/users/ status=200 duration_ms=11.68
+INFO 2026-11-08 11:14:41,377 mediresilience.api method=GET path=/api/v1/accounts/users/ status=401 duration_ms=0.65
+WARNING 2026-11-08 11:14:41,378 django.request Unauthorized: /api/v1/accounts/users/
+INFO 2026-11-08 11:17:00,703 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2169.81
+INFO 2026-11-08 11:17:00,728 mediresilience.api method=POST path=/api/v1/accounts/auth/refresh/ status=200 duration_ms=23.14
+INFO 2026-11-08 11:17:00,733 mediresilience.api method=POST path=/api/v1/accounts/auth/refresh/ status=401 duration_ms=3.51
+WARNING 2026-11-08 11:17:00,735 django.request Unauthorized: /api/v1/accounts/auth/refresh/
+INFO 2026-11-08 11:17:01,814 mediresilience.api method=GET path=/api/v1/accounts/auth/me/ status=401 duration_ms=0.88
+WARNING 2026-11-08 11:17:01,815 django.request Unauthorized: /api/v1/accounts/auth/me/
+INFO 2026-11-08 11:17:04,983 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2098.42
+INFO 2026-11-08 11:17:05,002 mediresilience.api method=GET path=/api/v1/accounts/auth/me/ status=200 duration_ms=17.78
+INFO 2026-11-08 11:17:07,131 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=400 duration_ms=1058.88
+WARNING 2026-11-08 11:17:07,132 django.request Bad Request: /api/v1/accounts/auth/login/
+INFO 2026-11-08 11:17:09,291 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=400 duration_ms=1073.06
+WARNING 2026-11-08 11:17:09,292 django.request Bad Request: /api/v1/accounts/auth/login/
+INFO 2026-11-08 11:17:12,463 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2108.77
+INFO 2026-11-08 11:17:12,474 mediresilience.api method=POST path=/api/v1/accounts/auth/logout/ status=205 duration_ms=9.64
+INFO 2026-11-08 11:17:15,710 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2125.83
+INFO 2026-11-08 11:17:15,711 mediresilience.api method=POST path=/api/v1/accounts/auth/logout/ status=401 duration_ms=0.70
+WARNING 2026-11-08 11:17:15,712 django.request Unauthorized: /api/v1/accounts/auth/logout/
+INFO 2026-11-08 11:17:18,892 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2097.28
+INFO 2026-11-08 11:17:18,895 mediresilience.api method=POST path=/api/v1/accounts/auth/logout/ status=400 duration_ms=2.26
+WARNING 2026-11-08 11:17:18,896 django.request Bad Request: /api/v1/accounts/auth/logout/
+INFO 2026-11-08 11:17:22,135 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2151.14
+INFO 2026-11-08 11:17:24,244 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=200 duration_ms=2108.87
+INFO 2026-11-08 11:17:29,518 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2121.38
+INFO 2026-11-08 11:17:30,579 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=400 duration_ms=1060.10
+WARNING 2026-11-08 11:17:30,580 django.request Bad Request: /api/v1/accounts/auth/change-password/
+INFO 2026-11-08 11:17:33,756 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2098.33
+INFO 2026-11-08 11:17:34,820 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=400 duration_ms=1063.06
+WARNING 2026-11-08 11:17:34,820 django.request Bad Request: /api/v1/accounts/auth/change-password/
+INFO 2026-11-08 11:17:38,110 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2103.85
+INFO 2026-11-08 11:17:39,175 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=400 duration_ms=1064.21
+WARNING 2026-11-08 11:17:39,176 django.request Bad Request: /api/v1/accounts/auth/change-password/
+INFO 2026-11-08 11:17:41,321 mediresilience.api method=POST path=/api/v1/accounts/auth/change-password/ status=401 duration_ms=0.55
+WARNING 2026-11-08 11:17:41,322 django.request Unauthorized: /api/v1/accounts/auth/change-password/
+INFO 2026-11-08 11:17:44,554 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2146.60
+INFO 2026-11-08 11:17:44,571 mediresilience.api method=POST path=/api/v1/accounts/auth/refresh/ status=200 duration_ms=15.99
+INFO 2026-11-08 11:17:46,700 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=400 duration_ms=1052.29
+WARNING 2026-11-08 11:17:46,701 django.request Bad Request: /api/v1/accounts/auth/login/
+INFO 2026-11-08 11:17:49,863 mediresilience.api method=POST path=/api/v1/accounts/auth/login/ status=200 duration_ms=2104.74
+INFO 2026-11-08 11:17:53,258 mediresilience.api method=POST path=/api/v1/accounts/users/ status=201 duration_ms=1135.23
+INFO 2026-11-08 11:17:55,416 mediresilience.api method=GET path=/api/v1/accounts/users/ status=200 duration_ms=11.93
+INFO 2026-11-08 11:17:57,544 mediresilience.api method=GET path=/api/v1/accounts/users/ status=401 duration_ms=0.56
+WARNING 2026-11-08 11:17:57,545 django.request Unauthorized: /api/v1/accounts/users/
+INFO 2026-11-08 11:18:44,611 mediresilience.api method=POST path=/api/v1/medicines/catalog/ status=201 duration_ms=123.39
+INFO 2026-11-08 11:18:47,577 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=200 duration_ms=28.84
+INFO 2026-11-08 11:18:49,958 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=401 duration_ms=1.04
+WARNING 2026-11-08 11:18:49,966 django.request Unauthorized: /api/v1/medicines/catalog/
