@@ -740,3 +740,24 @@ INFO 2026-11-08 14:17:01,104 mediresilience.api method=GET path=/api/v1/warehous
 WARNING 2026-11-08 14:17:01,104 django.request Unauthorized: /api/v1/warehouses/warehouses/
 INFO 2026-11-08 14:17:02,665 mediresilience.api method=DELETE path=/api/v1/warehouses/warehouses/bdf61718-c564-4ce4-b180-8aed0d2dc210/ status=400 duration_ms=8.76
 WARNING 2026-11-08 14:17:02,666 django.request Bad Request: /api/v1/warehouses/warehouses/bdf61718-c564-4ce4-b180-8aed0d2dc210/
+INFO 2026-11-08 15:06:20,442 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=200 duration_ms=385.48
+INFO 2026-11-08 15:06:22,535 mediresilience.api method=POST path=/api/v1/inventory/movements/ status=405 duration_ms=296.41
+WARNING 2026-11-08 15:06:22,679 django.request Method Not Allowed: /api/v1/inventory/movements/
+ERROR 2026-11-08 15:06:24,519 mediresilience.api Unhandled API exception: StockBatchViewSet.receive() got an unexpected keyword argument 'version'
+Traceback (most recent call last):
+  File "D:\nextjs\Intelligent_medical_resilience\backend\.venv\Lib\site-packages\rest_framework\views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: StockBatchViewSet.receive() got an unexpected keyword argument 'version'
+INFO 2026-11-08 15:06:24,548 mediresilience.api method=POST path=/api/v1/inventory/batches/b3cf2387-9c71-4170-a81e-db1cf06bd5f3/receive/ status=500 duration_ms=36.06
+ERROR 2026-11-08 15:06:24,548 django.request Internal Server Error: /api/v1/inventory/batches/b3cf2387-9c71-4170-a81e-db1cf06bd5f3/receive/
+INFO 2026-11-08 15:06:26,282 mediresilience.api method=GET path=/api/v1/inventory/balances/ status=200 duration_ms=198.60
+INFO 2026-11-08 15:06:27,723 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=401 duration_ms=0.66
+WARNING 2026-11-08 15:06:27,723 django.request Unauthorized: /api/v1/inventory/batches/
+INFO 2026-11-08 15:13:55,998 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=200 duration_ms=268.56
+INFO 2026-11-08 15:13:58,267 mediresilience.api method=POST path=/api/v1/inventory/movements/ status=405 duration_ms=43.84
+WARNING 2026-11-08 15:13:58,321 django.request Method Not Allowed: /api/v1/inventory/movements/
+INFO 2026-11-08 15:14:00,961 mediresilience.api method=POST path=/api/v1/inventory/batches/fa8c2c66-6748-49ff-8cd7-85b5177763cb/receive/ status=201 duration_ms=1046.62
+INFO 2026-11-08 15:14:02,297 mediresilience.api method=GET path=/api/v1/inventory/balances/ status=200 duration_ms=45.09
+INFO 2026-11-08 15:14:03,483 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=401 duration_ms=0.80
+WARNING 2026-11-08 15:14:03,483 django.request Unauthorized: /api/v1/inventory/batches/
