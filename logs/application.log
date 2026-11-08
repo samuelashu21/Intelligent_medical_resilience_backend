@@ -652,3 +652,25 @@ INFO 2026-11-08 12:46:49,680 mediresilience.api method=POST path=/api/v1/medicin
 INFO 2026-11-08 12:46:50,909 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=200 duration_ms=17.36
 INFO 2026-11-08 12:46:52,056 mediresilience.api method=GET path=/api/v1/medicines/catalog/ status=401 duration_ms=0.57
 WARNING 2026-11-08 12:46:52,056 django.request Unauthorized: /api/v1/medicines/catalog/
+INFO 2026-11-08 13:11:48,963 mediresilience.api method=POST path=/api/v1/suppliers/suppliers/ status=400 duration_ms=67.45
+WARNING 2026-11-08 13:11:48,964 django.request Bad Request: /api/v1/suppliers/suppliers/
+INFO 2026-11-08 13:11:50,081 mediresilience.api method=DELETE path=/api/v1/suppliers/suppliers/d7f91d91-5e5b-4237-a5d2-12abadb2aec8/ status=400 duration_ms=2.56
+WARNING 2026-11-08 13:11:50,081 django.request Bad Request: /api/v1/suppliers/suppliers/d7f91d91-5e5b-4237-a5d2-12abadb2aec8/
+INFO 2026-11-08 13:11:51,261 mediresilience.api method=GET path=/api/v1/suppliers/suppliers/ status=401 duration_ms=0.73
+WARNING 2026-11-08 13:11:51,262 django.request Unauthorized: /api/v1/suppliers/suppliers/
+INFO 2026-11-08 13:13:44,620 mediresilience.api method=POST path=/api/v1/suppliers/suppliers/ status=400 duration_ms=80.47
+WARNING 2026-11-08 13:13:44,622 django.request Bad Request: /api/v1/suppliers/suppliers/
+INFO 2026-11-08 13:13:45,762 mediresilience.api method=DELETE path=/api/v1/suppliers/suppliers/908fcb43-8cf5-4bbd-98e7-e747d7062cdf/ status=400 duration_ms=2.60
+WARNING 2026-11-08 13:13:45,762 django.request Bad Request: /api/v1/suppliers/suppliers/908fcb43-8cf5-4bbd-98e7-e747d7062cdf/
+INFO 2026-11-08 13:13:46,951 mediresilience.api method=GET path=/api/v1/suppliers/suppliers/ status=401 duration_ms=0.86
+WARNING 2026-11-08 13:13:46,952 django.request Unauthorized: /api/v1/suppliers/suppliers/
+INFO 2026-11-08 13:19:16,724 mediresilience.api method=POST path=/api/v1/suppliers/suppliers/ status=201 duration_ms=107.53
+INFO 2026-11-08 13:19:17,854 mediresilience.api method=DELETE path=/api/v1/suppliers/suppliers/8329ab2d-4411-4a84-bcd6-f668285c4daa/ status=400 duration_ms=3.17
+WARNING 2026-11-08 13:19:17,855 django.request Bad Request: /api/v1/suppliers/suppliers/8329ab2d-4411-4a84-bcd6-f668285c4daa/
+INFO 2026-11-08 13:19:18,957 mediresilience.api method=GET path=/api/v1/suppliers/suppliers/ status=401 duration_ms=0.62
+WARNING 2026-11-08 13:19:18,957 django.request Unauthorized: /api/v1/suppliers/suppliers/
+INFO 2026-11-08 13:20:12,694 mediresilience.api method=POST path=/api/v1/suppliers/suppliers/ status=201 duration_ms=103.34
+INFO 2026-11-08 13:20:13,829 mediresilience.api method=DELETE path=/api/v1/suppliers/suppliers/8c9d6c34-9a37-4a0e-847a-727b83063df9/ status=400 duration_ms=3.27
+WARNING 2026-11-08 13:20:13,831 django.request Bad Request: /api/v1/suppliers/suppliers/8c9d6c34-9a37-4a0e-847a-727b83063df9/
+INFO 2026-11-08 13:20:14,942 mediresilience.api method=GET path=/api/v1/suppliers/suppliers/ status=401 duration_ms=0.59
+WARNING 2026-11-08 13:20:14,943 django.request Unauthorized: /api/v1/suppliers/suppliers/
