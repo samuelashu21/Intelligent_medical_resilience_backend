@@ -1,12 +1,20 @@
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from apps.accounts.models import User, UserProfile
+from apps.accounts.models import User, UserProfile, UserRole
+from apps.audit.models import AuditEvent
 
+
+User = get_user_model()
+
+
+# ============================================================
+# AUTHENTICATION SERIALIZERS
+# ============================================================
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
@@ -62,6 +70,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 
+# ============================================================
+# USER PROFILE SERIALIZERS
+# ============================================================
+
 class UserProfileSerializer(serializers.ModelSerializer):
     """
     Serialize additional user profile information.
@@ -69,6 +81,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
+
         fields = [
             "phone_number",
             "job_title",
@@ -76,6 +89,26 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "timezone",
         ]
 
+
+class UserProfileAdministrativeSerializer(serializers.ModelSerializer):
+    """
+    Administrative serializer for managing user profiles.
+    """
+
+    class Meta:
+        model = UserProfile
+
+        fields = [
+            "phone_number",
+            "job_title",
+            "preferred_language",
+            "timezone",
+        ]
+
+
+# ============================================================
+# CURRENT USER SERIALIZER
+# ============================================================
 
 class CurrentUserSerializer(serializers.ModelSerializer):
     """
@@ -137,6 +170,239 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 
         return sorted(permissions)
 
+
+# ============================================================
+# ADMINISTRATIVE USER SERIALIZERS
+# ============================================================
+
+class AdministrativeUserSerializer(serializers.ModelSerializer):
+    """
+    Safe user representation for administrative endpoints.
+    """
+
+    class Meta:
+        model = User
+
+        fields = [
+            "id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "is_active",
+            "is_staff",
+            "date_joined",
+            "last_login",
+        ]
+
+        read_only_fields = [
+            "id",
+            "date_joined",
+            "last_login",
+        ]
+
+
+class AdministrativeUserCreateSerializer(serializers.ModelSerializer):
+    """
+    Create users through administrative endpoints.
+    """
+
+    password = serializers.CharField(
+        write_only=True,
+        min_length=12,
+        trim_whitespace=False,
+    )
+
+    class Meta:
+        model = User
+
+        fields = [
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "password",
+        ]
+
+    def validate_email(self, value):
+        value = value.strip().lower()
+
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError(
+                "A user with this email already exists."
+            )
+
+        return value
+
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+
+        return User.objects.create_user(
+            password=password,
+            **validated_data,
+        )
+
+
+# ============================================================
+# USER ROLE ASSIGNMENT SERIALIZER
+# ============================================================
+
+class UserRoleAssignmentSerializer(serializers.ModelSerializer):
+    """
+    Administrative serializer for assigning roles to users.
+
+    Supports:
+    - Global role assignments.
+    - Organization-specific assignments.
+    - Facility-specific assignments.
+    - Assignment validity periods.
+    - Organization/facility relationship validation.
+    """
+
+    user_email = serializers.EmailField(
+        source="user.email",
+        read_only=True,
+    )
+
+    role_code = serializers.CharField(
+        source="role.code",
+        read_only=True,
+    )
+
+    organization_name = serializers.CharField(
+        source="organization.name",
+        read_only=True,
+    )
+
+    facility_name = serializers.CharField(
+        source="facility.name",
+        read_only=True,
+    )
+
+    class Meta:
+        model = UserRole
+
+        fields = [
+            "id",
+            "user",
+            "user_email",
+            "role",
+            "role_code",
+            "organization",
+            "organization_name",
+            "facility",
+            "facility_name",
+            "assigned_by",
+            "is_active",
+            "valid_from",
+            "valid_until",
+            "assigned_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "assigned_by",
+            "assigned_at",
+        ]
+
+    def validate(self, attrs):
+        """
+        Validate organization, facility, and assignment dates.
+        """
+
+        organization = attrs.get(
+            "organization",
+            self.instance.organization if self.instance else None,
+        )
+
+        facility = attrs.get(
+            "facility",
+            self.instance.facility if self.instance else None,
+        )
+
+        valid_from = attrs.get(
+            "valid_from",
+            self.instance.valid_from if self.instance else None,
+        )
+
+        valid_until = attrs.get(
+            "valid_until",
+            self.instance.valid_until if self.instance else None,
+        )
+
+        if organization and facility:
+            if facility.organization_id != organization.id:
+                raise serializers.ValidationError({
+                    "facility": (
+                        "The facility must belong directly to the "
+                        "selected organization."
+                    )
+                })
+
+        if valid_from and valid_until and valid_until <= valid_from:
+            raise serializers.ValidationError({
+                "valid_until": (
+                    "The expiry must be later than the start date."
+                )
+            })
+
+        return attrs
+
+
+# ============================================================
+# AUDIT EVENT SERIALIZER
+# ============================================================
+
+class AuditEventSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for audit event records.
+
+    Provides related actor, organization, and facility information.
+    """
+
+    actor_email = serializers.EmailField(
+        source="actor.email",
+        read_only=True,
+    )
+
+    organization_name = serializers.CharField(
+        source="organization.name",
+        read_only=True,
+    )
+
+    facility_name = serializers.CharField(
+        source="facility.name",
+        read_only=True,
+    )
+
+    class Meta:
+        model = AuditEvent
+
+        fields = [
+            "id",
+            "actor",
+            "actor_email",
+            "category",
+            "action",
+            "target_type",
+            "target_id",
+            "description",
+            "organization",
+            "organization_name",
+            "facility",
+            "facility_name",
+            "changes",
+            "metadata",
+            "ip_address",
+            "created_at",
+        ]
+
+        read_only_fields = fields
+
+
+# ============================================================
+# PASSWORD CHANGE SERIALIZER
+# ============================================================
 
 class PasswordChangeSerializer(serializers.Serializer):
     """
@@ -237,3 +503,6 @@ class PasswordChangeSerializer(serializers.Serializer):
         )
 
         return user
+
+
+ 

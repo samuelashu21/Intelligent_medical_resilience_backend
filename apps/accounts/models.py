@@ -1,11 +1,12 @@
+
 import uuid
 
 from django.contrib.auth.models import AbstractUser
-from django.db import models 
-
+from django.core.exceptions import ValidationError
+from django.db import models
 
 from .managers import UserManager
-from django.core.exceptions import ValidationError 
+
 
 class User(AbstractUser):
 
@@ -40,15 +41,11 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
     def __str__(self):
-
         return self.email
 
     @property
     def full_name(self):
-
         return self.get_full_name().strip() or self.username
-
-
 
 
 class UserProfile(models.Model):
@@ -99,7 +96,6 @@ class UserProfile(models.Model):
         verbose_name_plural = "User Profiles"
 
     def __str__(self):
-
         return f"Profile: {self.user.email}"
 
 
@@ -148,9 +144,7 @@ class Role(models.Model):
     )
 
     class Meta:
-
         db_table = "accounts_role"
-
         ordering = ["name"]
 
         indexes = [
@@ -161,10 +155,7 @@ class Role(models.Model):
         ]
 
     def __str__(self):
-
         return f"{self.name} ({self.code})"
-
-
 
 
 class AccessPermission(models.Model):
@@ -201,9 +192,7 @@ class AccessPermission(models.Model):
     )
 
     class Meta:
-
         db_table = "accounts_access_permission"
-
         ordering = ["module", "code"]
 
         indexes = [
@@ -214,9 +203,7 @@ class AccessPermission(models.Model):
         ]
 
     def __str__(self):
-
         return self.code
-
 
 
 class RolePermission(models.Model):
@@ -244,7 +231,6 @@ class RolePermission(models.Model):
     )
 
     class Meta:
-
         db_table = "accounts_role_permission"
 
         constraints = [
@@ -255,9 +241,7 @@ class RolePermission(models.Model):
         ]
 
     def __str__(self):
-
         return f"{self.role.code} -> {self.permission.code}"
-
 
 
 class UserRole(models.Model):
@@ -369,35 +353,60 @@ class UserRole(models.Model):
 
     def clean(self):
         super().clean()
+
+        # Validate role assignment validity period.
+        if (
+            self.valid_from
+            and self.valid_until
+            and self.valid_until <= self.valid_from
+        ):
+            raise ValidationError({
+                "valid_until": (
+                    "The expiry must be later than the start date."
+                )
+            })  
+
+        # Prevent assigning roles to inactive users.
+        if self.user_id and not self.user.is_active:
+            raise ValidationError({
+                "user": "Cannot assign a role to an inactive user."
+            })
+
+        # Validate facility belongs to the selected organization.
         if self.organization_id and self.facility_id:
             if self.facility.organization_id != self.organization_id:
-                raise ValidationError(
-                    {
-                        "facility": (
-                            "The facility must belong directly to the "
-                            "selected organization."
-                        )
-                    }
-                ) 
+                raise ValidationError({
+                    "facility": (
+                        "The facility must belong directly to the "
+                        "selected organization."
+                    )
+                })
 
+        # Prevent role assignment to inactive facilities.
         if self.facility_id and not self.facility.is_active:
-            raise ValidationError(
-                {"facility": "Cannot assign a role to an inactive facility."}
-            )
+            raise ValidationError({
+                "facility": (
+                    "Cannot assign a role to an inactive facility."
+                )
+            })
 
+        # Prevent role assignment to inactive organizations.
         if self.organization_id and not self.organization.is_active:
-            raise ValidationError(
-                {"organization": "Cannot assign a role to an inactive organization."}
-            )
+            raise ValidationError({
+                "organization": (
+                    "Cannot assign a role to an inactive organization."
+                )
+            })
 
+        # Prevent assignment of inactive roles.
         if self.role_id and not self.role.is_active:
-            raise ValidationError(
-                {"role": "Cannot assign an inactive role."}
-            )
+            raise ValidationError({
+                "role": "Cannot assign an inactive role."
+            })
 
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
- 
+
     def __str__(self):
         return f"{self.user.email} - {self.role.code}"
