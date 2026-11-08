@@ -7,9 +7,20 @@ from apps.medicines.views import (
     MedicineViewSet,
     TherapeuticCategoryViewSet,
 )
+from apps.medicines.classification_views import (
+    ATCClassificationViewSet,
+    CountryViewSet,
+    CurrentEssentialMedicinesViewSet,
+    EssentialMedicineItemViewSet,
+    EssentialMedicineListViewSet,
+    MedicineEligibilityRuleViewSet,
+    MedicineNationalCodeViewSet,
+    MedicinePresentationViewSet,
+)
 
 router = DefaultRouter()
 
+# --- Phase 11 Registrations ---
 router.register(
     "catalog",
     MedicineViewSet,
@@ -38,6 +49,55 @@ router.register(
     "units",
     MeasurementUnitViewSet,
     basename="measurement-unit",
+)
+
+# --- New Classification Registrations ---
+router.register(
+    "countries",
+    CountryViewSet,
+    basename="medicine-country",
+)
+
+router.register(
+    "atc",
+    ATCClassificationViewSet,
+    basename="atc-classification",
+)
+
+router.register(
+    "essential-lists",
+    EssentialMedicineListViewSet,
+    basename="essential-medicine-list",
+)
+
+router.register(
+    "essential-list-items",
+    EssentialMedicineItemViewSet,
+    basename="essential-medicine-item",
+)
+
+router.register(
+    "national-codes",
+    MedicineNationalCodeViewSet,
+    basename="medicine-national-code",
+)
+
+router.register(
+    "presentations",
+    MedicinePresentationViewSet,
+    basename="medicine-presentation",
+)
+
+router.register(
+    "eligibility-rules",
+    MedicineEligibilityRuleViewSet,
+    basename="medicine-eligibility-rule",
+)
+
+router.register(
+    "current-essential-medicines",
+    CurrentEssentialMedicinesViewSet,
+    basename="current-essential-medicines",
 )
 
 urlpatterns = router.urls

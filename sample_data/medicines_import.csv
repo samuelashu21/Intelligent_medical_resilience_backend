@@ -1,0 +1,5 @@
+code,generic_name,brand_name,dosage_form_code,route_code,strength_display,atc_code,category_code,is_essential,is_controlled,pack_size
+MED-PAR-500-IMPORT,Paracetamol,,TABLET,ORAL,500 mg,N02BE01,ANALGESICS,true,false,100
+MED-AMX-500-IMPORT,Amoxicillin,,CAPSULE,ORAL,500 mg,J01CA04,ANTI_INFECTIVES,true,false,100
+MED-ORS-IMPORT,Oral rehydration salts,,POWDER,ORAL,Standard sachet formulation,,GASTROINTESTINAL,true,false,1
+MED-IBU-400-IMPORT,Ibuprofen,,TABLET,ORAL,400 mg,M01AE01,ANALGESICS,true,false,100
