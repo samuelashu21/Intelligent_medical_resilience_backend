@@ -775,3 +775,9 @@ INFO 2026-11-09 00:11:15,813 mediresilience.api method=POST path=/api/v1/invento
 INFO 2026-11-09 00:11:17,172 mediresilience.api method=GET path=/api/v1/inventory/balances/ status=200 duration_ms=165.15
 INFO 2026-11-09 00:11:18,444 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=401 duration_ms=0.61
 WARNING 2026-11-09 00:11:18,444 django.request Unauthorized: /api/v1/inventory/batches/
+INFO 2026-11-09 05:32:10,124 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=401 duration_ms=96.58
+WARNING 2026-11-09 05:32:10,245 django.request Unauthorized: /api/v1/consumption/daily/
+INFO 2026-11-09 05:32:12,022 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=201 duration_ms=79.33
+INFO 2026-11-09 05:32:53,890 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=401 duration_ms=7.00
+WARNING 2026-11-09 05:32:53,893 django.request Unauthorized: /api/v1/consumption/daily/
+INFO 2026-11-09 05:32:55,257 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=201 duration_ms=51.62

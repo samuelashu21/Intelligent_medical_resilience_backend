@@ -8,6 +8,10 @@ from apps.accounts.models import (
 )
 
 
+# ==========================================================
+# PERMISSION CATALOG
+# ==========================================================
+
 PERMISSIONS = {
     "users": [
         ("view", "View users"),
@@ -16,21 +20,25 @@ PERMISSIONS = {
         ("deactivate", "Deactivate users"),
         ("assign_roles", "Assign user roles"),
     ],
+
     "organizations": [
         ("view", "View organizations"),
         ("create", "Create organizations"),
         ("update", "Update organizations"),
     ],
+
     "facilities": [
         ("view", "View facilities"),
         ("create", "Create facilities"),
         ("update", "Update facilities"),
     ],
+
     "medicines": [
         ("view", "View medicines"),
         ("create", "Create medicines"),
         ("update", "Update medicines"),
     ],
+
     "inventory": [
         ("view", "View inventory"),
         ("receive", "Receive stock"),
@@ -38,22 +46,26 @@ PERMISSIONS = {
         ("adjust", "Adjust stock"),
         ("reconcile", "Reconcile Inventory"),
     ],
+
     "consumption": [
-        ("view", "View consumption"),
-        ("create", "Record consumption"),
-        ("submit", "Submit consumption reports"),
-        ("approve", "Approve consumption reports"),
+        ("view", "View Medicine Consumption"),
+        ("create", "Record Medicine Consumption"),
+        ("submit", "Submit Consumption Reports"),
+        ("approve", "Approve Consumption Reports"),
     ],
+
     "replenishment": [
         ("view", "View replenishment requests"),
         ("create", "Create replenishment requests"),
         ("approve", "Approve replenishment requests"),
     ],
+
     "procurement": [
         ("view", "View procurement"),
         ("create", "Create purchase requests"),
         ("approve", "Approve procurement"),
     ],
+
     "redistribution": [
         ("view", "View redistribution"),
         ("create", "Create transfer requests"),
@@ -61,32 +73,39 @@ PERMISSIONS = {
         ("dispatch", "Dispatch transfers"),
         ("receive", "Receive transfers"),
     ],
+
     "forecasting": [
         ("view", "View forecasts"),
         ("run", "Run forecasting"),
     ],
+
     "analytics": [
         ("view", "View analytics"),
         ("export", "Export analytics"),
     ],
+
     "reports": [
         ("view", "View reports"),
         ("export", "Export reports"),
     ],
+
     "audit": [
         ("view", "View audit logs"),
         ("export", "Export audit logs"),
     ],
+
     "suppliers": [
         ("view", "View suppliers"),
         ("create", "Create suppliers"),
         ("update", "Update suppliers"),
     ],
+
     "warehouses": [
         ("view", "View warehouses"),
         ("create", "Create warehouses"),
         ("update", "Update warehouses"),
     ],
+
     "notifications": [
         ("view", "View notifications"),
         ("manage", "Manage notification settings"),
@@ -94,21 +113,51 @@ PERMISSIONS = {
 }
 
 
-# Additional permission metadata.
-# Only permissions listed here receive an explicit description update.
+# ==========================================================
+# PERMISSION DESCRIPTIONS
+# ==========================================================
+
 PERMISSION_DESCRIPTIONS = {
     "inventory.reconcile": (
         "Approve and post physical stock reconciliation."
     ),
+
+    "consumption.view": (
+        "View facility and medicine consumption records."
+    ),
+
+    "consumption.create": (
+        "Create and update draft consumption records."
+    ),
+
+    "consumption.submit": (
+        "Submit monthly consumption reports."
+    ),
+
+    "consumption.approve": (
+        "Review and approve submitted consumption reports."
+    ),
 }
 
 
+# ==========================================================
+# SYSTEM ROLES AND PERMISSIONS
+# ==========================================================
+
 ROLES = {
+    # ------------------------------------------------------
+    # SUPER ADMIN
+    # ------------------------------------------------------
+
     "SUPER_ADMIN": {
         "name": "Super Administrator",
         "description": "Full platform administration.",
         "permissions": ["*"],
     },
+
+    # ------------------------------------------------------
+    # MINISTRY ADMIN
+    # ------------------------------------------------------
 
     "MINISTRY_ADMIN": {
         "name": "Ministry of Health Administrator",
@@ -118,33 +167,51 @@ ROLES = {
             "users.create",
             "users.update",
             "users.assign_roles",
+
             "organizations.view",
             "organizations.create",
             "organizations.update",
+
             "facilities.view",
             "facilities.create",
             "facilities.update",
+
             "medicines.view",
             "medicines.create",
             "medicines.update",
+
             "inventory.view",
+
             "consumption.view",
+            "consumption.create",
+            "consumption.submit",
             "consumption.approve",
+
             "replenishment.view",
             "replenishment.approve",
+
             "procurement.view",
             "procurement.approve",
+
             "redistribution.view",
             "redistribution.approve",
+
             "forecasting.view",
+
             "analytics.view",
             "analytics.export",
+
             "reports.view",
             "reports.export",
+
             "audit.view",
             "audit.export",
         ],
     },
+
+    # ------------------------------------------------------
+    # REGIONAL ADMIN
+    # ------------------------------------------------------
 
     "REGIONAL_ADMIN": {
         "name": "Regional Health Bureau Administrator",
@@ -153,25 +220,42 @@ ROLES = {
             "users.view",
             "users.create",
             "users.update",
+
             "organizations.view",
+
             "facilities.view",
             "facilities.update",
+
             "medicines.view",
+
             "inventory.view",
+
             "consumption.view",
+            "consumption.create",
+            "consumption.submit",
             "consumption.approve",
+
             "replenishment.view",
             "replenishment.approve",
+
             "redistribution.view",
             "redistribution.approve",
+
             "forecasting.view",
+
             "analytics.view",
             "analytics.export",
+
             "reports.view",
             "reports.export",
+
             "audit.view",
         ],
     },
+
+    # ------------------------------------------------------
+    # DISTRICT OFFICER
+    # ------------------------------------------------------
 
     "DISTRICT_OFFICER": {
         "name": "District Health Officer",
@@ -181,18 +265,30 @@ ROLES = {
             "facilities.view",
             "medicines.view",
             "inventory.view",
+
             "consumption.view",
+            "consumption.create",
+            "consumption.submit",
             "consumption.approve",
+
             "replenishment.view",
             "replenishment.approve",
+
             "redistribution.view",
             "redistribution.approve",
+
             "forecasting.view",
+
             "analytics.view",
+
             "reports.view",
             "reports.export",
         ],
     },
+
+    # ------------------------------------------------------
+    # DISTRICT PHARMACIST
+    # ------------------------------------------------------
 
     "DISTRICT_PHARMACIST": {
         "name": "District Pharmacist",
@@ -203,18 +299,30 @@ ROLES = {
             "facilities.view",
             "medicines.view",
             "inventory.view",
+
             "consumption.view",
+            "consumption.create",
+            "consumption.submit",
             "consumption.approve",
+
             "replenishment.view",
             "replenishment.approve",
+
             "redistribution.view",
             "redistribution.create",
             "redistribution.approve",
+
             "forecasting.view",
+
             "analytics.view",
+
             "reports.view",
         ],
     },
+
+    # ------------------------------------------------------
+    # FACILITY ADMIN
+    # ------------------------------------------------------
 
     "FACILITY_ADMIN": {
         "name": "Facility Administrator",
@@ -223,18 +331,29 @@ ROLES = {
             "users.view",
             "users.create",
             "users.update",
+
             "facilities.view",
             "medicines.view",
             "inventory.view",
+
             "consumption.view",
+            "consumption.create",
+            "consumption.submit",
             "consumption.approve",
+
             "replenishment.view",
             "replenishment.create",
+
             "redistribution.view",
             "redistribution.create",
+
             "reports.view",
         ],
     },
+
+    # ------------------------------------------------------
+    # FACILITY PHARMACIST
+    # ------------------------------------------------------
 
     "FACILITY_PHARMACIST": {
         "name": "Facility Pharmacist",
@@ -242,47 +361,71 @@ ROLES = {
         "permissions": [
             "facilities.view",
             "medicines.view",
+
             "inventory.view",
             "inventory.receive",
             "inventory.issue",
             "inventory.adjust",
             "inventory.reconcile",
+
             "consumption.view",
             "consumption.create",
             "consumption.submit",
+
             "replenishment.view",
             "replenishment.create",
+
             "redistribution.view",
             "redistribution.create",
             "redistribution.receive",
+
             "forecasting.view",
+
             "reports.view",
         ],
     },
+
+    # ------------------------------------------------------
+    # SUPPLY CHAIN OFFICER
+    # ------------------------------------------------------
 
     "SUPPLY_CHAIN_OFFICER": {
         "name": "Supply Chain Officer",
         "description": "Supply chain and distribution operations.",
         "permissions": [
             "medicines.view",
+
             "suppliers.view",
             "suppliers.create",
             "suppliers.update",
+
             "warehouses.view",
+
             "inventory.view",
             "inventory.receive",
             "inventory.issue",
+
+            "consumption.view",
+            "consumption.create",
+
             "replenishment.view",
+
             "procurement.view",
             "procurement.create",
+
             "redistribution.view",
             "redistribution.create",
             "redistribution.approve",
             "redistribution.dispatch",
             "redistribution.receive",
+
             "reports.view",
         ],
     },
+
+    # ------------------------------------------------------
+    # DATA ANALYST
+    # ------------------------------------------------------
 
     "DATA_ANALYST": {
         "name": "Data Analyst",
@@ -291,15 +434,23 @@ ROLES = {
             "medicines.view",
             "facilities.view",
             "inventory.view",
+
             "consumption.view",
+
             "forecasting.view",
             "forecasting.run",
+
             "analytics.view",
             "analytics.export",
+
             "reports.view",
             "reports.export",
         ],
     },
+
+    # ------------------------------------------------------
+    # AUDITOR
+    # ------------------------------------------------------
 
     "AUDITOR": {
         "name": "Auditor",
@@ -310,13 +461,18 @@ ROLES = {
             "facilities.view",
             "medicines.view",
             "inventory.view",
+
             "consumption.view",
+
             "replenishment.view",
             "procurement.view",
             "redistribution.view",
+
             "analytics.view",
+
             "reports.view",
             "reports.export",
+
             "audit.view",
             "audit.export",
         ],
@@ -324,19 +480,33 @@ ROLES = {
 }
 
 
+# ==========================================================
+# MANAGEMENT COMMAND
+# ==========================================================
+
 class Command(BaseCommand):
+
     help = "Create default MediResilience AI roles and permissions."
 
     @transaction.atomic
     def handle(self, *args, **options):
+
         permission_map = {}
 
         # --------------------------------------------------
-        # 1. Create or update permissions
+        # 1. CREATE OR UPDATE PERMISSIONS
         # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Seeding permission catalog..."
+            )
+        )
+
         for module, actions in PERMISSIONS.items():
 
             for action, name in actions:
+
                 code = f"{module}.{action}"
 
                 defaults = {
@@ -345,7 +515,6 @@ class Command(BaseCommand):
                     "is_active": True,
                 }
 
-                # Apply description where explicitly defined.
                 if code in PERMISSION_DESCRIPTIONS:
                     defaults["description"] = (
                         PERMISSION_DESCRIPTIONS[code]
@@ -372,8 +541,15 @@ class Command(BaseCommand):
                     )
 
         # --------------------------------------------------
-        # 2. Create or update roles
+        # 2. CREATE OR UPDATE ROLES
         # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Seeding system roles..."
+            )
+        )
+
         for code, definition in ROLES.items():
 
             role, created = Role.objects.update_or_create(
@@ -388,14 +564,28 @@ class Command(BaseCommand):
 
             # SUPER_ADMIN receives every catalog permission.
             if definition["permissions"] == ["*"]:
-                permissions = list(permission_map.values())
+
+                permissions = list(
+                    permission_map.values()
+                )
 
             else:
-                permissions = [
-                    permission_map[permission_code]
-                    for permission_code in definition["permissions"]
-                    if permission_code in permission_map
-                ]
+
+                permissions = []
+
+                for permission_code in definition["permissions"]:
+
+                    permission = permission_map.get(
+                        permission_code
+                    )
+
+                    if permission is None:
+                        raise ValueError(
+                            f"Unknown permission '{permission_code}' "
+                            f"assigned to role '{code}'."
+                        )
+
+                    permissions.append(permission)
 
             # Synchronize role permissions.
             role.permissions.set(permissions)
@@ -412,8 +602,9 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 3. Success message
+        # 3. SUCCESS MESSAGE
         # --------------------------------------------------
+
         self.stdout.write(
             self.style.SUCCESS(
                 "RBAC roles and permissions seeded successfully."
