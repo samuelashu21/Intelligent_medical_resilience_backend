@@ -103,4 +103,9 @@ urlpatterns = [
     "reports/",
     include("apps.inventory.reporting_urls"),
 ),
+
+path(
+    "policies/",
+    include("apps.inventory.stock_policy_urls"),
+),
 ] + router.urls

@@ -839,3 +839,29 @@ WARNING 2026-11-09 06:07:19,161 django.request Unauthorized: /api/v1/inventory/r
 INFO 2026-11-09 06:07:53,637 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=401 duration_ms=5.37
 WARNING 2026-11-09 06:07:53,639 django.request Unauthorized: /api/v1/consumption/daily/
 INFO 2026-11-09 06:07:54,816 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=201 duration_ms=37.25
+INFO 2026-11-09 06:36:50,192 mediresilience.api method=GET path=/api/v1/inventory/policies/evaluate/ status=401 duration_ms=6.05
+WARNING 2026-11-09 06:36:50,195 django.request Unauthorized: /api/v1/inventory/policies/evaluate/
+INFO 2026-11-09 06:36:51,302 mediresilience.api method=GET path=/api/v1/inventory/policies/policies/ status=401 duration_ms=0.71
+WARNING 2026-11-09 06:36:51,302 django.request Unauthorized: /api/v1/inventory/policies/policies/
+INFO 2026-11-09 06:37:25,718 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=200 duration_ms=64.41
+INFO 2026-11-09 06:37:27,049 mediresilience.api method=POST path=/api/v1/inventory/movements/ status=405 duration_ms=9.22
+WARNING 2026-11-09 06:37:27,050 django.request Method Not Allowed: /api/v1/inventory/movements/
+INFO 2026-11-09 06:37:28,315 mediresilience.api method=POST path=/api/v1/inventory/batches/4fd20b00-905a-4696-8a73-a805b8efb121/receive/ status=201 duration_ms=67.59
+INFO 2026-11-09 06:37:29,538 mediresilience.api method=GET path=/api/v1/inventory/balances/ status=200 duration_ms=24.40
+INFO 2026-11-09 06:37:30,772 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=401 duration_ms=0.64
+WARNING 2026-11-09 06:37:30,773 django.request Unauthorized: /api/v1/inventory/batches/
+INFO 2026-11-09 06:38:26,934 mediresilience.api method=GET path=/api/v1/inventory/reports/export/csv/ status=401 duration_ms=2.47
+WARNING 2026-11-09 06:38:26,935 django.request Unauthorized: /api/v1/inventory/reports/export/csv/
+INFO 2026-11-09 06:38:28,349 mediresilience.api method=GET path=/api/v1/inventory/reports/dashboard/ status=401 duration_ms=1.30
+WARNING 2026-11-09 06:38:28,350 django.request Unauthorized: /api/v1/inventory/reports/dashboard/
+INFO 2026-11-09 06:38:29,585 mediresilience.api method=GET path=/api/v1/inventory/reports/expiry/ status=401 duration_ms=2.36
+WARNING 2026-11-09 06:38:29,586 django.request Unauthorized: /api/v1/inventory/reports/expiry/
+INFO 2026-11-09 06:38:30,809 mediresilience.api method=GET path=/api/v1/inventory/reports/status/ status=401 duration_ms=0.71
+WARNING 2026-11-09 06:38:30,810 django.request Unauthorized: /api/v1/inventory/reports/status/
+INFO 2026-11-09 06:38:38,330 mediresilience.api method=GET path=/api/v1/inventory/policies/evaluate/ status=401 duration_ms=0.67
+WARNING 2026-11-09 06:38:38,330 django.request Unauthorized: /api/v1/inventory/policies/evaluate/
+INFO 2026-11-09 06:38:39,418 mediresilience.api method=GET path=/api/v1/inventory/policies/policies/ status=401 duration_ms=0.69
+WARNING 2026-11-09 06:38:39,419 django.request Unauthorized: /api/v1/inventory/policies/policies/
+INFO 2026-11-09 06:39:04,686 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=401 duration_ms=9.79
+WARNING 2026-11-09 06:39:04,689 django.request Unauthorized: /api/v1/consumption/daily/
+INFO 2026-11-09 06:39:05,992 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=201 duration_ms=33.73

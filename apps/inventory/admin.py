@@ -9,6 +9,7 @@ from apps.inventory.models import (
     BatchLifecycleEvent,
 )
 
+from apps.inventory.models import StockPolicy
 
 @admin.register(StockBatch)
 class StockBatchAdmin(admin.ModelAdmin):
@@ -203,3 +204,52 @@ class BatchExpiryAlertAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(StockPolicy)
+class StockPolicyAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "medicine",
+        "organization",
+        "facility",
+        "policy_level",
+        "minimum_stock",
+        "maximum_stock",
+        "lead_time_days",
+        "status",
+        "effective_from",
+    ]
+
+    list_filter = [
+        "policy_level",
+        "status",
+        "is_essential",
+        "organization",
+    ]
+
+    search_fields = [
+        "medicine__generic_name",
+        "medicine__code",
+        "facility__name",
+        "organization__name",
+    ]
+
+    readonly_fields = [
+        "id",
+        "created_at",
+        "updated_at",
+    ]
+
+    autocomplete_fields = [
+        "organization",
+        "facility",
+        "medicine",
+        "created_by",
+        "updated_by",
+    ]
+
+    ordering = [
+        "organization__name",
+        "medicine__generic_name",
+    ]    

@@ -957,3 +957,257 @@ class BatchExpiryAlert(models.Model):
 
     def __str__(self):
         return f"{self.batch.batch_number}: {self.alert_level}"    
+
+
+class StockPolicy(models.Model):
+
+    class PolicyLevel(models.TextChoices):
+        ORGANIZATION = "ORGANIZATION", "Organization default"
+        FACILITY = "FACILITY", "Facility specific"
+
+    class PolicyStatus(models.TextChoices):
+        DRAFT = "DRAFT", "Draft"
+        ACTIVE = "ACTIVE", "Active"
+        INACTIVE = "INACTIVE", "Inactive"
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    policy_level = models.CharField(
+        max_length=20,
+        choices=PolicyLevel.choices,
+        default=PolicyLevel.FACILITY,
+    )
+
+    organization = models.ForeignKey(
+        "organizations.Organization",
+        on_delete=models.PROTECT,
+        related_name="stock_policies",
+    )
+
+    facility = models.ForeignKey(
+        "facilities.Facility",
+        on_delete=models.PROTECT,
+        related_name="stock_policies",
+        null=True,
+        blank=True,
+    )
+
+    medicine = models.ForeignKey(
+        "medicines.Medicine",
+        on_delete=models.PROTECT,
+        related_name="stock_policies",
+    )
+
+    minimum_stock = models.DecimalField(
+        max_digits=18,
+        decimal_places=3,
+        default=0,
+    )
+
+    maximum_stock = models.DecimalField(
+        max_digits=18,
+        decimal_places=3,
+    )
+
+    safety_stock = models.DecimalField(
+        max_digits=18,
+        decimal_places=3,
+        default=0,
+    )
+
+    buffer_stock = models.DecimalField(
+        max_digits=18,
+        decimal_places=3,
+        default=0,
+    )
+
+    lead_time_days = models.PositiveIntegerField(
+        default=30,
+    )
+
+    review_period_days = models.PositiveIntegerField(
+        default=30,
+    )
+
+    minimum_order_quantity = models.DecimalField(
+        max_digits=18,
+        decimal_places=3,
+        default=0,
+    )
+
+    is_essential = models.BooleanField(
+        default=False,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=PolicyStatus.choices,
+        default=PolicyStatus.DRAFT,
+    )
+
+    effective_from = models.DateField(
+        default=timezone.localdate,
+    )
+
+    effective_until = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    notes = models.TextField(
+        blank=True,
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_stock_policies",
+    )
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="updated_stock_policies",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = [
+            "organization__name",
+            "medicine__generic_name",
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["facility", "medicine"],
+                condition=Q(facility__isnull=False),
+                name="unique_facility_medicine_stock_policy",
+            ),
+            models.UniqueConstraint(
+                fields=["organization", "medicine"],
+                condition=Q(facility__isnull=True),
+                name="unique_org_default_medicine_stock_policy",
+            ),
+            models.CheckConstraint(
+                condition=Q(minimum_stock__gte=0),
+                name="stock_policy_min_nonnegative",
+            ),
+            models.CheckConstraint(
+                condition=Q(maximum_stock__gt=0),
+                name="stock_policy_max_positive",
+            ),
+            models.CheckConstraint(
+                condition=Q(safety_stock__gte=0),
+                name="stock_policy_safety_nonnegative",
+            ),
+            models.CheckConstraint(
+                condition=Q(buffer_stock__gte=0),
+                name="stock_policy_buffer_nonnegative",
+            ),
+            models.CheckConstraint(
+                condition=Q(minimum_order_quantity__gte=0),
+                name="stock_policy_moq_nonnegative",
+            ),
+            models.CheckConstraint(
+                condition=Q(maximum_stock__gte=models.F("minimum_stock")),
+                name="stock_policy_max_gte_min",
+            ),
+        ]
+
+        indexes = [
+            models.Index(
+                fields=["organization", "status"],
+                name="stock_policy_org_status_idx",
+            ),
+            models.Index(
+                fields=["facility", "status"],
+                name="stock_policy_fac_status_idx",
+            ),
+            models.Index(
+                fields=["medicine", "status"],
+                name="stock_policy_med_status_idx",
+            ),
+            models.Index(
+                fields=["effective_from", "effective_until"],
+                name="stock_policy_effective_idx",
+            ),
+        ]
+
+    def clean(self):
+        errors = {}
+
+        if self.policy_level == self.PolicyLevel.FACILITY:
+            if not self.facility_id:
+                errors["facility"] = (
+                    "A facility-specific policy requires a facility."
+                )
+
+            elif (
+                self.organization_id
+                and self.facility.organization_id != self.organization_id
+            ):
+                errors["facility"] = (
+                    "The facility must belong to the selected organization."
+                )
+
+        elif self.policy_level == self.PolicyLevel.ORGANIZATION:
+            if self.facility_id:
+                errors["facility"] = (
+                    "An organization default policy cannot reference "
+                    "a specific facility."
+                )
+
+        if self.minimum_stock < 0:
+            errors["minimum_stock"] = "Minimum stock cannot be negative."
+
+        if self.maximum_stock <= 0:
+            errors["maximum_stock"] = "Maximum stock must be positive."
+
+        if self.maximum_stock < self.minimum_stock:
+            errors["maximum_stock"] = (
+                "Maximum stock cannot be lower than minimum stock."
+            )
+
+        if self.effective_until and (
+            self.effective_until < self.effective_from
+        ):
+            errors["effective_until"] = (
+                "End date cannot be before the start date."
+            )
+
+        if self.status == self.PolicyStatus.ACTIVE:
+            if (
+                self.effective_until
+                and self.effective_until < timezone.localdate()
+            ):
+                errors["status"] = (
+                    "An expired policy cannot be activated."
+                )
+
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return (
+            f"{self.medicine} - "
+            f"{self.facility or self.organization}"
+        )

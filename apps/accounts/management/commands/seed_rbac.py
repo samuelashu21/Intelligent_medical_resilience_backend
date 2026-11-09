@@ -1,4 +1,4 @@
-
+ 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -45,6 +45,12 @@ PERMISSIONS = {
         ("issue", "Issue stock"),
         ("adjust", "Adjust stock"),
         ("reconcile", "Reconcile Inventory"),
+
+        # Stock policy permissions
+        ("policy.view", "View Stock Policies"),
+        ("policy.create", "Create Stock Policies"),
+        ("policy.update", "Update Stock Policies"),
+        ("policy.manage", "Activate and Deactivate Stock Policies"),
     ],
 
     "consumption": [
@@ -138,6 +144,24 @@ PERMISSION_DESCRIPTIONS = {
         "Approve and post physical stock reconciliation."
     ),
 
+    # Stock policy descriptions
+    "inventory.policy.view": (
+        "View minimum, maximum and reorder stock policies."
+    ),
+
+    "inventory.policy.create": (
+        "Create organization and facility stock policies."
+    ),
+
+    "inventory.policy.update": (
+        "Update inactive stock policies."
+    ),
+
+    "inventory.policy.manage": (
+        "Manage stock policy lifecycle, including activation "
+        "and deactivation."
+    ),
+
     "consumption.view": (
         "View facility and medicine consumption records."
     ),
@@ -153,6 +177,18 @@ PERMISSION_DESCRIPTIONS = {
     "consumption.approve": (
         "Review and approve submitted consumption reports."
     ),
+}
+
+
+# ==========================================================
+# STOCK POLICY PERMISSION DEFINITIONS
+# ==========================================================
+
+STOCK_POLICY_PERMISSIONS = {
+    "view": "inventory.policy.view",
+    "create": "inventory.policy.create",
+    "update": "inventory.policy.update",
+    "manage": "inventory.policy.manage",
 }
 
 
@@ -198,6 +234,12 @@ ROLES = {
             "medicines.update",
 
             "inventory.view",
+
+            # Stock policy permissions
+            "inventory.policy.view",
+            "inventory.policy.create",
+            "inventory.policy.update",
+            "inventory.policy.manage",
 
             "consumption.view",
             "consumption.create",
@@ -247,6 +289,12 @@ ROLES = {
 
             "inventory.view",
 
+            # Stock policy permissions
+            "inventory.policy.view",
+            "inventory.policy.create",
+            "inventory.policy.update",
+            "inventory.policy.manage",
+
             "consumption.view",
             "consumption.create",
             "consumption.submit",
@@ -284,6 +332,12 @@ ROLES = {
 
             "inventory.view",
 
+            # Stock policy permissions
+            "inventory.policy.view",
+            "inventory.policy.create",
+            "inventory.policy.update",
+            "inventory.policy.manage",
+
             "consumption.view",
             "consumption.create",
             "consumption.submit",
@@ -318,6 +372,12 @@ ROLES = {
             "medicines.view",
 
             "inventory.view",
+
+            # Stock policy permissions
+            "inventory.policy.view",
+            "inventory.policy.create",
+            "inventory.policy.update",
+            "inventory.policy.manage",
 
             "consumption.view",
             "consumption.create",
@@ -356,6 +416,10 @@ ROLES = {
 
             "inventory.view",
 
+            # Stock policy permissions
+            # Create, update and manage are policy-based.
+            "inventory.policy.view",
+
             "consumption.view",
             "consumption.create",
             "consumption.submit",
@@ -387,6 +451,10 @@ ROLES = {
             "inventory.issue",
             "inventory.adjust",
             "inventory.reconcile",
+
+            # Stock policy permissions
+            # Read-only access.
+            "inventory.policy.view",
 
             "consumption.view",
             "consumption.create",
@@ -425,6 +493,12 @@ ROLES = {
             "inventory.receive",
             "inventory.issue",
 
+            # Stock policy permissions
+            "inventory.policy.view",
+            "inventory.policy.create",
+            "inventory.policy.update",
+            # Manage is policy-based and is not granted globally.
+
             "consumption.view",
             "consumption.create",
 
@@ -456,6 +530,10 @@ ROLES = {
 
             "inventory.view",
 
+            # Stock policy permissions
+            # Read-only access.
+            "inventory.policy.view",
+
             "consumption.view",
 
             "forecasting.view",
@@ -483,6 +561,10 @@ ROLES = {
             "medicines.view",
 
             "inventory.view",
+
+            # Stock policy permissions
+            # Read-only access.
+            "inventory.policy.view",
 
             "consumption.view",
 
@@ -518,6 +600,63 @@ INVENTORY_VIEW_ROLES = [
     "DATA_ANALYST",
     "AUDITOR",
 ]
+
+
+# ==========================================================
+# STOCK POLICY ROLE ASSIGNMENT EXPECTATIONS
+# ==========================================================
+
+STOCK_POLICY_ROLE_ASSIGNMENTS = {
+    "MINISTRY_ADMIN": [
+        "inventory.policy.view",
+        "inventory.policy.create",
+        "inventory.policy.update",
+        "inventory.policy.manage",
+    ],
+
+    "REGIONAL_ADMIN": [
+        "inventory.policy.view",
+        "inventory.policy.create",
+        "inventory.policy.update",
+        "inventory.policy.manage",
+    ],
+
+    "DISTRICT_OFFICER": [
+        "inventory.policy.view",
+        "inventory.policy.create",
+        "inventory.policy.update",
+        "inventory.policy.manage",
+    ],
+
+    "DISTRICT_PHARMACIST": [
+        "inventory.policy.view",
+        "inventory.policy.create",
+        "inventory.policy.update",
+        "inventory.policy.manage",
+    ],
+
+    "FACILITY_ADMIN": [
+        "inventory.policy.view",
+    ],
+
+    "FACILITY_PHARMACIST": [
+        "inventory.policy.view",
+    ],
+
+    "SUPPLY_CHAIN_OFFICER": [
+        "inventory.policy.view",
+        "inventory.policy.create",
+        "inventory.policy.update",
+    ],
+
+    "DATA_ANALYST": [
+        "inventory.policy.view",
+    ],
+
+    "AUDITOR": [
+        "inventory.policy.view",
+    ],
+}
 
 
 # ==========================================================
@@ -597,7 +736,27 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 3. VALIDATE ALL ROLE PERMISSIONS
+        # 3. VALIDATE STOCK POLICY PERMISSIONS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Validating stock policy permissions..."
+            )
+        )
+
+        for permission_name, permission_code in (
+            STOCK_POLICY_PERMISSIONS.items()
+        ):
+
+            if permission_code not in permission_map:
+                raise ValueError(
+                    f"Required stock policy permission "
+                    f"'{permission_code}' is missing."
+                )
+
+        # --------------------------------------------------
+        # 4. VALIDATE ALL ROLE PERMISSIONS
         # --------------------------------------------------
 
         self.stdout.write(
@@ -620,7 +779,7 @@ class Command(BaseCommand):
                     )
 
         # --------------------------------------------------
-        # 4. VALIDATE INVENTORY VIEW ROLE CONFIGURATION
+        # 5. VALIDATE INVENTORY VIEW ROLE CONFIGURATION
         # --------------------------------------------------
 
         for role_code in INVENTORY_VIEW_ROLES:
@@ -643,7 +802,49 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 5. CREATE OR UPDATE ROLES
+        # 6. VALIDATE STOCK POLICY ROLE CONFIGURATION
+        # --------------------------------------------------
+
+        for role_code, expected_permissions in (
+            STOCK_POLICY_ROLE_ASSIGNMENTS.items()
+        ):
+
+            if role_code not in ROLES:
+                raise ValueError(
+                    f"Stock policy role '{role_code}' "
+                    "does not exist in ROLES."
+                )
+
+            actual_permissions = set(
+                ROLES[role_code]["permissions"]
+            )
+
+            expected_permissions = set(expected_permissions)
+
+            for permission_code in expected_permissions:
+
+                if permission_code not in actual_permissions:
+                    raise ValueError(
+                        f"Role '{role_code}' must include "
+                        f"'{permission_code}'."
+                    )
+
+            # Ensure no additional stock policy permissions
+            # are accidentally granted beyond the matrix.
+            actual_policy_permissions = (
+                actual_permissions
+                & set(STOCK_POLICY_PERMISSIONS.values())
+            )
+
+            if actual_policy_permissions != expected_permissions:
+                raise ValueError(
+                    f"Stock policy permissions for role "
+                    f"'{role_code}' do not match the configured "
+                    f"role assignment policy."
+                )
+
+        # --------------------------------------------------
+        # 7. CREATE OR UPDATE ROLES
         # --------------------------------------------------
 
         self.stdout.write(
@@ -693,7 +894,7 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 6. VERIFY INVENTORY VIEW PERMISSION
+        # 8. VERIFY INVENTORY VIEW PERMISSION
         # --------------------------------------------------
 
         self.stdout.write(
@@ -725,7 +926,74 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 7. VERIFY PERMISSION METADATA
+        # 9. VERIFY STOCK POLICY PERMISSION ASSIGNMENTS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying stock policy role assignments..."
+            )
+        )
+
+        for role_code, expected_permissions in (
+            STOCK_POLICY_ROLE_ASSIGNMENTS.items()
+        ):
+
+            role = Role.objects.get(
+                code=role_code
+            )
+
+            assigned_codes = set(
+                role.permissions.filter(
+                    code__in=STOCK_POLICY_PERMISSIONS.values()
+                ).values_list(
+                    "code",
+                    flat=True,
+                )
+            )
+
+            expected_codes = set(expected_permissions)
+
+            if assigned_codes != expected_codes:
+                raise ValueError(
+                    f"Stock policy permission verification failed "
+                    f"for role '{role_code}'. "
+                    f"Expected: {sorted(expected_codes)}. "
+                    f"Found: {sorted(assigned_codes)}."
+                )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{role_code}: stock policy permissions verified."
+                )
+            )
+
+        # --------------------------------------------------
+        # 10. VERIFY STOCK POLICY PERMISSION METADATA
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying stock policy permission metadata..."
+            )
+        )
+
+        for permission_code in STOCK_POLICY_PERMISSIONS.values():
+
+            permission = permission_map[permission_code]
+            permission.refresh_from_db()
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{permission.code} | "
+                    f"{permission.name} | "
+                    f"Module: {permission.module} | "
+                    f"Active: {permission.is_active}"
+                )
+            )
+
+        # --------------------------------------------------
+        # 11. VERIFY INVENTORY VIEW PERMISSION METADATA
         # --------------------------------------------------
 
         inventory_view.refresh_from_db()
@@ -757,7 +1025,7 @@ class Command(BaseCommand):
         )
 
         # --------------------------------------------------
-        # 8. SUCCESS MESSAGE
+        # 12. SUCCESS MESSAGE
         # --------------------------------------------------
 
         self.stdout.write(
@@ -771,3 +1039,11 @@ class Command(BaseCommand):
                 "All 10 system roles have inventory.view."
             )
         )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Stock policy permissions and role assignments "
+                "verified successfully."
+            )
+        )
+ 
