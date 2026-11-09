@@ -154,6 +154,87 @@ class InventoryServiceTests(TestCase):
                 performed_by=self.user,
             )
 
+    def test_quarantined_batch_cannot_be_issued(self):
+        from apps.inventory.batch_services import quarantine_batch
+        from apps.inventory.models import BatchStatus
+
+        receive_stock(
+            batch_id=self.batch.pk,
+            quantity=100,
+            performed_by=self.user,
+        )
+
+        quarantine_batch(
+            batch_id=self.batch.pk,
+            performed_by=self.user,
+            reason="Quality inspection.",
+        )
+
+        with self.assertRaises(ValidationError):
+            issue_stock(
+                batch_id=self.batch.pk,
+                quantity=10,
+                performed_by=self.user,
+            )
+
+        self.batch.refresh_from_db()
+
+        self.assertEqual(
+            self.batch.status,
+            BatchStatus.QUARANTINED,
+        )
+
+        self.batch.balance.refresh_from_db()
+
+        self.assertEqual(
+            self.batch.balance.quantity_on_hand,
+            Decimal("100"),
+        )
+
+    
+def test_expired_batch_cannot_be_issued(self):
+    # First receive stock while the batch is still valid.
+    receive_stock(
+        batch_id=self.batch.pk,
+        quantity=100,
+        performed_by=self.user,
+    )
+
+    # Simulate the batch expiring after stock has been received.
+    past_date = timezone.localdate() - timedelta(days=1)
+
+    StockBatch.objects.filter(
+        pk=self.batch.pk
+    ).update(
+        expiry_date=past_date
+    )
+
+    self.batch.refresh_from_db()
+
+    # Verify that issuing expired stock is rejected.
+    with self.assertRaises(ValidationError):
+        issue_stock(
+            batch_id=self.batch.pk,
+            quantity=10,
+            performed_by=self.user,
+        )
+
+    # Verify that the failed issue did not change stock.
+    self.batch.balance.refresh_from_db()
+
+    self.assertEqual(
+        self.batch.balance.quantity_on_hand,
+        Decimal("100"),
+    )
+
+    # Verify that no issue movement was recorded.
+    self.assertFalse(
+        StockMovement.objects.filter(
+            batch=self.batch,
+            movement_type=MovementType.ISSUE,
+        ).exists()
+    )
+
     def test_adjustment_in(self):
         adjust_stock(
             batch_id=self.batch.pk,

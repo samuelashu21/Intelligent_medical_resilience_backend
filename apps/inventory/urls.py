@@ -8,6 +8,12 @@ from apps.inventory.views import (
     StockReservationViewSet,
 )
 
+from apps.inventory.batch_views import (
+    BatchExpiryAlertViewSet,
+    BatchLifecycleEventViewSet,
+    BatchLifecycleViewSet,
+)
+
 router = DefaultRouter()
 
 router.register(
@@ -38,6 +44,24 @@ router.register(
     "reports",
     InventoryReportViewSet,
     basename="inventory-report",
+)
+
+router.register(
+    "batch-lifecycle",
+    BatchLifecycleViewSet,
+    basename="batch-lifecycle",
+)
+
+router.register(
+    "expiry-alerts",
+    BatchExpiryAlertViewSet,
+    basename="batch-expiry-alert",
+)
+
+router.register(
+    "lifecycle-events",
+    BatchLifecycleEventViewSet,
+    basename="batch-lifecycle-event",
 )
 
 urlpatterns = router.urls

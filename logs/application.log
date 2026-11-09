@@ -761,3 +761,10 @@ INFO 2026-11-08 15:14:00,961 mediresilience.api method=POST path=/api/v1/invento
 INFO 2026-11-08 15:14:02,297 mediresilience.api method=GET path=/api/v1/inventory/balances/ status=200 duration_ms=45.09
 INFO 2026-11-08 15:14:03,483 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=401 duration_ms=0.80
 WARNING 2026-11-08 15:14:03,483 django.request Unauthorized: /api/v1/inventory/batches/
+INFO 2026-11-08 22:59:00,849 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=200 duration_ms=1697.72
+INFO 2026-11-08 22:59:03,383 mediresilience.api method=POST path=/api/v1/inventory/movements/ status=405 duration_ms=764.72
+WARNING 2026-11-08 22:59:03,629 django.request Method Not Allowed: /api/v1/inventory/movements/
+INFO 2026-11-08 22:59:05,455 mediresilience.api method=POST path=/api/v1/inventory/batches/791b03a9-2276-4f5d-a3bd-54f6c952e521/receive/ status=201 duration_ms=263.77
+INFO 2026-11-08 22:59:07,240 mediresilience.api method=GET path=/api/v1/inventory/balances/ status=200 duration_ms=361.23
+INFO 2026-11-08 22:59:08,729 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=401 duration_ms=0.64
+WARNING 2026-11-08 22:59:08,729 django.request Unauthorized: /api/v1/inventory/batches/

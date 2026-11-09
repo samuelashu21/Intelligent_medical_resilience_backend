@@ -5,6 +5,8 @@ from apps.inventory.models import (
     StockBatch,
     StockMovement,
     StockReservation,
+    BatchExpiryAlert,
+    BatchLifecycleEvent,
 )
 
 
@@ -128,3 +130,76 @@ class StockReservationAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     ]
+
+
+@admin.register(BatchLifecycleEvent)
+class BatchLifecycleEventAdmin(admin.ModelAdmin):
+    list_display = [
+        "batch",
+        "action",
+        "previous_status",
+        "new_status",
+        "performed_by_label",
+        "occurred_at",
+    ]
+
+    list_filter = [
+        "action",
+        "occurred_at",
+    ]
+
+    search_fields = [
+        "batch__batch_number",
+        "reference_number",
+        "reason",
+    ]
+
+    readonly_fields = [
+        field.name
+        for field in BatchLifecycleEvent._meta.fields
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(BatchExpiryAlert)
+class BatchExpiryAlertAdmin(admin.ModelAdmin):
+    list_display = [
+        "batch",
+        "alert_level",
+        "threshold_days",
+        "is_active",
+        "first_detected_at",
+        "last_detected_at",
+    ]
+
+    list_filter = [
+        "alert_level",
+        "is_active",
+    ]
+
+    search_fields = [
+        "batch__batch_number",
+        "batch__medicine__generic_name",
+    ]
+
+    readonly_fields = [
+        field.name
+        for field in BatchExpiryAlert._meta.fields
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

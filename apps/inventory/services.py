@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, ExpressionWrapper, DecimalField
 from django.utils import timezone
 
 from apps.audit.services import record_audit_event
@@ -10,6 +10,7 @@ from apps.audit.services import record_audit_event
 from datetime import timedelta
 
 from apps.inventory.models import (
+    BatchStatus,
     InventoryBalance,
     MovementType,
     ReservationStatus,
@@ -33,6 +34,19 @@ DECREASE_TYPES = {
     MovementType.DAMAGE,
     MovementType.EXPIRY,
 }
+
+
+def validate_batch_for_issue(batch):
+    if batch.status != BatchStatus.AVAILABLE:
+        raise ValidationError(
+            f"Batch {batch.batch_number} is not available for issuing. "
+            f"Current status: {batch.status}."
+        )
+
+    if batch.expiry_date < timezone.localdate():
+        raise ValidationError(
+            f"Batch {batch.batch_number} has expired and cannot be issued."
+        )
 
 
 def _audit_inventory(
@@ -152,15 +166,7 @@ def issue_stock(
         "warehouse__organization",
     ).get(pk=batch_id)
 
-    if batch.status != StockStatus.AVAILABLE:
-        raise ValidationError(
-            "This batch is not available for issuing."
-        )
-
-    if batch.is_expired:
-        raise ValidationError(
-            "Expired stock cannot be issued."
-        )
+    validate_batch_for_issue(batch)
 
     balance = _get_or_create_balance(batch)
 
@@ -382,6 +388,8 @@ def fulfill_reservation(
         pk=reservation.batch_id
     )
 
+    validate_batch_for_issue(batch)
+
     balance = InventoryBalance.objects.select_for_update().get(
         batch=batch
     )
@@ -441,7 +449,6 @@ def get_stock_balance(batch):
 
 
 def get_fefo_batches(
-    *,
     medicine_id,
     warehouse_id,
     presentation_id=None,
@@ -451,29 +458,32 @@ def get_fefo_batches(
     queryset = StockBatch.objects.filter(
         medicine_id=medicine_id,
         warehouse_id=warehouse_id,
-        status=StockStatus.AVAILABLE,
+        status=BatchStatus.AVAILABLE,
         expiry_date__gte=today,
-    ).select_related(
-        "balance",
-        "location",
-        "location__zone",
-    ).order_by("expiry_date", "received_date")
+        balance__quantity_on_hand__gt=0,
+    ).annotate(
+        available_quantity=ExpressionWrapper(
+            F("balance__quantity_on_hand")
+            - F("balance__quantity_reserved"),
+            output_field=DecimalField(
+                max_digits=16,
+                decimal_places=3,
+            ),
+        )
+    ).filter(
+        available_quantity__gt=0
+    )
 
-    if presentation_id is None:
-        queryset = queryset.filter(presentation__isnull=True)
-    else:
+    if presentation_id:
         queryset = queryset.filter(
             presentation_id=presentation_id
         )
 
-    return [
-        batch
-        for batch in queryset
-        if (
-            getattr(batch, "balance", None)
-            and batch.balance.quantity_available > 0
-        )
-    ]
+    return queryset.order_by(
+        "expiry_date",
+        "received_date",
+        "batch_number",
+    )
 
 
 def get_expiring_batches(*, warehouse_id=None, days=90):
