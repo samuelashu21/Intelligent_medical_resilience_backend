@@ -1,10 +1,10 @@
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.accounts.models import (
     Role,
     AccessPermission,
-    RolePermission,
 )
 
 
@@ -40,7 +40,7 @@ PERMISSIONS = {
     ],
 
     "inventory": [
-        ("view", "View inventory"),
+        ("view", "View Inventory"),
         ("receive", "Receive stock"),
         ("issue", "Issue stock"),
         ("adjust", "Adjust stock"),
@@ -118,6 +118,22 @@ PERMISSIONS = {
 # ==========================================================
 
 PERMISSION_DESCRIPTIONS = {
+    "inventory.view": (
+        "View stock balances, batches and inventory reports."
+    ),
+
+    "inventory.receive": (
+        "Receive and record incoming medicine stock."
+    ),
+
+    "inventory.issue": (
+        "Issue medicine stock from inventory."
+    ),
+
+    "inventory.adjust": (
+        "Adjust inventory quantities and stock balances."
+    ),
+
     "inventory.reconcile": (
         "Approve and post physical stock reconciliation."
     ),
@@ -145,6 +161,7 @@ PERMISSION_DESCRIPTIONS = {
 # ==========================================================
 
 ROLES = {
+
     # ------------------------------------------------------
     # SUPER ADMIN
     # ------------------------------------------------------
@@ -264,6 +281,7 @@ ROLES = {
             "users.view",
             "facilities.view",
             "medicines.view",
+
             "inventory.view",
 
             "consumption.view",
@@ -298,6 +316,7 @@ ROLES = {
         "permissions": [
             "facilities.view",
             "medicines.view",
+
             "inventory.view",
 
             "consumption.view",
@@ -334,6 +353,7 @@ ROLES = {
 
             "facilities.view",
             "medicines.view",
+
             "inventory.view",
 
             "consumption.view",
@@ -433,6 +453,7 @@ ROLES = {
         "permissions": [
             "medicines.view",
             "facilities.view",
+
             "inventory.view",
 
             "consumption.view",
@@ -460,6 +481,7 @@ ROLES = {
             "organizations.view",
             "facilities.view",
             "medicines.view",
+
             "inventory.view",
 
             "consumption.view",
@@ -481,12 +503,32 @@ ROLES = {
 
 
 # ==========================================================
+# ROLES THAT MUST HAVE INVENTORY VIEW
+# ==========================================================
+
+INVENTORY_VIEW_ROLES = [
+    "SUPER_ADMIN",
+    "MINISTRY_ADMIN",
+    "REGIONAL_ADMIN",
+    "DISTRICT_OFFICER",
+    "DISTRICT_PHARMACIST",
+    "FACILITY_ADMIN",
+    "FACILITY_PHARMACIST",
+    "SUPPLY_CHAIN_OFFICER",
+    "DATA_ANALYST",
+    "AUDITOR",
+]
+
+
+# ==========================================================
 # MANAGEMENT COMMAND
 # ==========================================================
 
 class Command(BaseCommand):
 
-    help = "Create default MediResilience AI roles and permissions."
+    help = (
+        "Create default MediResilience AI roles and permissions."
+    )
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -515,10 +557,10 @@ class Command(BaseCommand):
                     "is_active": True,
                 }
 
-                if code in PERMISSION_DESCRIPTIONS:
-                    defaults["description"] = (
-                        PERMISSION_DESCRIPTIONS[code]
-                    )
+                description = PERMISSION_DESCRIPTIONS.get(code)
+
+                if description is not None:
+                    defaults["description"] = description
 
                 permission, created = (
                     AccessPermission.objects.update_or_create(
@@ -541,7 +583,67 @@ class Command(BaseCommand):
                     )
 
         # --------------------------------------------------
-        # 2. CREATE OR UPDATE ROLES
+        # 2. VALIDATE REQUIRED INVENTORY PERMISSION
+        # --------------------------------------------------
+
+        inventory_view = permission_map.get(
+            "inventory.view"
+        )
+
+        if inventory_view is None:
+            raise ValueError(
+                "Required permission inventory.view "
+                "is missing from the permission catalog."
+            )
+
+        # --------------------------------------------------
+        # 3. VALIDATE ALL ROLE PERMISSIONS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Validating system role permissions..."
+            )
+        )
+
+        for role_code, definition in ROLES.items():
+
+            if definition["permissions"] == ["*"]:
+                continue
+
+            for permission_code in definition["permissions"]:
+
+                if permission_code not in permission_map:
+                    raise ValueError(
+                        f"Unknown permission '{permission_code}' "
+                        f"assigned to role '{role_code}'."
+                    )
+
+        # --------------------------------------------------
+        # 4. VALIDATE INVENTORY VIEW ROLE CONFIGURATION
+        # --------------------------------------------------
+
+        for role_code in INVENTORY_VIEW_ROLES:
+
+            if role_code not in ROLES:
+                raise ValueError(
+                    f"Inventory view role '{role_code}' "
+                    "does not exist in ROLES."
+                )
+
+            role_permissions = ROLES[role_code]["permissions"]
+
+            if (
+                role_permissions != ["*"]
+                and "inventory.view" not in role_permissions
+            ):
+                raise ValueError(
+                    f"Role '{role_code}' must include "
+                    "inventory.view."
+                )
+
+        # --------------------------------------------------
+        # 5. CREATE OR UPDATE ROLES
         # --------------------------------------------------
 
         self.stdout.write(
@@ -571,21 +673,10 @@ class Command(BaseCommand):
 
             else:
 
-                permissions = []
-
-                for permission_code in definition["permissions"]:
-
-                    permission = permission_map.get(
-                        permission_code
-                    )
-
-                    if permission is None:
-                        raise ValueError(
-                            f"Unknown permission '{permission_code}' "
-                            f"assigned to role '{code}'."
-                        )
-
-                    permissions.append(permission)
+                permissions = [
+                    permission_map[permission_code]
+                    for permission_code in definition["permissions"]
+                ]
 
             # Synchronize role permissions.
             role.permissions.set(permissions)
@@ -602,11 +693,81 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 3. SUCCESS MESSAGE
+        # 6. VERIFY INVENTORY VIEW PERMISSION
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying inventory.view role assignments..."
+            )
+        )
+
+        for role_code in INVENTORY_VIEW_ROLES:
+
+            role = Role.objects.get(
+                code=role_code
+            )
+
+            has_permission = role.permissions.filter(
+                pk=inventory_view.pk
+            ).exists()
+
+            if not has_permission:
+                raise ValueError(
+                    f"Role '{role_code}' is missing "
+                    "inventory.view."
+                )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{role_code}: inventory.view verified."
+                )
+            )
+
+        # --------------------------------------------------
+        # 7. VERIFY PERMISSION METADATA
+        # --------------------------------------------------
+
+        inventory_view.refresh_from_db()
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verified inventory.view permission metadata:"
+            )
+        )
+
+        self.stdout.write(
+            f"Code: {inventory_view.code}"
+        )
+
+        self.stdout.write(
+            f"Name: {inventory_view.name}"
+        )
+
+        self.stdout.write(
+            f"Module: {inventory_view.module}"
+        )
+
+        self.stdout.write(
+            f"Description: {inventory_view.description}"
+        )
+
+        self.stdout.write(
+            f"Active: {inventory_view.is_active}"
+        )
+
+        # --------------------------------------------------
+        # 8. SUCCESS MESSAGE
         # --------------------------------------------------
 
         self.stdout.write(
             self.style.SUCCESS(
                 "RBAC roles and permissions seeded successfully."
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "All 10 system roles have inventory.view."
             )
         )

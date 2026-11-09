@@ -1,5 +1,5 @@
 
-from django.urls import path
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.inventory.views import (
@@ -99,4 +99,8 @@ urlpatterns = [
         ReconciliationSummaryView.as_view(),
         name="reconciliation-summary",
     ),
+    path(
+    "reports/",
+    include("apps.inventory.reporting_urls"),
+),
 ] + router.urls

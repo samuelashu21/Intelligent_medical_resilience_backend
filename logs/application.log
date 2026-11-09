@@ -781,3 +781,61 @@ INFO 2026-11-09 05:32:12,022 mediresilience.api method=POST path=/api/v1/consump
 INFO 2026-11-09 05:32:53,890 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=401 duration_ms=7.00
 WARNING 2026-11-09 05:32:53,893 django.request Unauthorized: /api/v1/consumption/daily/
 INFO 2026-11-09 05:32:55,257 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=201 duration_ms=51.62
+ERROR 2026-11-09 06:02:27,186 mediresilience.api Unhandled API exception: StockStatusCSVExportView.get() got an unexpected keyword argument 'version'
+Traceback (most recent call last):
+  File "D:\nextjs\Intelligent_medical_resilience\backend\.venv\Lib\site-packages\rest_framework\views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: StockStatusCSVExportView.get() got an unexpected keyword argument 'version'
+INFO 2026-11-09 06:02:27,203 mediresilience.api method=GET path=/api/v1/inventory/reports/export/csv/ status=500 duration_ms=21.94
+ERROR 2026-11-09 06:02:27,206 django.request Internal Server Error: /api/v1/inventory/reports/export/csv/
+ERROR 2026-11-09 06:02:28,274 mediresilience.api Unhandled API exception: StockDashboardView.get() got an unexpected keyword argument 'version'
+Traceback (most recent call last):
+  File "D:\nextjs\Intelligent_medical_resilience\backend\.venv\Lib\site-packages\rest_framework\views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: StockDashboardView.get() got an unexpected keyword argument 'version'
+INFO 2026-11-09 06:02:28,275 mediresilience.api method=GET path=/api/v1/inventory/reports/dashboard/ status=500 duration_ms=1.42
+ERROR 2026-11-09 06:02:28,276 django.request Internal Server Error: /api/v1/inventory/reports/dashboard/
+ERROR 2026-11-09 06:02:29,354 mediresilience.api Unhandled API exception: ExpiryReportView.get() got an unexpected keyword argument 'version'
+Traceback (most recent call last):
+  File "D:\nextjs\Intelligent_medical_resilience\backend\.venv\Lib\site-packages\rest_framework\views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: ExpiryReportView.get() got an unexpected keyword argument 'version'
+INFO 2026-11-09 06:02:29,355 mediresilience.api method=GET path=/api/v1/inventory/reports/expiry/ status=500 duration_ms=1.46
+ERROR 2026-11-09 06:02:29,355 django.request Internal Server Error: /api/v1/inventory/reports/expiry/
+ERROR 2026-11-09 06:02:30,441 mediresilience.api Unhandled API exception: StockStatusReportView.get() got an unexpected keyword argument 'version'
+Traceback (most recent call last):
+  File "D:\nextjs\Intelligent_medical_resilience\backend\.venv\Lib\site-packages\rest_framework\views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: StockStatusReportView.get() got an unexpected keyword argument 'version'
+INFO 2026-11-09 06:02:30,442 mediresilience.api method=GET path=/api/v1/inventory/reports/status/ status=500 duration_ms=1.34
+ERROR 2026-11-09 06:02:30,442 django.request Internal Server Error: /api/v1/inventory/reports/status/
+INFO 2026-11-09 06:05:34,392 mediresilience.api method=GET path=/api/v1/inventory/reports/export/csv/ status=401 duration_ms=8.65
+WARNING 2026-11-09 06:05:34,397 django.request Unauthorized: /api/v1/inventory/reports/export/csv/
+INFO 2026-11-09 06:05:35,593 mediresilience.api method=GET path=/api/v1/inventory/reports/dashboard/ status=401 duration_ms=0.91
+WARNING 2026-11-09 06:05:35,594 django.request Unauthorized: /api/v1/inventory/reports/dashboard/
+INFO 2026-11-09 06:05:36,749 mediresilience.api method=GET path=/api/v1/inventory/reports/expiry/ status=401 duration_ms=0.67
+WARNING 2026-11-09 06:05:36,750 django.request Unauthorized: /api/v1/inventory/reports/expiry/
+INFO 2026-11-09 06:05:37,896 mediresilience.api method=GET path=/api/v1/inventory/reports/status/ status=401 duration_ms=0.68
+WARNING 2026-11-09 06:05:37,897 django.request Unauthorized: /api/v1/inventory/reports/status/
+INFO 2026-11-09 06:06:18,649 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=200 duration_ms=85.08
+INFO 2026-11-09 06:06:19,853 mediresilience.api method=POST path=/api/v1/inventory/movements/ status=405 duration_ms=8.63
+WARNING 2026-11-09 06:06:19,855 django.request Method Not Allowed: /api/v1/inventory/movements/
+INFO 2026-11-09 06:06:21,086 mediresilience.api method=POST path=/api/v1/inventory/batches/92495024-5149-48ee-8647-8e0794aff0c3/receive/ status=201 duration_ms=62.26
+INFO 2026-11-09 06:06:22,581 mediresilience.api method=GET path=/api/v1/inventory/balances/ status=200 duration_ms=117.98
+INFO 2026-11-09 06:06:23,729 mediresilience.api method=GET path=/api/v1/inventory/batches/ status=401 duration_ms=0.65
+WARNING 2026-11-09 06:06:23,729 django.request Unauthorized: /api/v1/inventory/batches/
+INFO 2026-11-09 06:07:14,037 mediresilience.api method=GET path=/api/v1/inventory/reports/export/csv/ status=401 duration_ms=2.03
+WARNING 2026-11-09 06:07:14,038 django.request Unauthorized: /api/v1/inventory/reports/export/csv/
+INFO 2026-11-09 06:07:15,275 mediresilience.api method=GET path=/api/v1/inventory/reports/dashboard/ status=401 duration_ms=1.02
+WARNING 2026-11-09 06:07:15,275 django.request Unauthorized: /api/v1/inventory/reports/dashboard/
+INFO 2026-11-09 06:07:16,867 mediresilience.api method=GET path=/api/v1/inventory/reports/expiry/ status=401 duration_ms=1.19
+WARNING 2026-11-09 06:07:16,867 django.request Unauthorized: /api/v1/inventory/reports/expiry/
+INFO 2026-11-09 06:07:19,161 mediresilience.api method=GET path=/api/v1/inventory/reports/status/ status=401 duration_ms=0.73
+WARNING 2026-11-09 06:07:19,161 django.request Unauthorized: /api/v1/inventory/reports/status/
+INFO 2026-11-09 06:07:53,637 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=401 duration_ms=5.37
+WARNING 2026-11-09 06:07:53,639 django.request Unauthorized: /api/v1/consumption/daily/
+INFO 2026-11-09 06:07:54,816 mediresilience.api method=POST path=/api/v1/consumption/daily/ status=201 duration_ms=37.25
