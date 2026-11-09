@@ -1,3 +1,5 @@
+
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from apps.inventory.views import (
@@ -13,6 +15,14 @@ from apps.inventory.batch_views import (
     BatchLifecycleEventViewSet,
     BatchLifecycleViewSet,
 )
+
+from apps.inventory.reconciliation_views import (
+    ReconciliationSummaryView,
+    StockCountLineViewSet,
+    StockCountViewSet,
+    StockReconciliationViewSet,
+)
+
 
 router = DefaultRouter()
 
@@ -64,4 +74,29 @@ router.register(
     basename="batch-lifecycle-event",
 )
 
-urlpatterns = router.urls
+router.register(
+    "stock-counts",
+    StockCountViewSet,
+    basename="stock-count",
+)
+
+router.register(
+    "stock-count-lines",
+    StockCountLineViewSet,
+    basename="stock-count-line",
+)
+
+router.register(
+    "reconciliations",
+    StockReconciliationViewSet,
+    basename="stock-reconciliation",
+)
+
+
+urlpatterns = [
+    path(
+        "reconciliation-summary/",
+        ReconciliationSummaryView.as_view(),
+        name="reconciliation-summary",
+    ),
+] + router.urls

@@ -36,7 +36,7 @@ PERMISSIONS = {
         ("receive", "Receive stock"),
         ("issue", "Issue stock"),
         ("adjust", "Adjust stock"),
-        ("reconcile", "Reconcile stock"),
+        ("reconcile", "Reconcile Inventory"),
     ],
     "consumption": [
         ("view", "View consumption"),
@@ -94,12 +94,22 @@ PERMISSIONS = {
 }
 
 
+# Additional permission metadata.
+# Only permissions listed here receive an explicit description update.
+PERMISSION_DESCRIPTIONS = {
+    "inventory.reconcile": (
+        "Approve and post physical stock reconciliation."
+    ),
+}
+
+
 ROLES = {
     "SUPER_ADMIN": {
         "name": "Super Administrator",
         "description": "Full platform administration.",
         "permissions": ["*"],
     },
+
     "MINISTRY_ADMIN": {
         "name": "Ministry of Health Administrator",
         "description": "National-level administration.",
@@ -135,6 +145,7 @@ ROLES = {
             "audit.export",
         ],
     },
+
     "REGIONAL_ADMIN": {
         "name": "Regional Health Bureau Administrator",
         "description": "Regional administration and monitoring.",
@@ -161,6 +172,7 @@ ROLES = {
             "audit.view",
         ],
     },
+
     "DISTRICT_OFFICER": {
         "name": "District Health Officer",
         "description": "District-level health operations oversight.",
@@ -181,9 +193,12 @@ ROLES = {
             "reports.export",
         ],
     },
+
     "DISTRICT_PHARMACIST": {
         "name": "District Pharmacist",
-        "description": "District medicine availability and pharmacy oversight.",
+        "description": (
+            "District medicine availability and pharmacy oversight."
+        ),
         "permissions": [
             "facilities.view",
             "medicines.view",
@@ -200,6 +215,7 @@ ROLES = {
             "reports.view",
         ],
     },
+
     "FACILITY_ADMIN": {
         "name": "Facility Administrator",
         "description": "Health facility administration.",
@@ -219,6 +235,7 @@ ROLES = {
             "reports.view",
         ],
     },
+
     "FACILITY_PHARMACIST": {
         "name": "Facility Pharmacist",
         "description": "Facility medicine and stock management.",
@@ -242,6 +259,7 @@ ROLES = {
             "reports.view",
         ],
     },
+
     "SUPPLY_CHAIN_OFFICER": {
         "name": "Supply Chain Officer",
         "description": "Supply chain and distribution operations.",
@@ -265,6 +283,7 @@ ROLES = {
             "reports.view",
         ],
     },
+
     "DATA_ANALYST": {
         "name": "Data Analyst",
         "description": "Analytics, forecasting and reporting.",
@@ -281,6 +300,7 @@ ROLES = {
             "reports.export",
         ],
     },
+
     "AUDITOR": {
         "name": "Auditor",
         "description": "Read-only audit and compliance access.",
@@ -311,27 +331,51 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         permission_map = {}
 
+        # --------------------------------------------------
+        # 1. Create or update permissions
+        # --------------------------------------------------
         for module, actions in PERMISSIONS.items():
+
             for action, name in actions:
                 code = f"{module}.{action}"
 
-                permission, created = AccessPermission.objects.update_or_create(
-                    code=code,
-                    defaults={
-                        "name": name,
-                        "module": module,
-                        "is_active": True,
-                    },
+                defaults = {
+                    "name": name,
+                    "module": module,
+                    "is_active": True,
+                }
+
+                # Apply description where explicitly defined.
+                if code in PERMISSION_DESCRIPTIONS:
+                    defaults["description"] = (
+                        PERMISSION_DESCRIPTIONS[code]
+                    )
+
+                permission, created = (
+                    AccessPermission.objects.update_or_create(
+                        code=code,
+                        defaults=defaults,
+                    )
                 )
 
                 permission_map[code] = permission
 
                 if created:
                     self.stdout.write(
-                        self.style.SUCCESS(f"Created permission: {code}")
+                        self.style.SUCCESS(
+                            f"Created permission: {code}"
+                        )
+                    )
+                else:
+                    self.stdout.write(
+                        f"Updated permission: {code}"
                     )
 
+        # --------------------------------------------------
+        # 2. Create or update roles
+        # --------------------------------------------------
         for code, definition in ROLES.items():
+
             role, created = Role.objects.update_or_create(
                 code=code,
                 defaults={
@@ -342,8 +386,10 @@ class Command(BaseCommand):
                 },
             )
 
+            # SUPER_ADMIN receives every catalog permission.
             if definition["permissions"] == ["*"]:
                 permissions = list(permission_map.values())
+
             else:
                 permissions = [
                     permission_map[permission_code]
@@ -351,15 +397,25 @@ class Command(BaseCommand):
                     if permission_code in permission_map
                 ]
 
+            # Synchronize role permissions.
             role.permissions.set(permissions)
 
             if created:
                 self.stdout.write(
-                    self.style.SUCCESS(f"Created role: {code}")
+                    self.style.SUCCESS(
+                        f"Created role: {code}"
+                    )
                 )
             else:
-                self.stdout.write(f"Updated role: {code}")
+                self.stdout.write(
+                    f"Updated role: {code}"
+                )
 
+        # --------------------------------------------------
+        # 3. Success message
+        # --------------------------------------------------
         self.stdout.write(
-            self.style.SUCCESS("RBAC roles and permissions seeded successfully.")
+            self.style.SUCCESS(
+                "RBAC roles and permissions seeded successfully."
+            )
         )
