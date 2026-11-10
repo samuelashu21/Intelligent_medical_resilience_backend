@@ -1,4 +1,3 @@
- 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -60,10 +59,13 @@ PERMISSIONS = {
         ("approve", "Approve Consumption Reports"),
     ],
 
+    # Replenishment request permissions
     "replenishment": [
-        ("view", "View replenishment requests"),
-        ("create", "Create replenishment requests"),
-        ("approve", "Approve replenishment requests"),
+        ("view", "View Replenishment Requests"),
+        ("create", "Create Replenishment Requests"),
+        ("submit", "Submit Replenishment Requests"),
+        ("approve", "Approve Replenishment Requests"),
+        ("cancel", "Cancel Replenishment Requests"),
     ],
 
     "procurement": [
@@ -162,6 +164,7 @@ PERMISSION_DESCRIPTIONS = {
         "and deactivation."
     ),
 
+    # Consumption descriptions
     "consumption.view": (
         "View facility and medicine consumption records."
     ),
@@ -177,6 +180,27 @@ PERMISSION_DESCRIPTIONS = {
     "consumption.approve": (
         "Review and approve submitted consumption reports."
     ),
+
+    # Replenishment descriptions
+    "replenishment.view": (
+        "View replenishment requests within authorized scope."
+    ),
+
+    "replenishment.create": (
+        "Create manual and policy-generated replenishment requests."
+    ),
+
+    "replenishment.submit": (
+        "Submit draft requests for approval."
+    ),
+
+    "replenishment.approve": (
+        "Approve or reject submitted replenishment requests."
+    ),
+
+    "replenishment.cancel": (
+        "Cancel draft or submitted replenishment requests."
+    ),
 }
 
 
@@ -189,6 +213,91 @@ STOCK_POLICY_PERMISSIONS = {
     "create": "inventory.policy.create",
     "update": "inventory.policy.update",
     "manage": "inventory.policy.manage",
+}
+
+
+# ==========================================================
+# REPLENISHMENT PERMISSION DEFINITIONS
+# ==========================================================
+
+REPLENISHMENT_PERMISSIONS = {
+    "view": "replenishment.view",
+    "create": "replenishment.create",
+    "submit": "replenishment.submit",
+    "approve": "replenishment.approve",
+    "cancel": "replenishment.cancel",
+}
+
+
+# ==========================================================
+# REPLENISHMENT ROLE ASSIGNMENT EXPECTATIONS
+# ==========================================================
+
+# Policy-based permissions are intentionally not granted globally.
+# They must be enforced by the replenishment workflow/policy checks.
+
+REPLENISHMENT_ROLE_ASSIGNMENTS = {
+    "MINISTRY_ADMIN": [
+        "replenishment.view",
+        "replenishment.create",
+        "replenishment.submit",
+        "replenishment.approve",
+        "replenishment.cancel",
+    ],
+
+    "REGIONAL_ADMIN": [
+        "replenishment.view",
+        "replenishment.create",
+        "replenishment.submit",
+        "replenishment.approve",
+        "replenishment.cancel",
+    ],
+
+    "DISTRICT_OFFICER": [
+        "replenishment.view",
+        "replenishment.create",
+        "replenishment.submit",
+        "replenishment.approve",
+        "replenishment.cancel",
+    ],
+
+    "DISTRICT_PHARMACIST": [
+        "replenishment.view",
+        "replenishment.create",
+        "replenishment.submit",
+        "replenishment.approve",
+        "replenishment.cancel",
+    ],
+
+    # Facility Admin: approval is policy-based.
+    "FACILITY_ADMIN": [
+        "replenishment.view",
+        "replenishment.create",
+        "replenishment.submit",
+        "replenishment.cancel",
+    ],
+
+    "FACILITY_PHARMACIST": [
+        "replenishment.view",
+        "replenishment.create",
+        "replenishment.submit",
+        "replenishment.cancel",
+    ],
+
+    # Supply Chain Officer:
+    # Submit, approve and cancel are policy-based.
+    "SUPPLY_CHAIN_OFFICER": [
+        "replenishment.view",
+        "replenishment.create",
+    ],
+
+    "DATA_ANALYST": [
+        "replenishment.view",
+    ],
+
+    "AUDITOR": [
+        "replenishment.view",
+    ],
 }
 
 
@@ -246,8 +355,12 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
+            # Replenishment permissions
             "replenishment.view",
+            "replenishment.create",
+            "replenishment.submit",
             "replenishment.approve",
+            "replenishment.cancel",
 
             "procurement.view",
             "procurement.approve",
@@ -300,8 +413,12 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
+            # Replenishment permissions
             "replenishment.view",
+            "replenishment.create",
+            "replenishment.submit",
             "replenishment.approve",
+            "replenishment.cancel",
 
             "redistribution.view",
             "redistribution.approve",
@@ -343,8 +460,12 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
+            # Replenishment permissions
             "replenishment.view",
+            "replenishment.create",
+            "replenishment.submit",
             "replenishment.approve",
+            "replenishment.cancel",
 
             "redistribution.view",
             "redistribution.approve",
@@ -384,8 +505,12 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
+            # Replenishment permissions
             "replenishment.view",
+            "replenishment.create",
+            "replenishment.submit",
             "replenishment.approve",
+            "replenishment.cancel",
 
             "redistribution.view",
             "redistribution.create",
@@ -425,8 +550,12 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
+            # Replenishment permissions
+            # Approval is policy-based.
             "replenishment.view",
             "replenishment.create",
+            "replenishment.submit",
+            "replenishment.cancel",
 
             "redistribution.view",
             "redistribution.create",
@@ -460,8 +589,11 @@ ROLES = {
             "consumption.create",
             "consumption.submit",
 
+            # Replenishment permissions
             "replenishment.view",
             "replenishment.create",
+            "replenishment.submit",
+            "replenishment.cancel",
 
             "redistribution.view",
             "redistribution.create",
@@ -502,7 +634,10 @@ ROLES = {
             "consumption.view",
             "consumption.create",
 
+            # Replenishment permissions
+            # Submit, approve and cancel are policy-based.
             "replenishment.view",
+            "replenishment.create",
 
             "procurement.view",
             "procurement.create",
@@ -533,6 +668,9 @@ ROLES = {
             # Stock policy permissions
             # Read-only access.
             "inventory.policy.view",
+
+            # Replenishment: read-only access.
+            "replenishment.view",
 
             "consumption.view",
 
@@ -568,7 +706,9 @@ ROLES = {
 
             "consumption.view",
 
+            # Replenishment: read-only access.
             "replenishment.view",
+
             "procurement.view",
             "redistribution.view",
 
@@ -756,7 +896,27 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 4. VALIDATE ALL ROLE PERMISSIONS
+        # 4. VALIDATE REPLENISHMENT PERMISSIONS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Validating replenishment permissions..."
+            )
+        )
+
+        for permission_name, permission_code in (
+            REPLENISHMENT_PERMISSIONS.items()
+        ):
+
+            if permission_code not in permission_map:
+                raise ValueError(
+                    f"Required replenishment permission "
+                    f"'{permission_code}' is missing."
+                )
+
+        # --------------------------------------------------
+        # 5. VALIDATE ALL ROLE PERMISSIONS
         # --------------------------------------------------
 
         self.stdout.write(
@@ -779,7 +939,7 @@ class Command(BaseCommand):
                     )
 
         # --------------------------------------------------
-        # 5. VALIDATE INVENTORY VIEW ROLE CONFIGURATION
+        # 6. VALIDATE INVENTORY VIEW ROLE CONFIGURATION
         # --------------------------------------------------
 
         for role_code in INVENTORY_VIEW_ROLES:
@@ -802,7 +962,7 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 6. VALIDATE STOCK POLICY ROLE CONFIGURATION
+        # 7. VALIDATE STOCK POLICY ROLE CONFIGURATION
         # --------------------------------------------------
 
         for role_code, expected_permissions in (
@@ -829,8 +989,8 @@ class Command(BaseCommand):
                         f"'{permission_code}'."
                     )
 
-            # Ensure no additional stock policy permissions
-            # are accidentally granted beyond the matrix.
+            # Prevent additional stock policy permissions
+            # from being accidentally granted.
             actual_policy_permissions = (
                 actual_permissions
                 & set(STOCK_POLICY_PERMISSIONS.values())
@@ -844,7 +1004,49 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 7. CREATE OR UPDATE ROLES
+        # 8. VALIDATE REPLENISHMENT ROLE CONFIGURATION
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Validating replenishment role assignments..."
+            )
+        )
+
+        for role_code, expected_permissions in (
+            REPLENISHMENT_ROLE_ASSIGNMENTS.items()
+        ):
+
+            if role_code not in ROLES:
+                raise ValueError(
+                    f"Replenishment role '{role_code}' "
+                    "does not exist in ROLES."
+                )
+
+            actual_permissions = set(
+                ROLES[role_code]["permissions"]
+            )
+
+            expected_permissions = set(expected_permissions)
+
+            # Enforce exact matching to ensure policy-based
+            # permissions are not granted globally.
+            actual_replenishment_permissions = (
+                actual_permissions
+                & set(REPLENISHMENT_PERMISSIONS.values())
+            )
+
+            if actual_replenishment_permissions != expected_permissions:
+                raise ValueError(
+                    f"Replenishment permissions for role "
+                    f"'{role_code}' do not match the configured "
+                    f"role assignment policy. "
+                    f"Expected: {sorted(expected_permissions)}. "
+                    f"Found: {sorted(actual_replenishment_permissions)}."
+                )
+
+        # --------------------------------------------------
+        # 9. CREATE OR UPDATE ROLES
         # --------------------------------------------------
 
         self.stdout.write(
@@ -894,7 +1096,7 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 8. VERIFY INVENTORY VIEW PERMISSION
+        # 10. VERIFY INVENTORY VIEW PERMISSION
         # --------------------------------------------------
 
         self.stdout.write(
@@ -926,7 +1128,7 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 9. VERIFY STOCK POLICY PERMISSION ASSIGNMENTS
+        # 11. VERIFY STOCK POLICY PERMISSION ASSIGNMENTS
         # --------------------------------------------------
 
         self.stdout.write(
@@ -969,7 +1171,7 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 10. VERIFY STOCK POLICY PERMISSION METADATA
+        # 12. VERIFY STOCK POLICY PERMISSION METADATA
         # --------------------------------------------------
 
         self.stdout.write(
@@ -993,7 +1195,72 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 11. VERIFY INVENTORY VIEW PERMISSION METADATA
+        # 13. VERIFY REPLENISHMENT ROLE PERMISSION ASSIGNMENTS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying replenishment role assignments..."
+            )
+        )
+
+        for role_code, expected_permissions in (
+            REPLENISHMENT_ROLE_ASSIGNMENTS.items()
+        ):
+
+            role = Role.objects.get(code=role_code)
+
+            assigned_codes = set(
+                role.permissions.filter(
+                    code__in=REPLENISHMENT_PERMISSIONS.values()
+                ).values_list(
+                    "code",
+                    flat=True,
+                )
+            )
+
+            expected_codes = set(expected_permissions)
+
+            if assigned_codes != expected_codes:
+                raise ValueError(
+                    f"Replenishment permission verification failed "
+                    f"for role '{role_code}'. "
+                    f"Expected: {sorted(expected_codes)}. "
+                    f"Found: {sorted(assigned_codes)}."
+                )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{role_code}: replenishment permissions verified."
+                )
+            )
+
+        # --------------------------------------------------
+        # 14. VERIFY REPLENISHMENT PERMISSION METADATA
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying replenishment permission metadata..."
+            )
+        )
+
+        for permission_code in REPLENISHMENT_PERMISSIONS.values():
+
+            permission = permission_map[permission_code]
+            permission.refresh_from_db()
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{permission.code} | "
+                    f"{permission.name} | "
+                    f"Module: {permission.module} | "
+                    f"Active: {permission.is_active}"
+                )
+            )
+
+        # --------------------------------------------------
+        # 15. VERIFY INVENTORY VIEW PERMISSION METADATA
         # --------------------------------------------------
 
         inventory_view.refresh_from_db()
@@ -1025,7 +1292,7 @@ class Command(BaseCommand):
         )
 
         # --------------------------------------------------
-        # 12. SUCCESS MESSAGE
+        # 16. SUCCESS MESSAGE
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1046,4 +1313,10 @@ class Command(BaseCommand):
                 "verified successfully."
             )
         )
- 
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Replenishment permissions and role assignments "
+                "verified successfully."
+            )
+        )
