@@ -7,3 +7,9 @@ from apps.logistics.shipment_models import (
     ShipmentDocument,
     ShipmentException,
 )
+
+from apps.logistics.receiving_models import (
+    ReceivingRecord,
+    ReceivingLine,
+    ReceivingDiscrepancy,
+)

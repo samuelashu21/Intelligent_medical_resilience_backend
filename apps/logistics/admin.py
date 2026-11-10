@@ -10,6 +10,7 @@ from apps.logistics.shipment_models import (
     ShipmentException,
 )
 
+from apps.logistics import receiving_admin
 
 class ShipmentLineInline(admin.TabularInline):
     model = ShipmentLine

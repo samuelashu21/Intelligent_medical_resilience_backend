@@ -58,6 +58,7 @@ class ShipmentEventType(models.TextChoices):
     DELAYED = "DELAYED", "Delayed"
     ARRIVED = "ARRIVED", "Arrived at Destination"
     DELIVERED = "DELIVERED", "Delivery Reported"
+    RECEIVED = "RECEIVED", "Received by recipient"
     EXCEPTION = "EXCEPTION", "Exception"
     CANCELLED = "CANCELLED", "Cancelled"
 
