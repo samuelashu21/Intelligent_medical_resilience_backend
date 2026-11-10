@@ -59,13 +59,19 @@ PERMISSIONS = {
         ("approve", "Approve Consumption Reports"),
     ],
 
-    # Replenishment request permissions
+    # Replenishment request and approval workflow permissions
     "replenishment": [
         ("view", "View Replenishment Requests"),
         ("create", "Create Replenishment Requests"),
         ("submit", "Submit Replenishment Requests"),
         ("approve", "Approve Replenishment Requests"),
         ("cancel", "Cancel Replenishment Requests"),
+
+        # Approval workflow permissions
+        ("workflow.view", "View Approval Workflows"),
+        ("approval.view", "View Approval Stages and Decisions"),
+        ("workflow.manage", "Manage Approval Workflows"),
+        ("approval.escalate", "Escalate Approval Stages"),
     ],
 
     "procurement": [
@@ -181,7 +187,7 @@ PERMISSION_DESCRIPTIONS = {
         "Review and approve submitted consumption reports."
     ),
 
-    # Replenishment descriptions
+    # Replenishment request descriptions
     "replenishment.view": (
         "View replenishment requests within authorized scope."
     ),
@@ -200,6 +206,23 @@ PERMISSION_DESCRIPTIONS = {
 
     "replenishment.cancel": (
         "Cancel draft or submitted replenishment requests."
+    ),
+
+    # Replenishment approval workflow descriptions
+    "replenishment.workflow.view": (
+        "View configured replenishment approval workflows."
+    ),
+
+    "replenishment.approval.view": (
+        "View approval stages and decision history."
+    ),
+
+    "replenishment.workflow.manage": (
+        "Create and manage approval workflows."
+    ),
+
+    "replenishment.approval.escalate": (
+        "Escalate overdue replenishment approvals."
     ),
 }
 
@@ -226,6 +249,12 @@ REPLENISHMENT_PERMISSIONS = {
     "submit": "replenishment.submit",
     "approve": "replenishment.approve",
     "cancel": "replenishment.cancel",
+
+    # Approval workflow permissions
+    "workflow_view": "replenishment.workflow.view",
+    "approval_view": "replenishment.approval.view",
+    "workflow_manage": "replenishment.workflow.manage",
+    "approval_escalate": "replenishment.approval.escalate",
 }
 
 
@@ -234,7 +263,10 @@ REPLENISHMENT_PERMISSIONS = {
 # ==========================================================
 
 # Policy-based permissions are intentionally not granted globally.
-# They must be enforced by the replenishment workflow/policy checks.
+# They must be enforced by replenishment workflow/policy checks.
+#
+# Facility approval-history visibility must additionally be scoped
+# to requests owned by the current facility/user as appropriate.
 
 REPLENISHMENT_ROLE_ASSIGNMENTS = {
     "MINISTRY_ADMIN": [
@@ -243,6 +275,10 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.submit",
         "replenishment.approve",
         "replenishment.cancel",
+        "replenishment.workflow.view",
+        "replenishment.approval.view",
+        "replenishment.workflow.manage",
+        "replenishment.approval.escalate",
     ],
 
     "REGIONAL_ADMIN": [
@@ -251,6 +287,10 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.submit",
         "replenishment.approve",
         "replenishment.cancel",
+        "replenishment.workflow.view",
+        "replenishment.approval.view",
+        # Workflow management is policy-based.
+        "replenishment.approval.escalate",
     ],
 
     "DISTRICT_OFFICER": [
@@ -259,6 +299,9 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.submit",
         "replenishment.approve",
         "replenishment.cancel",
+        "replenishment.workflow.view",
+        "replenishment.approval.view",
+        "replenishment.approval.escalate",
     ],
 
     "DISTRICT_PHARMACIST": [
@@ -267,14 +310,18 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.submit",
         "replenishment.approve",
         "replenishment.cancel",
+        "replenishment.workflow.view",
+        "replenishment.approval.view",
     ],
 
-    # Facility Admin: approval is policy-based.
+    # Facility roles can view approval stages only for their own requests.
+    # Enforce ownership scope in the replenishment queryset/service layer.
     "FACILITY_ADMIN": [
         "replenishment.view",
         "replenishment.create",
         "replenishment.submit",
         "replenishment.cancel",
+        "replenishment.approval.view",
     ],
 
     "FACILITY_PHARMACIST": [
@@ -282,21 +329,27 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.create",
         "replenishment.submit",
         "replenishment.cancel",
+        "replenishment.approval.view",
     ],
 
-    # Supply Chain Officer:
-    # Submit, approve and cancel are policy-based.
+    # Escalation is policy-based for Supply Chain Officers.
     "SUPPLY_CHAIN_OFFICER": [
         "replenishment.view",
         "replenishment.create",
+        "replenishment.workflow.view",
+        "replenishment.approval.view",
     ],
 
     "DATA_ANALYST": [
         "replenishment.view",
+        "replenishment.workflow.view",
+        "replenishment.approval.view",
     ],
 
     "AUDITOR": [
         "replenishment.view",
+        "replenishment.workflow.view",
+        "replenishment.approval.view",
     ],
 }
 
@@ -355,12 +408,18 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
-            # Replenishment permissions
+            # Replenishment request permissions
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.approve",
             "replenishment.cancel",
+
+            # Replenishment workflow permissions
+            "replenishment.workflow.view",
+            "replenishment.approval.view",
+            "replenishment.workflow.manage",
+            "replenishment.approval.escalate",
 
             "procurement.view",
             "procurement.approve",
@@ -413,12 +472,18 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
-            # Replenishment permissions
+            # Replenishment request permissions
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.approve",
             "replenishment.cancel",
+
+            # Replenishment workflow permissions
+            "replenishment.workflow.view",
+            "replenishment.approval.view",
+            # Workflow management is policy-based.
+            "replenishment.approval.escalate",
 
             "redistribution.view",
             "redistribution.approve",
@@ -460,12 +525,17 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
-            # Replenishment permissions
+            # Replenishment request permissions
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.approve",
             "replenishment.cancel",
+
+            # Replenishment workflow permissions
+            "replenishment.workflow.view",
+            "replenishment.approval.view",
+            "replenishment.approval.escalate",
 
             "redistribution.view",
             "redistribution.approve",
@@ -505,12 +575,16 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
-            # Replenishment permissions
+            # Replenishment request permissions
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.approve",
             "replenishment.cancel",
+
+            # Replenishment workflow permissions
+            "replenishment.workflow.view",
+            "replenishment.approval.view",
 
             "redistribution.view",
             "redistribution.create",
@@ -550,12 +624,15 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
-            # Replenishment permissions
+            # Replenishment request permissions
             # Approval is policy-based.
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.cancel",
+
+            # Approval-stage access is limited to own requests.
+            "replenishment.approval.view",
 
             "redistribution.view",
             "redistribution.create",
@@ -589,11 +666,14 @@ ROLES = {
             "consumption.create",
             "consumption.submit",
 
-            # Replenishment permissions
+            # Replenishment request permissions
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.cancel",
+
+            # Approval-stage access is limited to own requests.
+            "replenishment.approval.view",
 
             "redistribution.view",
             "redistribution.create",
@@ -635,9 +715,11 @@ ROLES = {
             "consumption.create",
 
             # Replenishment permissions
-            # Submit, approve and cancel are policy-based.
+            # Submit, approve, cancel and escalation are policy-based.
             "replenishment.view",
             "replenishment.create",
+            "replenishment.workflow.view",
+            "replenishment.approval.view",
 
             "procurement.view",
             "procurement.create",
@@ -671,6 +753,8 @@ ROLES = {
 
             # Replenishment: read-only access.
             "replenishment.view",
+            "replenishment.workflow.view",
+            "replenishment.approval.view",
 
             "consumption.view",
 
@@ -708,6 +792,8 @@ ROLES = {
 
             # Replenishment: read-only access.
             "replenishment.view",
+            "replenishment.workflow.view",
+            "replenishment.approval.view",
 
             "procurement.view",
             "redistribution.view",
@@ -1316,7 +1402,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                "Replenishment permissions and role assignments "
-                "verified successfully."
+                "Replenishment request and workflow permissions and "
+                "role assignments verified successfully."
             )
         )

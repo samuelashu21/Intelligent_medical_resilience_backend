@@ -10,6 +10,7 @@ from apps.medicines.models import Medicine
 from apps.replenishment.models import (
     ReplenishmentRequest,
     ReplenishmentRequestLine,
+    ReplenishmentApproval,
 )
 
 from apps.inventory.stock_policy_services import (
@@ -213,13 +214,20 @@ def generate_policy_replenishment_request(
 
 @transaction.atomic
 def submit_replenishment_request(request_id, user):
+    from apps.replenishment.approval_services import (
+        initialize_approval_workflow,
+    )
+
     request = ReplenishmentRequest.objects.select_for_update().get(
         pk=request_id
     )
 
-    if request.status != ReplenishmentRequest.Status.DRAFT:
+    if request.status not in [
+        ReplenishmentRequest.Status.DRAFT,
+        ReplenishmentRequest.Status.REVISION_REQUESTED,
+    ]:
         raise ValidationError(
-            "Only draft requests can be submitted."
+            "Only draft or revision-requested requests can be submitted."
         )
 
     if request.requested_by_id != user.pk:
@@ -232,8 +240,25 @@ def submit_replenishment_request(request_id, user):
             "A request must contain at least one medicine."
         )
 
+    # Remove old unfinished stages when a revised request is resubmitted.
+    if request.status == ReplenishmentRequest.Status.REVISION_REQUESTED:
+        if request.approval_stages.filter(
+            status=ReplenishmentApproval.Status.PENDING
+        ).exists():
+            raise ValidationError(
+                "Cannot resubmit while approval stages remain pending."
+            )
+
+        # Preserve completed approval history. A production workflow
+        # should create a new approval cycle rather than delete history.
+        raise ValidationError(
+            "Revision resubmission requires a new approval cycle. "
+            "This will be implemented in Section 22.10."
+        )
+
     request.status = ReplenishmentRequest.Status.SUBMITTED
     request.submitted_at = timezone.now()
+
     request.save(
         update_fields=[
             "status",
@@ -241,6 +266,8 @@ def submit_replenishment_request(request_id, user):
             "updated_at",
         ]
     )
+
+    initialize_approval_workflow(request)
 
     return request
 

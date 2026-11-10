@@ -3,6 +3,10 @@ from django.contrib import admin
 from apps.replenishment.models import (
     ReplenishmentRequest,
     ReplenishmentRequestLine,
+    ApprovalDecision,
+    ApprovalWorkflow,
+    ApprovalWorkflowStage,
+    ReplenishmentApproval,
 )
 
 
@@ -97,3 +101,118 @@ class ReplenishmentRequestLineAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+class ApprovalWorkflowStageInline(admin.TabularInline):
+    model = ApprovalWorkflowStage
+    extra = 1
+    ordering = ["sequence"]
+
+
+@admin.register(ApprovalWorkflow)
+class ApprovalWorkflowAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "name",
+        "organization",
+        "is_active",
+        "created_by",
+        "created_at",
+    ]
+
+    list_filter = [
+        "is_active",
+        "organization",
+    ]
+
+    search_fields = [
+        "name",
+        "organization__name",
+    ]
+
+    inlines = [
+        ApprovalWorkflowStageInline,
+    ]
+
+    readonly_fields = [
+        "id",
+        "created_at",
+        "updated_at",
+    ]
+
+
+@admin.register(ReplenishmentApproval)
+class ReplenishmentApprovalAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "request",
+        "workflow_stage",
+        "organization",
+        "status",
+        "assigned_at",
+        "due_at",
+        "decided_by",
+    ]
+
+    list_filter = [
+        "status",
+        "organization",
+        "workflow_stage",
+    ]
+
+    search_fields = [
+        "request__request_number",
+        "organization__name",
+        "workflow_stage__name",
+    ]
+
+    readonly_fields = [
+        "id",
+        "assigned_at",
+        "completed_at",
+        "decided_by",
+    ]
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(ApprovalDecision)
+class ApprovalDecisionAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "approval",
+        "decided_by",
+        "decision",
+        "approved_at",
+    ]
+
+    list_filter = [
+        "decision",
+        "approved_at",
+    ]
+
+    search_fields = [
+        "approval__request__request_number",
+        "decided_by__email",
+        "comments",
+    ]
+
+    readonly_fields = [
+        "id",
+        "approval",
+        "decided_by",
+        "decision",
+        "comments",
+        "approved_at",
+        "metadata",
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False    

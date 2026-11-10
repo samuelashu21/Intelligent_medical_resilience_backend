@@ -4,17 +4,22 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
+from django.db.models import F
 from django.utils import timezone
 
 
 class ReplenishmentRequest(models.Model):
 
     class Status(models.TextChoices):
-        DRAFT = "DRAFT", "Draft"
-        SUBMITTED = "SUBMITTED", "Submitted"
-        APPROVED = "APPROVED", "Approved"
-        REJECTED = "REJECTED", "Rejected"
-        CANCELLED = "CANCELLED", "Cancelled"
+     DRAFT = "DRAFT", "Draft"
+     SUBMITTED = "SUBMITTED", "Submitted"
+     APPROVED = "APPROVED", "Approved"
+     REJECTED = "REJECTED", "Rejected"
+     CANCELLED = "CANCELLED", "Cancelled"
+     REVISION_REQUESTED = (
+        "REVISION_REQUESTED",
+        "Revision Requested",
+    )
 
     class Priority(models.TextChoices):
         LOW = "LOW", "Low"
@@ -363,3 +368,289 @@ class ReplenishmentRequestLine(models.Model):
             f"{self.request.request_number} - "
             f"{self.medicine.generic_name}"
         )
+
+
+class ApprovalWorkflow(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    name = models.CharField(max_length=150)
+
+    organization = models.ForeignKey(
+        "organizations.Organization",
+        on_delete=models.PROTECT,
+        related_name="approval_workflows",
+    )
+
+    description = models.TextField(blank=True)
+
+    is_active = models.BooleanField(default=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="created_approval_workflows",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "name"],
+                name="unique_approval_workflow_name",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.organization.name} - {self.name}"
+
+
+class ApprovalWorkflowStage(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    workflow = models.ForeignKey(
+        ApprovalWorkflow,
+        on_delete=models.PROTECT,
+        related_name="stages",
+    )
+
+    sequence = models.PositiveSmallIntegerField()
+
+    name = models.CharField(max_length=120)
+
+    organization_type_code = models.CharField(
+        max_length=50,
+        help_text=(
+            "Organization unit type code required for this stage."
+        ),
+    )
+
+    required_role_code = models.CharField(
+        max_length=50,
+        help_text="RBAC role code required to approve this stage.",
+    )
+
+    required_permission_code = models.CharField(
+        max_length=100,
+        default="replenishment.approve",
+    )
+
+    minimum_priority = models.CharField(
+        max_length=20,
+        choices=ReplenishmentRequest.Priority.choices,
+        default=ReplenishmentRequest.Priority.LOW,
+    )
+
+    allow_revision = models.BooleanField(default=True)
+
+    allow_partial_approval = models.BooleanField(default=True)
+
+    is_final_stage = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["sequence"]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["workflow", "sequence"],
+                name="unique_workflow_stage_sequence",
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.workflow.name} - "
+            f"{self.sequence} - {self.name}"
+        )
+
+
+class ReplenishmentApproval(models.Model):
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+        REVISION_REQUESTED = (
+            "REVISION_REQUESTED",
+            "Revision Requested",
+        )
+        SKIPPED = "SKIPPED", "Skipped"
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    request = models.ForeignKey(
+        ReplenishmentRequest,
+        on_delete=models.PROTECT,
+        related_name="approval_stages",
+    )
+
+    workflow_stage = models.ForeignKey(
+        ApprovalWorkflowStage,
+        on_delete=models.PROTECT,
+        related_name="request_approvals",
+    )
+
+    organization = models.ForeignKey(
+        "organizations.Organization",
+        on_delete=models.PROTECT,
+        related_name="replenishment_approvals",
+    )
+
+    status = models.CharField(
+        max_length=30,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+
+    assigned_at = models.DateTimeField(default=timezone.now)
+
+    due_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="replenishment_stage_decisions",
+    )
+
+    cycle_number = models.PositiveSmallIntegerField(
+    default=1,
+     )
+    
+    escalation_level = models.PositiveSmallIntegerField(
+        default=0,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = [
+            "workflow_stage__sequence",
+        ]
+
+        models.UniqueConstraint(
+         fields=[
+          "request",
+          "workflow_stage",
+          "cycle_number",
+         ],
+         name="unique_request_approval_cycle_stage",
+         )
+
+        indexes = [
+            models.Index(
+                fields=["organization", "status"],
+                name="replen_appr_org_status_idx",
+            ),
+            models.Index(
+                fields=["status", "due_at"],
+                name="replen_appr_due_status_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.request.request_number} - "
+            f"{self.workflow_stage.name}"
+        )
+
+
+class ApprovalDecision(models.Model):
+
+    class Decision(models.TextChoices):
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+        REVISION_REQUESTED = (
+            "REVISION_REQUESTED",
+            "Revision Requested",
+        )
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    approval = models.ForeignKey(
+        ReplenishmentApproval,
+        on_delete=models.PROTECT,
+        related_name="decisions",
+    )
+
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="replenishment_approval_decisions",
+    )
+
+    decision = models.CharField(
+        max_length=30,
+        choices=Decision.choices,
+    )
+
+    comments = models.TextField()
+
+    approved_at = models.DateTimeField(
+        default=timezone.now,
+    )
+
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["approved_at"]
+
+        indexes = [
+            models.Index(
+                fields=["decided_by", "approved_at"],
+                name="replen_decision_user_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.approval} - "
+            f"{self.decision}"
+        )
+
+    def save(self, *args, **kwargs):
+        if self.pk and ApprovalDecision.objects.filter(
+            pk=self.pk
+        ).exists():
+            raise ValidationError(
+                "Approval decisions cannot be modified."
+            )
+
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError(
+            "Approval decisions cannot be deleted."
+        )                

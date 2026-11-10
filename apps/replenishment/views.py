@@ -60,7 +60,8 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
 
         if self.action == "approve":
             return "replenishment.approve"
-
+        if self.action == "revise":
+            return "replenishment.create"
         if self.action == "reject":
             return "replenishment.approve"
 
@@ -161,6 +162,67 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
 
         self.created_request = request
 
+
+    @action(detail=True, methods=["patch"])
+    def revise(self, request, pk=None):
+
+        replenishment_request = self.get_object()
+
+        if (
+            replenishment_request.requested_by_id
+            != request.user.pk
+        ):
+            raise PermissionDenied(
+                "Only the original requester can revise this request."
+            )
+
+        if (
+            replenishment_request.status
+            != ReplenishmentRequest.Status.REVISION_REQUESTED
+        ):
+            raise ValidationError(
+                "Only revision-requested requests can be edited."
+            )
+
+        allowed_fields = {
+            "justification",
+            "notes",
+        }
+
+        unexpected = set(request.data.keys()) - allowed_fields
+
+        if unexpected:
+            raise ValidationError({
+                "detail": (
+                    "Only justification and notes can be edited "
+                    "through this endpoint. Medicine lines require "
+                    "the dedicated line revision workflow."
+                )
+            })
+
+        if "justification" in request.data:
+            replenishment_request.justification = (
+                request.data["justification"]
+            )
+
+        if "notes" in request.data:
+            replenishment_request.notes = request.data["notes"]
+
+        replenishment_request.save(
+            update_fields=[
+                "justification",
+                "notes",
+                "updated_at",
+            ]
+        )
+
+        return Response(
+            ReplenishmentRequestSerializer(
+                replenishment_request
+            ).data
+        )
+
+    
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -207,38 +269,17 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
-        replenishment_request = self.get_object()
-
-        if (
-            not request.user.is_superuser
-            and not user_has_permission(
-                request.user,
-                "replenishment.approve",
-                facility=replenishment_request.facility,
-            )
-        ):
-            raise PermissionDenied(
-                "You cannot approve this request."
-            )
-
-        serializer = ReplenishmentApprovalSerializer(
-            data=request.data
-        )
-        serializer.is_valid(raise_exception=True)
-
-        try:
-            result = approve_replenishment_request(
-                replenishment_request.pk,
-                request.user,
-                serializer.validated_data.get(
-                    "approved_quantities"
-                ),
-            )
-        except DjangoValidationError as exc:
-            raise ValidationError(exc.messages)
-
         return Response(
-            self.get_serializer(result).data
+            {
+                "detail": (
+                    "Direct request approval is disabled. "
+                    "Use the configured approval-stage workflow."
+                ),
+                "approval_endpoint": (
+                    "/api/v1/replenishment/approvals/stages/"
+                ),
+            },
+            status=status.HTTP_409_CONFLICT,
         )
 
     @action(detail=True, methods=["post"])
