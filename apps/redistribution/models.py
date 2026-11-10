@@ -1,3 +1,6 @@
-from django.db import models
+from apps.redistribution.recommendation_models import (
+    RedistributionRecommendation,
+    RecommendationStatus,
+    RecommendationPriority,
+)
 
-# Create your models here.

@@ -1,6 +1,6 @@
-
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import F, Q
 
 from apps.accounts.models import Role, AccessPermission
 
@@ -202,6 +202,40 @@ PROCUREMENT_PERMISSIONS = [
 
 
 # ==========================================================
+# REDISTRIBUTION RECOMMENDATION PERMISSION CATALOG
+# ==========================================================
+
+REDISTRIBUTION_RECOMMENDATION_PERMISSIONS = [
+    {
+        "code": "redistribution.recommendation.view",
+        "name": "View Redistribution Recommendations",
+        "module": "redistribution",
+        "description": (
+            "View stock redistribution recommendations within "
+            "authorized scope."
+        ),
+    },
+    {
+        "code": "redistribution.recommendation.generate",
+        "name": "Generate Redistribution Recommendations",
+        "module": "redistribution",
+        "description": (
+            "Generate demand-aware and expiry-aware redistribution "
+            "recommendations."
+        ),
+    },
+    {
+        "code": "redistribution.recommendation.review",
+        "name": "Review Redistribution Recommendations",
+        "module": "redistribution",
+        "description": (
+            "Accept, reject, or defer redistribution recommendations."
+        ),
+    },
+]
+
+
+# ==========================================================
 # PERMISSION DESCRIPTIONS
 # ==========================================================
 
@@ -224,7 +258,6 @@ PERMISSION_DESCRIPTIONS = {
     "inventory.visibility.view": (
         "View eligible medicine availability across authorized facilities."
     ),
-
     "inventory.policy.view": (
         "View minimum, maximum and reorder stock policies."
     ),
@@ -238,7 +271,6 @@ PERMISSION_DESCRIPTIONS = {
         "Manage stock policy lifecycle, including activation "
         "and deactivation."
     ),
-
     "consumption.view": (
         "View facility and medicine consumption records."
     ),
@@ -251,7 +283,6 @@ PERMISSION_DESCRIPTIONS = {
     "consumption.approve": (
         "Review and approve submitted consumption reports."
     ),
-
     "replenishment.view": (
         "View replenishment requests within authorized scope."
     ),
@@ -331,6 +362,17 @@ PROCUREMENT_PERMISSION_CODES = {
     "order_approve": "procurement.order.approve",
     "order_send": "procurement.order.send",
     "order_acknowledge": "procurement.order.acknowledge",
+}
+
+
+# ==========================================================
+# REDISTRIBUTION RECOMMENDATION PERMISSION DEFINITIONS
+# ==========================================================
+
+REDISTRIBUTION_RECOMMENDATION_PERMISSION_CODES = {
+    "view": "redistribution.recommendation.view",
+    "generate": "redistribution.recommendation.generate",
+    "review": "redistribution.recommendation.review",
 }
 
 
@@ -458,7 +500,6 @@ PROCUREMENT_ROLE_ASSIGNMENTS = {
         "procurement.quotation.view",
         "procurement.order.view",
     ],
-
     # Exactly 11 granular permissions.
     "SUPPLY_CHAIN_OFFICER": [
         "procurement.requisition.view",
@@ -475,7 +516,6 @@ PROCUREMENT_ROLE_ASSIGNMENTS = {
         "procurement.order.submit",
         "procurement.order.send",
     ],
-
     "DATA_ANALYST": [
         "procurement.requisition.view",
         "procurement.quotation.view",
@@ -485,6 +525,52 @@ PROCUREMENT_ROLE_ASSIGNMENTS = {
         "procurement.requisition.view",
         "procurement.quotation.view",
         "procurement.order.view",
+    ],
+}
+
+
+# ==========================================================
+# REDISTRIBUTION RECOMMENDATION ROLE ASSIGNMENTS
+# ==========================================================
+
+REDISTRIBUTION_RECOMMENDATION_ROLE_ASSIGNMENTS = {
+    "MINISTRY_ADMIN": [
+        "redistribution.recommendation.view",
+        "redistribution.recommendation.generate",
+        "redistribution.recommendation.review",
+    ],
+    "REGIONAL_ADMIN": [
+        "redistribution.recommendation.view",
+        "redistribution.recommendation.generate",
+        "redistribution.recommendation.review",
+    ],
+    "DISTRICT_OFFICER": [
+        "redistribution.recommendation.view",
+        "redistribution.recommendation.generate",
+        "redistribution.recommendation.review",
+    ],
+    "DISTRICT_PHARMACIST": [
+        "redistribution.recommendation.view",
+        "redistribution.recommendation.generate",
+        "redistribution.recommendation.review",
+    ],
+    "FACILITY_ADMIN": [
+        "redistribution.recommendation.view",
+        "redistribution.recommendation.review",
+    ],
+    "FACILITY_PHARMACIST": [
+        "redistribution.recommendation.view",
+    ],
+    "SUPPLY_CHAIN_OFFICER": [
+        "redistribution.recommendation.view",
+        "redistribution.recommendation.generate",
+        "redistribution.recommendation.review",
+    ],
+    "DATA_ANALYST": [
+        "redistribution.recommendation.view",
+    ],
+    "AUDITOR": [
+        "redistribution.recommendation.view",
     ],
 }
 
@@ -860,14 +946,6 @@ ROLES = {
 # APPLY PROCUREMENT ROLE ASSIGNMENTS
 # ==========================================================
 
-# The procurement assignment policy is the source of truth.
-# Add the expected granular procurement permissions to each
-# role before validation and database synchronization.
-#
-# Existing role permissions are preserved.
-# Existing general procurement permissions are also preserved.
-# SUPER_ADMIN continues to receive every permission through "*".
-
 for role_code, procurement_permissions in (
     PROCUREMENT_ROLE_ASSIGNMENTS.items()
 ):
@@ -880,6 +958,27 @@ for role_code, procurement_permissions in (
 
     if role_permissions != ["*"]:
         for permission_code in procurement_permissions:
+            if permission_code not in role_permissions:
+                role_permissions.append(permission_code)
+
+
+# ==========================================================
+# APPLY REDISTRIBUTION RECOMMENDATION ROLE ASSIGNMENTS
+# ==========================================================
+
+for role_code, recommendation_permissions in (
+    REDISTRIBUTION_RECOMMENDATION_ROLE_ASSIGNMENTS.items()
+):
+    if role_code not in ROLES:
+        raise ValueError(
+            "Redistribution recommendation role "
+            f"'{role_code}' does not exist in ROLES."
+        )
+
+    role_permissions = ROLES[role_code]["permissions"]
+
+    if role_permissions != ["*"]:
+        for permission_code in recommendation_permissions:
             if permission_code not in role_permissions:
                 role_permissions.append(permission_code)
 
@@ -912,15 +1011,6 @@ INVENTORY_VISIBILITY_PERMISSION = "inventory.visibility.view"
 # ==========================================================
 # INTER-FACILITY STOCK VISIBILITY ROLE ASSIGNMENTS
 # ==========================================================
-
-# Every non-Super-Admin system role receives permission to
-# access the inter-facility stock visibility feature.
-#
-# Actual facility-level data access must still be restricted
-# by get_user_accessible_facility_ids() and the user's scope.
-#
-# SUPER_ADMIN is intentionally omitted because it receives
-# every permission through ["*"].
 
 INVENTORY_VISIBILITY_ROLE_ASSIGNMENTS = {
     "MINISTRY_ADMIN": [
@@ -1123,6 +1213,48 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
+        # 2A. CREATE OR UPDATE REDISTRIBUTION RECOMMENDATION
+        #     PERMISSIONS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Seeding redistribution recommendation permissions..."
+            )
+        )
+
+        for definition in REDISTRIBUTION_RECOMMENDATION_PERMISSIONS:
+
+            code = definition["code"]
+
+            defaults = {
+                "name": definition["name"],
+                "module": definition["module"],
+                "description": definition["description"],
+                "is_active": True,
+            }
+
+            permission, created = (
+                AccessPermission.objects.update_or_create(
+                    code=code,
+                    defaults=defaults,
+                )
+            )
+
+            permission_map[code] = permission
+
+            if created:
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"Created permission: {code}"
+                    )
+                )
+            else:
+                self.stdout.write(
+                    f"Updated permission: {code}"
+                )
+
+        # --------------------------------------------------
         # 3. VALIDATE REQUIRED INVENTORY PERMISSION
         # --------------------------------------------------
 
@@ -1156,6 +1288,33 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
+        # 3B. VALIDATE REDISTRIBUTION RECOMMENDATION
+        #     PERMISSIONS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Validating redistribution recommendation permissions..."
+            )
+        )
+
+        for permission_code in (
+            REDISTRIBUTION_RECOMMENDATION_PERMISSION_CODES.values()
+        ):
+            permission = permission_map.get(permission_code)
+
+            if permission is None:
+                raise ValueError(
+                    "Required redistribution recommendation permission "
+                    f"'{permission_code}' is missing."
+                )
+
+            if not permission.is_active:
+                raise ValueError(
+                    f"Permission '{permission_code}' must be active."
+                )
+
+        # --------------------------------------------------
         # 4. VALIDATE STOCK POLICY PERMISSIONS
         # --------------------------------------------------
 
@@ -1170,7 +1329,7 @@ class Command(BaseCommand):
         ):
             if permission_code not in permission_map:
                 raise ValueError(
-                    f"Required stock policy permission "
+                    "Required stock policy permission "
                     f"'{permission_code}' is missing."
                 )
 
@@ -1189,7 +1348,7 @@ class Command(BaseCommand):
         ):
             if permission_code not in permission_map:
                 raise ValueError(
-                    f"Required replenishment permission "
+                    "Required replenishment permission "
                     f"'{permission_code}' is missing."
                 )
 
@@ -1207,7 +1366,7 @@ class Command(BaseCommand):
 
             if permission_code not in permission_map:
                 raise ValueError(
-                    f"Required procurement permission "
+                    "Required procurement permission "
                     f"'{permission_code}' is missing."
                 )
 
@@ -1256,6 +1415,51 @@ class Command(BaseCommand):
                     f"role assignment policy. "
                     f"Expected: {sorted(expected_permissions)}. "
                     f"Found: {sorted(actual_visibility_permissions)}."
+                )
+
+        # --------------------------------------------------
+        # 6B. VALIDATE REDISTRIBUTION RECOMMENDATION
+        #     ROLE ASSIGNMENTS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Validating redistribution recommendation role assignments..."
+            )
+        )
+
+        recommendation_permission_set = set(
+            REDISTRIBUTION_RECOMMENDATION_PERMISSION_CODES.values()
+        )
+
+        for role_code, expected_permissions in (
+            REDISTRIBUTION_RECOMMENDATION_ROLE_ASSIGNMENTS.items()
+        ):
+
+            if role_code not in ROLES:
+                raise ValueError(
+                    "Redistribution recommendation role "
+                    f"'{role_code}' does not exist in ROLES."
+                )
+
+            actual_permissions = set(
+                ROLES[role_code]["permissions"]
+            )
+
+            expected_permissions = set(expected_permissions)
+
+            actual_recommendation_permissions = (
+                actual_permissions
+                & recommendation_permission_set
+            )
+
+            if actual_recommendation_permissions != expected_permissions:
+                raise ValueError(
+                    "Redistribution recommendation permissions for "
+                    f"role '{role_code}' do not match the configured "
+                    f"role assignment policy. "
+                    f"Expected: {sorted(expected_permissions)}. "
+                    f"Found: {sorted(actual_recommendation_permissions)}."
                 )
 
         # --------------------------------------------------
@@ -1569,6 +1773,79 @@ class Command(BaseCommand):
         )
 
         # --------------------------------------------------
+        # 13C. VERIFY REDISTRIBUTION RECOMMENDATION ASSIGNMENTS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying redistribution recommendation role assignments..."
+            )
+        )
+
+        for role_code, expected_permissions in (
+            REDISTRIBUTION_RECOMMENDATION_ROLE_ASSIGNMENTS.items()
+        ):
+
+            role = Role.objects.get(code=role_code)
+
+            assigned_codes = set(
+                role.permissions.filter(
+                    code__in=recommendation_permission_set
+                ).values_list(
+                    "code",
+                    flat=True,
+                )
+            )
+
+            expected_codes = set(expected_permissions)
+
+            if assigned_codes != expected_codes:
+                raise ValueError(
+                    "Redistribution recommendation permission "
+                    f"verification failed for role '{role_code}'. "
+                    f"Expected: {sorted(expected_codes)}. "
+                    f"Found: {sorted(assigned_codes)}."
+                )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{role_code}: redistribution recommendation "
+                    "permissions verified."
+                )
+            )
+
+        # --------------------------------------------------
+        # 13D. VERIFY SUPER ADMIN RECOMMENDATION PERMISSIONS
+        # --------------------------------------------------
+
+        super_admin_recommendation_codes = set(
+            super_admin_role.permissions.filter(
+                code__in=recommendation_permission_set
+            ).values_list(
+                "code",
+                flat=True,
+            )
+        )
+
+        if (
+            super_admin_recommendation_codes
+            != recommendation_permission_set
+        ):
+            raise ValueError(
+                "SUPER_ADMIN is missing one or more redistribution "
+                "recommendation permissions. "
+                f"Expected: {sorted(recommendation_permission_set)}. "
+                f"Found: {sorted(super_admin_recommendation_codes)}."
+            )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "SUPER_ADMIN: all redistribution recommendation "
+                "permissions verified."
+            )
+        )
+
+        # --------------------------------------------------
         # 14. VERIFY STOCK POLICY PERMISSION ASSIGNMENTS
         # --------------------------------------------------
 
@@ -1761,8 +2038,44 @@ class Command(BaseCommand):
                 or not permission.is_active
             ):
                 raise ValueError(
-                    f"Procurement permission metadata verification "
+                    "Procurement permission metadata verification "
                     f"failed for '{definition['code']}'."
+                )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{permission.code} | "
+                    f"{permission.name} | "
+                    f"Module: {permission.module} | "
+                    f"Active: {permission.is_active}"
+                )
+            )
+
+        # --------------------------------------------------
+        # 19A. VERIFY REDISTRIBUTION RECOMMENDATION METADATA
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying redistribution recommendation permission metadata..."
+            )
+        )
+
+        for definition in REDISTRIBUTION_RECOMMENDATION_PERMISSIONS:
+
+            permission = permission_map[definition["code"]]
+            permission.refresh_from_db()
+
+            if (
+                permission.code != definition["code"]
+                or permission.name != definition["name"]
+                or permission.module != "redistribution"
+                or permission.description != definition["description"]
+                or not permission.is_active
+            ):
+                raise ValueError(
+                    "Redistribution recommendation permission metadata "
+                    f"verification failed for '{definition['code']}'."
                 )
 
             self.stdout.write(
@@ -1916,5 +2229,12 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 "Supply Chain Officer has exactly 11 "
                 "granular procurement permissions."
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Redistribution recommendation permissions and "
+                "role assignments verified successfully."
             )
         )
