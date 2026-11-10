@@ -324,6 +324,88 @@ REDISTRIBUTION_TRANSFER_PERMISSIONS = [
 
 
 # ==========================================================
+# LOGISTICS PERMISSION CATALOG
+# ==========================================================
+
+LOGISTICS_PERMISSIONS = [
+    {
+        "code": "logistics.shipment.view",
+        "name": "View Shipments",
+        "module": "logistics",
+        "description": (
+            "View shipments within authorized organizational scope."
+        ),
+    },
+    {
+        "code": "logistics.shipment.create",
+        "name": "Create Shipments",
+        "module": "logistics",
+        "description": "Create shipments for reserved transfers.",
+    },
+    {
+        "code": "logistics.shipment.manage",
+        "name": "Manage Shipments",
+        "module": "logistics",
+        "description": "Prepare shipments for dispatch.",
+    },
+    {
+        "code": "logistics.shipment.dispatch",
+        "name": "Dispatch Shipments",
+        "module": "logistics",
+        "description": "Authorize physical shipment dispatch.",
+    },
+    {
+        "code": "logistics.shipment.track",
+        "name": "Track Shipments",
+        "module": "logistics",
+        "description": "Record shipment tracking events and delays.",
+    },
+    {
+        "code": "logistics.shipment.exception.manage",
+        "name": "Manage Shipment Exceptions",
+        "module": "logistics",
+        "description": "Report and resolve shipment exceptions.",
+    },
+    {
+        "code": "logistics.shipment.deliver",
+        "name": "Report Shipment Delivery",
+        "module": "logistics",
+        "description": "Record shipment delivery status.",
+    },
+    {
+        "code": "logistics.shipment.document.manage",
+        "name": "Manage Shipment Documents",
+        "module": "logistics",
+        "description": "Upload and manage shipment documents.",
+    },
+    {
+        "code": "logistics.transporter.view",
+        "name": "View Transporters",
+        "module": "logistics",
+        "description": "View registered transport providers.",
+    },
+    {
+        "code": "logistics.transporter.manage",
+        "name": "Manage Transporters",
+        "module": "logistics",
+        "description": "Register and maintain transport providers.",
+    },
+    {
+        "code": "logistics.vehicle.view",
+        "name": "View Vehicles",
+        "module": "logistics",
+        "description": "View transport vehicles.",
+    },
+    {
+        "code": "logistics.vehicle.manage",
+        "name": "Manage Vehicles",
+        "module": "logistics",
+        "description": "Register and maintain transport vehicles.",
+    },
+]
+
+
+# ==========================================================
 # PERMISSION DESCRIPTIONS
 # ==========================================================
 
@@ -484,6 +566,26 @@ REDISTRIBUTION_TRANSFER_PERMISSION_CODES = {
     "approve": "redistribution.transfer.approve",
     "cancel": "redistribution.transfer.cancel",
     "manage_policy": "redistribution.transfer.policy.manage",
+}
+
+
+# ==========================================================
+# LOGISTICS PERMISSION DEFINITIONS
+# ==========================================================
+
+LOGISTICS_PERMISSION_CODES = {
+    "shipment_view": "logistics.shipment.view",
+    "shipment_create": "logistics.shipment.create",
+    "shipment_manage": "logistics.shipment.manage",
+    "shipment_dispatch": "logistics.shipment.dispatch",
+    "shipment_track": "logistics.shipment.track",
+    "shipment_exception_manage": "logistics.shipment.exception.manage",
+    "shipment_deliver": "logistics.shipment.deliver",
+    "shipment_document_manage": "logistics.shipment.document.manage",
+    "transporter_view": "logistics.transporter.view",
+    "transporter_manage": "logistics.transporter.manage",
+    "vehicle_view": "logistics.vehicle.view",
+    "vehicle_manage": "logistics.vehicle.manage",
 }
 
 
@@ -806,6 +908,94 @@ REDISTRIBUTION_TRANSFER_ROLE_ASSIGNMENTS = {
 
 
 # ==========================================================
+# LOGISTICS ROLE ASSIGNMENT EXPECTATIONS
+# ==========================================================
+
+LOGISTICS_ROLE_ASSIGNMENTS = {
+    "MINISTRY_ADMIN": [
+        "logistics.shipment.view",
+        "logistics.shipment.create",
+        "logistics.shipment.manage",
+        "logistics.shipment.dispatch",
+        "logistics.shipment.track",
+        "logistics.shipment.exception.manage",
+        "logistics.shipment.deliver",
+        "logistics.shipment.document.manage",
+        "logistics.transporter.view",
+        "logistics.transporter.manage",
+        "logistics.vehicle.view",
+        "logistics.vehicle.manage",
+    ],
+    "REGIONAL_ADMIN": [
+        "logistics.shipment.view",
+        "logistics.shipment.create",
+        "logistics.shipment.manage",
+        "logistics.shipment.dispatch",
+        "logistics.shipment.track",
+        "logistics.shipment.exception.manage",
+        "logistics.shipment.deliver",
+        "logistics.shipment.document.manage",
+        "logistics.transporter.view",
+        "logistics.vehicle.view",
+    ],
+    "DISTRICT_OFFICER": [
+        "logistics.shipment.view",
+        "logistics.shipment.create",
+        "logistics.shipment.manage",
+        "logistics.shipment.dispatch",
+        "logistics.shipment.track",
+        "logistics.shipment.exception.manage",
+        "logistics.shipment.deliver",
+        "logistics.shipment.document.manage",
+        "logistics.transporter.view",
+        "logistics.vehicle.view",
+    ],
+    "DISTRICT_PHARMACIST": [
+        "logistics.shipment.view",
+        "logistics.shipment.track",
+        "logistics.shipment.exception.manage",
+        "logistics.shipment.deliver",
+    ],
+    "FACILITY_ADMIN": [
+        "logistics.shipment.view",
+        "logistics.shipment.track",
+        "logistics.shipment.exception.manage",
+        "logistics.shipment.deliver",
+    ],
+    "FACILITY_PHARMACIST": [
+        "logistics.shipment.view",
+        "logistics.shipment.track",
+        "logistics.shipment.exception.manage",
+        "logistics.shipment.deliver",
+    ],
+    "SUPPLY_CHAIN_OFFICER": [
+        "logistics.shipment.view",
+        "logistics.shipment.create",
+        "logistics.shipment.manage",
+        "logistics.shipment.dispatch",
+        "logistics.shipment.track",
+        "logistics.shipment.exception.manage",
+        "logistics.shipment.deliver",
+        "logistics.shipment.document.manage",
+        "logistics.transporter.view",
+        "logistics.transporter.manage",
+        "logistics.vehicle.view",
+        "logistics.vehicle.manage",
+    ],
+    "DATA_ANALYST": [
+        "logistics.shipment.view",
+        "logistics.transporter.view",
+        "logistics.vehicle.view",
+    ],
+    "AUDITOR": [
+        "logistics.shipment.view",
+        "logistics.transporter.view",
+        "logistics.vehicle.view",
+    ],
+}
+
+
+# ==========================================================
 # SYSTEM ROLES AND PERMISSIONS
 # ==========================================================
 
@@ -1123,6 +1313,11 @@ apply_role_assignments(
     "Redistribution transfer",
 )
 
+apply_role_assignments(
+    LOGISTICS_ROLE_ASSIGNMENTS,
+    "Logistics",
+)
+
 
 # ==========================================================
 # ROLES THAT MUST HAVE INVENTORY VIEW
@@ -1296,6 +1491,10 @@ class Command(BaseCommand):
                 "redistribution transfer",
                 REDISTRIBUTION_TRANSFER_PERMISSIONS,
             ),
+            (
+                "logistics",
+                LOGISTICS_PERMISSIONS,
+            ),
         ]
 
         for catalog_name, catalog in specialized_catalogs:
@@ -1358,6 +1557,7 @@ class Command(BaseCommand):
             "redistribution transfer": list(
                 REDISTRIBUTION_TRANSFER_PERMISSION_CODES.values()
             ),
+            "logistics": list(LOGISTICS_PERMISSION_CODES.values()),
         }
 
         for catalog_name, permission_codes in (
@@ -1447,6 +1647,11 @@ class Command(BaseCommand):
                 set(
                     REDISTRIBUTION_TRANSFER_PERMISSION_CODES.values()
                 ),
+            ),
+            (
+                "Logistics",
+                LOGISTICS_ROLE_ASSIGNMENTS,
+                set(LOGISTICS_PERMISSION_CODES.values()),
             ),
         ]
 
@@ -1610,6 +1815,11 @@ class Command(BaseCommand):
                     REDISTRIBUTION_TRANSFER_PERMISSION_CODES.values()
                 ),
             ),
+            (
+                "Logistics",
+                LOGISTICS_ROLE_ASSIGNMENTS,
+                set(LOGISTICS_PERMISSION_CODES.values()),
+            ),
         ]
 
         for policy_name, assignments, permission_set in (
@@ -1679,6 +1889,10 @@ class Command(BaseCommand):
                     REDISTRIBUTION_TRANSFER_PERMISSION_CODES.values()
                 ),
             ),
+            (
+                "Logistics",
+                set(LOGISTICS_PERMISSION_CODES.values()),
+            ),
         ]
 
         for policy_name, expected_codes in super_admin_permission_sets:
@@ -1724,6 +1938,7 @@ class Command(BaseCommand):
                 "Redistribution transfer",
                 REDISTRIBUTION_TRANSFER_PERMISSIONS,
             ),
+            ("Logistics", LOGISTICS_PERMISSIONS),
         ]
 
         for catalog_name, catalog in metadata_catalogs:
@@ -1905,7 +2120,79 @@ class Command(BaseCommand):
         )
 
         # --------------------------------------------------
-        # 16. SUCCESS MESSAGES
+        # 16. VERIFY LOGISTICS PERMISSIONS
+        # --------------------------------------------------
+
+        logistics_permission_set = set(
+            LOGISTICS_PERMISSION_CODES.values()
+        )
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying logistics permissions and role assignments..."
+            )
+        )
+
+        for role_code, expected_permissions in (
+            LOGISTICS_ROLE_ASSIGNMENTS.items()
+        ):
+            role = Role.objects.get(code=role_code)
+
+            assigned_codes = set(
+                role.permissions.filter(
+                    code__in=logistics_permission_set
+                ).values_list(
+                    "code",
+                    flat=True,
+                )
+            )
+
+            expected_codes = set(expected_permissions)
+
+            if assigned_codes != expected_codes:
+                raise ValueError(
+                    "Logistics permission verification failed "
+                    f"for '{role_code}'. "
+                    f"Expected: {sorted(expected_codes)}. "
+                    f"Found: {sorted(assigned_codes)}."
+                )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{role_code}: {len(expected_codes)} logistics "
+                    "permissions verified."
+                )
+            )
+
+        if len(logistics_permission_set) != 12:
+            raise ValueError(
+                "The logistics catalog must contain exactly 12 "
+                f"permissions. Found: {len(logistics_permission_set)}."
+            )
+
+        super_admin_logistics_codes = set(
+            super_admin_role.permissions.filter(
+                code__in=logistics_permission_set
+            ).values_list(
+                "code",
+                flat=True,
+            )
+        )
+
+        if super_admin_logistics_codes != logistics_permission_set:
+            raise ValueError(
+                "SUPER_ADMIN is missing one or more logistics permissions."
+            )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "All 12 logistics permissions verified, including "
+                "SUPER_ADMIN access."
+            )
+        )
+
+        # --------------------------------------------------
+        # 17. SUCCESS MESSAGES
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1972,6 +2259,13 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 "Redistribution transfer permissions and "
                 "role assignments verified successfully."
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Logistics permissions and role assignments "
+                "verified successfully."
             )
         )
 
