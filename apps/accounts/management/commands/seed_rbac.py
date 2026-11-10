@@ -1,10 +1,8 @@
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from apps.accounts.models import (
-    Role,
-    AccessPermission,
-)
+from apps.accounts.models import Role, AccessPermission
 
 
 # ==========================================================
@@ -19,67 +17,55 @@ PERMISSIONS = {
         ("deactivate", "Deactivate users"),
         ("assign_roles", "Assign user roles"),
     ],
-
     "organizations": [
         ("view", "View organizations"),
         ("create", "Create organizations"),
         ("update", "Update organizations"),
     ],
-
     "facilities": [
         ("view", "View facilities"),
         ("create", "Create facilities"),
         ("update", "Update facilities"),
     ],
-
     "medicines": [
         ("view", "View medicines"),
         ("create", "Create medicines"),
         ("update", "Update medicines"),
     ],
-
     "inventory": [
         ("view", "View Inventory"),
         ("receive", "Receive stock"),
         ("issue", "Issue stock"),
         ("adjust", "Adjust stock"),
         ("reconcile", "Reconcile Inventory"),
-
-        # Stock policy permissions
         ("policy.view", "View Stock Policies"),
         ("policy.create", "Create Stock Policies"),
         ("policy.update", "Update Stock Policies"),
         ("policy.manage", "Activate and Deactivate Stock Policies"),
     ],
-
     "consumption": [
         ("view", "View Medicine Consumption"),
         ("create", "Record Medicine Consumption"),
         ("submit", "Submit Consumption Reports"),
         ("approve", "Approve Consumption Reports"),
     ],
-
-    # Replenishment request and approval workflow permissions
     "replenishment": [
         ("view", "View Replenishment Requests"),
         ("create", "Create Replenishment Requests"),
         ("submit", "Submit Replenishment Requests"),
         ("approve", "Approve Replenishment Requests"),
         ("cancel", "Cancel Replenishment Requests"),
-
-        # Approval workflow permissions
         ("workflow.view", "View Approval Workflows"),
         ("approval.view", "View Approval Stages and Decisions"),
         ("workflow.manage", "Manage Approval Workflows"),
         ("approval.escalate", "Escalate Approval Stages"),
     ],
-
+    # Existing general procurement permissions (preserved).
     "procurement": [
         ("view", "View procurement"),
         ("create", "Create purchase requests"),
         ("approve", "Approve procurement"),
     ],
-
     "redistribution": [
         ("view", "View redistribution"),
         ("create", "Create transfer requests"),
@@ -87,44 +73,131 @@ PERMISSIONS = {
         ("dispatch", "Dispatch transfers"),
         ("receive", "Receive transfers"),
     ],
-
     "forecasting": [
         ("view", "View forecasts"),
         ("run", "Run forecasting"),
     ],
-
     "analytics": [
         ("view", "View analytics"),
         ("export", "Export analytics"),
     ],
-
     "reports": [
         ("view", "View reports"),
         ("export", "Export reports"),
     ],
-
     "audit": [
         ("view", "View audit logs"),
         ("export", "Export audit logs"),
     ],
-
     "suppliers": [
         ("view", "View suppliers"),
         ("create", "Create suppliers"),
         ("update", "Update suppliers"),
     ],
-
     "warehouses": [
         ("view", "View warehouses"),
         ("create", "Create warehouses"),
         ("update", "Update warehouses"),
     ],
-
     "notifications": [
         ("view", "View notifications"),
         ("manage", "Manage notification settings"),
     ],
 }
+
+
+# ==========================================================
+# PROCUREMENT PERMISSION CATALOG
+# ==========================================================
+
+PROCUREMENT_PERMISSIONS = [
+    {
+        "code": "procurement.requisition.view",
+        "name": "View Purchase Requisitions",
+        "module": "procurement",
+        "description": "View procurement requisitions.",
+    },
+    {
+        "code": "procurement.requisition.create",
+        "name": "Create Purchase Requisitions",
+        "module": "procurement",
+        "description": (
+            "Convert approved replenishment requests into requisitions."
+        ),
+    },
+    {
+        "code": "procurement.requisition.submit",
+        "name": "Submit Purchase Requisitions",
+        "module": "procurement",
+        "description": "Submit purchase requisitions.",
+    },
+    {
+        "code": "procurement.requisition.approve",
+        "name": "Approve Purchase Requisitions",
+        "module": "procurement",
+        "description": "Approve submitted purchase requisitions.",
+    },
+    {
+        "code": "procurement.quotation.view",
+        "name": "View Supplier Quotations",
+        "module": "procurement",
+        "description": "View supplier quotations and comparisons.",
+    },
+    {
+        "code": "procurement.quotation.create",
+        "name": "Record Supplier Quotations",
+        "module": "procurement",
+        "description": "Record supplier quotation details.",
+    },
+    {
+        "code": "procurement.quotation.select",
+        "name": "Select Supplier Quotations",
+        "module": "procurement",
+        "description": "Select a supplier quotation for procurement.",
+    },
+    {
+        "code": "procurement.order.view",
+        "name": "View Purchase Orders",
+        "module": "procurement",
+        "description": "View purchase orders.",
+    },
+    {
+        "code": "procurement.order.create",
+        "name": "Create Purchase Orders",
+        "module": "procurement",
+        "description": (
+            "Generate purchase orders from selected quotations."
+        ),
+    },
+    {
+        "code": "procurement.order.submit",
+        "name": "Submit Purchase Orders",
+        "module": "procurement",
+        "description": "Submit purchase orders for authorization.",
+    },
+    {
+        "code": "procurement.order.approve",
+        "name": "Approve Purchase Orders",
+        "module": "procurement",
+        "description": "Authorize purchase orders.",
+    },
+    {
+        "code": "procurement.order.send",
+        "name": "Send Purchase Orders",
+        "module": "procurement",
+        "description": (
+            "Dispatch approved purchase orders to suppliers."
+        ),
+    },
+    {
+        "code": "procurement.order.acknowledge",
+        "name": "Acknowledge Purchase Orders",
+        "module": "procurement",
+        "description": (
+            "Record supplier acknowledgement of purchase orders."
+        ),
+    },
+]
 
 
 # ==========================================================
@@ -135,92 +208,70 @@ PERMISSION_DESCRIPTIONS = {
     "inventory.view": (
         "View stock balances, batches and inventory reports."
     ),
-
     "inventory.receive": (
         "Receive and record incoming medicine stock."
     ),
-
     "inventory.issue": (
         "Issue medicine stock from inventory."
     ),
-
     "inventory.adjust": (
         "Adjust inventory quantities and stock balances."
     ),
-
     "inventory.reconcile": (
         "Approve and post physical stock reconciliation."
     ),
 
-    # Stock policy descriptions
     "inventory.policy.view": (
         "View minimum, maximum and reorder stock policies."
     ),
-
     "inventory.policy.create": (
         "Create organization and facility stock policies."
     ),
-
     "inventory.policy.update": (
         "Update inactive stock policies."
     ),
-
     "inventory.policy.manage": (
         "Manage stock policy lifecycle, including activation "
         "and deactivation."
     ),
 
-    # Consumption descriptions
     "consumption.view": (
         "View facility and medicine consumption records."
     ),
-
     "consumption.create": (
         "Create and update draft consumption records."
     ),
-
     "consumption.submit": (
         "Submit monthly consumption reports."
     ),
-
     "consumption.approve": (
         "Review and approve submitted consumption reports."
     ),
 
-    # Replenishment request descriptions
     "replenishment.view": (
         "View replenishment requests within authorized scope."
     ),
-
     "replenishment.create": (
         "Create manual and policy-generated replenishment requests."
     ),
-
     "replenishment.submit": (
         "Submit draft requests for approval."
     ),
-
     "replenishment.approve": (
         "Approve or reject submitted replenishment requests."
     ),
-
     "replenishment.cancel": (
         "Cancel draft or submitted replenishment requests."
     ),
-
-    # Replenishment approval workflow descriptions
     "replenishment.workflow.view": (
         "View configured replenishment approval workflows."
     ),
-
     "replenishment.approval.view": (
         "View approval stages and decision history."
     ),
-
     "replenishment.workflow.manage": (
         "Create and manage approval workflows."
     ),
-
     "replenishment.approval.escalate": (
         "Escalate overdue replenishment approvals."
     ),
@@ -249,8 +300,6 @@ REPLENISHMENT_PERMISSIONS = {
     "submit": "replenishment.submit",
     "approve": "replenishment.approve",
     "cancel": "replenishment.cancel",
-
-    # Approval workflow permissions
     "workflow_view": "replenishment.workflow.view",
     "approval_view": "replenishment.approval.view",
     "workflow_manage": "replenishment.workflow.manage",
@@ -259,14 +308,31 @@ REPLENISHMENT_PERMISSIONS = {
 
 
 # ==========================================================
-# REPLENISHMENT ROLE ASSIGNMENT EXPECTATIONS
+# PROCUREMENT PERMISSION DEFINITIONS
 # ==========================================================
 
-# Policy-based permissions are intentionally not granted globally.
-# They must be enforced by replenishment workflow/policy checks.
-#
-# Facility approval-history visibility must additionally be scoped
-# to requests owned by the current facility/user as appropriate.
+PROCUREMENT_PERMISSION_CODES = {
+    "requisition_view": "procurement.requisition.view",
+    "requisition_create": "procurement.requisition.create",
+    "requisition_submit": "procurement.requisition.submit",
+    "requisition_approve": "procurement.requisition.approve",
+
+    "quotation_view": "procurement.quotation.view",
+    "quotation_create": "procurement.quotation.create",
+    "quotation_select": "procurement.quotation.select",
+
+    "order_view": "procurement.order.view",
+    "order_create": "procurement.order.create",
+    "order_submit": "procurement.order.submit",
+    "order_approve": "procurement.order.approve",
+    "order_send": "procurement.order.send",
+    "order_acknowledge": "procurement.order.acknowledge",
+}
+
+
+# ==========================================================
+# REPLENISHMENT ROLE ASSIGNMENT EXPECTATIONS
+# ==========================================================
 
 REPLENISHMENT_ROLE_ASSIGNMENTS = {
     "MINISTRY_ADMIN": [
@@ -280,7 +346,6 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.workflow.manage",
         "replenishment.approval.escalate",
     ],
-
     "REGIONAL_ADMIN": [
         "replenishment.view",
         "replenishment.create",
@@ -289,10 +354,8 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.cancel",
         "replenishment.workflow.view",
         "replenishment.approval.view",
-        # Workflow management is policy-based.
         "replenishment.approval.escalate",
     ],
-
     "DISTRICT_OFFICER": [
         "replenishment.view",
         "replenishment.create",
@@ -303,7 +366,6 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.approval.view",
         "replenishment.approval.escalate",
     ],
-
     "DISTRICT_PHARMACIST": [
         "replenishment.view",
         "replenishment.create",
@@ -313,9 +375,6 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.workflow.view",
         "replenishment.approval.view",
     ],
-
-    # Facility roles can view approval stages only for their own requests.
-    # Enforce ownership scope in the replenishment queryset/service layer.
     "FACILITY_ADMIN": [
         "replenishment.view",
         "replenishment.create",
@@ -323,7 +382,6 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.cancel",
         "replenishment.approval.view",
     ],
-
     "FACILITY_PHARMACIST": [
         "replenishment.view",
         "replenishment.create",
@@ -331,21 +389,17 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
         "replenishment.cancel",
         "replenishment.approval.view",
     ],
-
-    # Escalation is policy-based for Supply Chain Officers.
     "SUPPLY_CHAIN_OFFICER": [
         "replenishment.view",
         "replenishment.create",
         "replenishment.workflow.view",
         "replenishment.approval.view",
     ],
-
     "DATA_ANALYST": [
         "replenishment.view",
         "replenishment.workflow.view",
         "replenishment.approval.view",
     ],
-
     "AUDITOR": [
         "replenishment.view",
         "replenishment.workflow.view",
@@ -355,24 +409,92 @@ REPLENISHMENT_ROLE_ASSIGNMENTS = {
 
 
 # ==========================================================
+# PROCUREMENT ROLE ASSIGNMENT EXPECTATIONS
+# ==========================================================
+
+PROCUREMENT_ROLE_ASSIGNMENTS = {
+    "MINISTRY_ADMIN": [
+        "procurement.requisition.view",
+        "procurement.requisition.approve",
+        "procurement.quotation.view",
+        "procurement.quotation.select",
+        "procurement.order.view",
+        "procurement.order.approve",
+    ],
+    "REGIONAL_ADMIN": [
+        "procurement.requisition.view",
+        "procurement.requisition.approve",
+        "procurement.quotation.view",
+        "procurement.quotation.select",
+        "procurement.order.view",
+        "procurement.order.approve",
+    ],
+    "DISTRICT_OFFICER": [
+        "procurement.requisition.view",
+        "procurement.requisition.create",
+        "procurement.requisition.submit",
+        "procurement.quotation.view",
+        "procurement.order.view",
+    ],
+    "DISTRICT_PHARMACIST": [
+        "procurement.requisition.view",
+        "procurement.requisition.create",
+        "procurement.quotation.view",
+        "procurement.order.view",
+    ],
+    "FACILITY_ADMIN": [
+        "procurement.requisition.view",
+        "procurement.requisition.create",
+        "procurement.requisition.submit",
+        "procurement.quotation.view",
+        "procurement.order.view",
+    ],
+    "FACILITY_PHARMACIST": [
+        "procurement.requisition.view",
+        "procurement.quotation.view",
+        "procurement.order.view",
+    ],
+
+    # Exactly 11 granular permissions.
+    "SUPPLY_CHAIN_OFFICER": [
+        "procurement.requisition.view",
+        "procurement.requisition.create",
+        "procurement.requisition.submit",
+        "procurement.requisition.approve",
+
+        "procurement.quotation.view",
+        "procurement.quotation.create",
+        "procurement.quotation.select",
+
+        "procurement.order.view",
+        "procurement.order.create",
+        "procurement.order.submit",
+        "procurement.order.send",
+    ],
+
+    "DATA_ANALYST": [
+        "procurement.requisition.view",
+        "procurement.quotation.view",
+        "procurement.order.view",
+    ],
+    "AUDITOR": [
+        "procurement.requisition.view",
+        "procurement.quotation.view",
+        "procurement.order.view",
+    ],
+}
+
+
+# ==========================================================
 # SYSTEM ROLES AND PERMISSIONS
 # ==========================================================
 
 ROLES = {
-
-    # ------------------------------------------------------
-    # SUPER ADMIN
-    # ------------------------------------------------------
-
     "SUPER_ADMIN": {
         "name": "Super Administrator",
         "description": "Full platform administration.",
         "permissions": ["*"],
     },
-
-    # ------------------------------------------------------
-    # MINISTRY ADMIN
-    # ------------------------------------------------------
 
     "MINISTRY_ADMIN": {
         "name": "Ministry of Health Administrator",
@@ -396,8 +518,6 @@ ROLES = {
             "medicines.update",
 
             "inventory.view",
-
-            # Stock policy permissions
             "inventory.policy.view",
             "inventory.policy.create",
             "inventory.policy.update",
@@ -408,14 +528,11 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
-            # Replenishment request permissions
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.approve",
             "replenishment.cancel",
-
-            # Replenishment workflow permissions
             "replenishment.workflow.view",
             "replenishment.approval.view",
             "replenishment.workflow.manage",
@@ -440,10 +557,6 @@ ROLES = {
         ],
     },
 
-    # ------------------------------------------------------
-    # REGIONAL ADMIN
-    # ------------------------------------------------------
-
     "REGIONAL_ADMIN": {
         "name": "Regional Health Bureau Administrator",
         "description": "Regional administration and monitoring.",
@@ -453,15 +566,12 @@ ROLES = {
             "users.update",
 
             "organizations.view",
-
             "facilities.view",
             "facilities.update",
 
             "medicines.view",
-
             "inventory.view",
 
-            # Stock policy permissions
             "inventory.policy.view",
             "inventory.policy.create",
             "inventory.policy.update",
@@ -472,24 +582,19 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
-            # Replenishment request permissions
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.approve",
             "replenishment.cancel",
-
-            # Replenishment workflow permissions
             "replenishment.workflow.view",
             "replenishment.approval.view",
-            # Workflow management is policy-based.
             "replenishment.approval.escalate",
 
             "redistribution.view",
             "redistribution.approve",
 
             "forecasting.view",
-
             "analytics.view",
             "analytics.export",
 
@@ -500,10 +605,6 @@ ROLES = {
         ],
     },
 
-    # ------------------------------------------------------
-    # DISTRICT OFFICER
-    # ------------------------------------------------------
-
     "DISTRICT_OFFICER": {
         "name": "District Health Officer",
         "description": "District-level health operations oversight.",
@@ -513,8 +614,6 @@ ROLES = {
             "medicines.view",
 
             "inventory.view",
-
-            # Stock policy permissions
             "inventory.policy.view",
             "inventory.policy.create",
             "inventory.policy.update",
@@ -525,14 +624,11 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
-            # Replenishment request permissions
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.approve",
             "replenishment.cancel",
-
-            # Replenishment workflow permissions
             "replenishment.workflow.view",
             "replenishment.approval.view",
             "replenishment.approval.escalate",
@@ -541,17 +637,12 @@ ROLES = {
             "redistribution.approve",
 
             "forecasting.view",
-
             "analytics.view",
 
             "reports.view",
             "reports.export",
         ],
     },
-
-    # ------------------------------------------------------
-    # DISTRICT PHARMACIST
-    # ------------------------------------------------------
 
     "DISTRICT_PHARMACIST": {
         "name": "District Pharmacist",
@@ -563,8 +654,6 @@ ROLES = {
             "medicines.view",
 
             "inventory.view",
-
-            # Stock policy permissions
             "inventory.policy.view",
             "inventory.policy.create",
             "inventory.policy.update",
@@ -575,14 +664,11 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
-            # Replenishment request permissions
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.approve",
             "replenishment.cancel",
-
-            # Replenishment workflow permissions
             "replenishment.workflow.view",
             "replenishment.approval.view",
 
@@ -591,16 +677,11 @@ ROLES = {
             "redistribution.approve",
 
             "forecasting.view",
-
             "analytics.view",
 
             "reports.view",
         ],
     },
-
-    # ------------------------------------------------------
-    # FACILITY ADMIN
-    # ------------------------------------------------------
 
     "FACILITY_ADMIN": {
         "name": "Facility Administrator",
@@ -614,9 +695,6 @@ ROLES = {
             "medicines.view",
 
             "inventory.view",
-
-            # Stock policy permissions
-            # Create, update and manage are policy-based.
             "inventory.policy.view",
 
             "consumption.view",
@@ -624,14 +702,10 @@ ROLES = {
             "consumption.submit",
             "consumption.approve",
 
-            # Replenishment request permissions
-            # Approval is policy-based.
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.cancel",
-
-            # Approval-stage access is limited to own requests.
             "replenishment.approval.view",
 
             "redistribution.view",
@@ -640,10 +714,6 @@ ROLES = {
             "reports.view",
         ],
     },
-
-    # ------------------------------------------------------
-    # FACILITY PHARMACIST
-    # ------------------------------------------------------
 
     "FACILITY_PHARMACIST": {
         "name": "Facility Pharmacist",
@@ -658,21 +728,16 @@ ROLES = {
             "inventory.adjust",
             "inventory.reconcile",
 
-            # Stock policy permissions
-            # Read-only access.
             "inventory.policy.view",
 
             "consumption.view",
             "consumption.create",
             "consumption.submit",
 
-            # Replenishment request permissions
             "replenishment.view",
             "replenishment.create",
             "replenishment.submit",
             "replenishment.cancel",
-
-            # Approval-stage access is limited to own requests.
             "replenishment.approval.view",
 
             "redistribution.view",
@@ -680,14 +745,9 @@ ROLES = {
             "redistribution.receive",
 
             "forecasting.view",
-
             "reports.view",
         ],
     },
-
-    # ------------------------------------------------------
-    # SUPPLY CHAIN OFFICER
-    # ------------------------------------------------------
 
     "SUPPLY_CHAIN_OFFICER": {
         "name": "Supply Chain Officer",
@@ -705,22 +765,19 @@ ROLES = {
             "inventory.receive",
             "inventory.issue",
 
-            # Stock policy permissions
             "inventory.policy.view",
             "inventory.policy.create",
             "inventory.policy.update",
-            # Manage is policy-based and is not granted globally.
 
             "consumption.view",
             "consumption.create",
 
-            # Replenishment permissions
-            # Submit, approve, cancel and escalation are policy-based.
             "replenishment.view",
             "replenishment.create",
             "replenishment.workflow.view",
             "replenishment.approval.view",
 
+            # Existing general procurement permissions preserved.
             "procurement.view",
             "procurement.create",
 
@@ -734,10 +791,6 @@ ROLES = {
         ],
     },
 
-    # ------------------------------------------------------
-    # DATA ANALYST
-    # ------------------------------------------------------
-
     "DATA_ANALYST": {
         "name": "Data Analyst",
         "description": "Analytics, forecasting and reporting.",
@@ -746,12 +799,8 @@ ROLES = {
             "facilities.view",
 
             "inventory.view",
-
-            # Stock policy permissions
-            # Read-only access.
             "inventory.policy.view",
 
-            # Replenishment: read-only access.
             "replenishment.view",
             "replenishment.workflow.view",
             "replenishment.approval.view",
@@ -769,10 +818,6 @@ ROLES = {
         ],
     },
 
-    # ------------------------------------------------------
-    # AUDITOR
-    # ------------------------------------------------------
-
     "AUDITOR": {
         "name": "Auditor",
         "description": "Read-only audit and compliance access.",
@@ -783,19 +828,16 @@ ROLES = {
             "medicines.view",
 
             "inventory.view",
-
-            # Stock policy permissions
-            # Read-only access.
             "inventory.policy.view",
 
             "consumption.view",
 
-            # Replenishment: read-only access.
             "replenishment.view",
             "replenishment.workflow.view",
             "replenishment.approval.view",
 
             "procurement.view",
+
             "redistribution.view",
 
             "analytics.view",
@@ -808,6 +850,36 @@ ROLES = {
         ],
     },
 }
+
+
+# ==========================================================
+# APPLY PROCUREMENT ROLE ASSIGNMENTS
+# ==========================================================
+
+# This is the important correction.
+#
+# The procurement assignment policy is the source of truth.
+# Add the expected granular procurement permissions to each
+# role before validation and database synchronization.
+#
+# Existing role permissions are preserved.
+# Existing general procurement permissions are also preserved.
+# SUPER_ADMIN continues to receive every permission through "*".
+
+for role_code, procurement_permissions in (
+    PROCUREMENT_ROLE_ASSIGNMENTS.items()
+):
+    if role_code not in ROLES:
+        raise ValueError(
+            f"Procurement role '{role_code}' does not exist in ROLES."
+        )
+
+    role_permissions = ROLES[role_code]["permissions"]
+
+    if role_permissions != ["*"]:
+        for permission_code in procurement_permissions:
+            if permission_code not in role_permissions:
+                role_permissions.append(permission_code)
 
 
 # ==========================================================
@@ -839,46 +911,38 @@ STOCK_POLICY_ROLE_ASSIGNMENTS = {
         "inventory.policy.update",
         "inventory.policy.manage",
     ],
-
     "REGIONAL_ADMIN": [
         "inventory.policy.view",
         "inventory.policy.create",
         "inventory.policy.update",
         "inventory.policy.manage",
     ],
-
     "DISTRICT_OFFICER": [
         "inventory.policy.view",
         "inventory.policy.create",
         "inventory.policy.update",
         "inventory.policy.manage",
     ],
-
     "DISTRICT_PHARMACIST": [
         "inventory.policy.view",
         "inventory.policy.create",
         "inventory.policy.update",
         "inventory.policy.manage",
     ],
-
     "FACILITY_ADMIN": [
         "inventory.policy.view",
     ],
-
     "FACILITY_PHARMACIST": [
         "inventory.policy.view",
     ],
-
     "SUPPLY_CHAIN_OFFICER": [
         "inventory.policy.view",
         "inventory.policy.create",
         "inventory.policy.update",
     ],
-
     "DATA_ANALYST": [
         "inventory.policy.view",
     ],
-
     "AUDITOR": [
         "inventory.policy.view",
     ],
@@ -901,13 +965,11 @@ class Command(BaseCommand):
         permission_map = {}
 
         # --------------------------------------------------
-        # 1. CREATE OR UPDATE PERMISSIONS
+        # 1. CREATE OR UPDATE EXISTING PERMISSIONS
         # --------------------------------------------------
 
         self.stdout.write(
-            self.style.NOTICE(
-                "Seeding permission catalog..."
-            )
+            self.style.NOTICE("Seeding permission catalog...")
         )
 
         for module, actions in PERMISSIONS.items():
@@ -948,12 +1010,49 @@ class Command(BaseCommand):
                     )
 
         # --------------------------------------------------
-        # 2. VALIDATE REQUIRED INVENTORY PERMISSION
+        # 2. CREATE OR UPDATE PROCUREMENT PERMISSIONS
         # --------------------------------------------------
 
-        inventory_view = permission_map.get(
-            "inventory.view"
+        self.stdout.write(
+            self.style.NOTICE("Seeding procurement permissions...")
         )
+
+        for definition in PROCUREMENT_PERMISSIONS:
+
+            code = definition["code"]
+
+            defaults = {
+                "name": definition["name"],
+                "module": definition["module"],
+                "description": definition["description"],
+                "is_active": True,
+            }
+
+            permission, created = (
+                AccessPermission.objects.update_or_create(
+                    code=code,
+                    defaults=defaults,
+                )
+            )
+
+            permission_map[code] = permission
+
+            if created:
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"Created permission: {code}"
+                    )
+                )
+            else:
+                self.stdout.write(
+                    f"Updated permission: {code}"
+                )
+
+        # --------------------------------------------------
+        # 3. VALIDATE REQUIRED INVENTORY PERMISSION
+        # --------------------------------------------------
+
+        inventory_view = permission_map.get("inventory.view")
 
         if inventory_view is None:
             raise ValueError(
@@ -962,7 +1061,7 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 3. VALIDATE STOCK POLICY PERMISSIONS
+        # 4. VALIDATE STOCK POLICY PERMISSIONS
         # --------------------------------------------------
 
         self.stdout.write(
@@ -974,7 +1073,6 @@ class Command(BaseCommand):
         for permission_name, permission_code in (
             STOCK_POLICY_PERMISSIONS.items()
         ):
-
             if permission_code not in permission_map:
                 raise ValueError(
                     f"Required stock policy permission "
@@ -982,7 +1080,7 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 4. VALIDATE REPLENISHMENT PERMISSIONS
+        # 5. VALIDATE REPLENISHMENT PERMISSIONS
         # --------------------------------------------------
 
         self.stdout.write(
@@ -994,7 +1092,6 @@ class Command(BaseCommand):
         for permission_name, permission_code in (
             REPLENISHMENT_PERMISSIONS.items()
         ):
-
             if permission_code not in permission_map:
                 raise ValueError(
                     f"Required replenishment permission "
@@ -1002,7 +1099,25 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 5. VALIDATE ALL ROLE PERMISSIONS
+        # 6. VALIDATE PROCUREMENT PERMISSIONS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Validating procurement permissions..."
+            )
+        )
+
+        for permission_code in PROCUREMENT_PERMISSION_CODES.values():
+
+            if permission_code not in permission_map:
+                raise ValueError(
+                    f"Required procurement permission "
+                    f"'{permission_code}' is missing."
+                )
+
+        # --------------------------------------------------
+        # 7. VALIDATE ALL ROLE PERMISSIONS
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1025,7 +1140,7 @@ class Command(BaseCommand):
                     )
 
         # --------------------------------------------------
-        # 6. VALIDATE INVENTORY VIEW ROLE CONFIGURATION
+        # 8. VALIDATE INVENTORY VIEW ROLE CONFIGURATION
         # --------------------------------------------------
 
         for role_code in INVENTORY_VIEW_ROLES:
@@ -1048,7 +1163,7 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 7. VALIDATE STOCK POLICY ROLE CONFIGURATION
+        # 9. VALIDATE STOCK POLICY ROLE CONFIGURATION
         # --------------------------------------------------
 
         for role_code, expected_permissions in (
@@ -1075,8 +1190,6 @@ class Command(BaseCommand):
                         f"'{permission_code}'."
                     )
 
-            # Prevent additional stock policy permissions
-            # from being accidentally granted.
             actual_policy_permissions = (
                 actual_permissions
                 & set(STOCK_POLICY_PERMISSIONS.values())
@@ -1086,11 +1199,13 @@ class Command(BaseCommand):
                 raise ValueError(
                     f"Stock policy permissions for role "
                     f"'{role_code}' do not match the configured "
-                    f"role assignment policy."
+                    f"role assignment policy. "
+                    f"Expected: {sorted(expected_permissions)}. "
+                    f"Found: {sorted(actual_policy_permissions)}."
                 )
 
         # --------------------------------------------------
-        # 8. VALIDATE REPLENISHMENT ROLE CONFIGURATION
+        # 10. VALIDATE REPLENISHMENT ROLE CONFIGURATION
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1115,8 +1230,6 @@ class Command(BaseCommand):
 
             expected_permissions = set(expected_permissions)
 
-            # Enforce exact matching to ensure policy-based
-            # permissions are not granted globally.
             actual_replenishment_permissions = (
                 actual_permissions
                 & set(REPLENISHMENT_PERMISSIONS.values())
@@ -1132,13 +1245,55 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 9. CREATE OR UPDATE ROLES
+        # 11. VALIDATE PROCUREMENT ROLE CONFIGURATION
         # --------------------------------------------------
 
         self.stdout.write(
             self.style.NOTICE(
-                "Seeding system roles..."
+                "Validating procurement role assignments..."
             )
+        )
+
+        procurement_permission_set = set(
+            PROCUREMENT_PERMISSION_CODES.values()
+        )
+
+        for role_code, expected_permissions in (
+            PROCUREMENT_ROLE_ASSIGNMENTS.items()
+        ):
+
+            if role_code not in ROLES:
+                raise ValueError(
+                    f"Procurement role '{role_code}' "
+                    "does not exist in ROLES."
+                )
+
+            actual_permissions = set(
+                ROLES[role_code]["permissions"]
+            )
+
+            expected_permissions = set(expected_permissions)
+
+            actual_procurement_permissions = (
+                actual_permissions
+                & procurement_permission_set
+            )
+
+            if actual_procurement_permissions != expected_permissions:
+                raise ValueError(
+                    f"Procurement permissions for role "
+                    f"'{role_code}' do not match the configured "
+                    f"role assignment policy. "
+                    f"Expected: {sorted(expected_permissions)}. "
+                    f"Found: {sorted(actual_procurement_permissions)}."
+                )
+
+        # --------------------------------------------------
+        # 12. CREATE OR UPDATE ROLES
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE("Seeding system roles...")
         )
 
         for code, definition in ROLES.items():
@@ -1156,9 +1311,7 @@ class Command(BaseCommand):
             # SUPER_ADMIN receives every catalog permission.
             if definition["permissions"] == ["*"]:
 
-                permissions = list(
-                    permission_map.values()
-                )
+                permissions = list(permission_map.values())
 
             else:
 
@@ -1182,7 +1335,7 @@ class Command(BaseCommand):
                 )
 
         # --------------------------------------------------
-        # 10. VERIFY INVENTORY VIEW PERMISSION
+        # 13. VERIFY INVENTORY VIEW PERMISSION
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1193,9 +1346,7 @@ class Command(BaseCommand):
 
         for role_code in INVENTORY_VIEW_ROLES:
 
-            role = Role.objects.get(
-                code=role_code
-            )
+            role = Role.objects.get(code=role_code)
 
             has_permission = role.permissions.filter(
                 pk=inventory_view.pk
@@ -1214,7 +1365,7 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 11. VERIFY STOCK POLICY PERMISSION ASSIGNMENTS
+        # 14. VERIFY STOCK POLICY PERMISSION ASSIGNMENTS
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1227,9 +1378,7 @@ class Command(BaseCommand):
             STOCK_POLICY_ROLE_ASSIGNMENTS.items()
         ):
 
-            role = Role.objects.get(
-                code=role_code
-            )
+            role = Role.objects.get(code=role_code)
 
             assigned_codes = set(
                 role.permissions.filter(
@@ -1257,7 +1406,7 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 12. VERIFY STOCK POLICY PERMISSION METADATA
+        # 15. VERIFY STOCK POLICY PERMISSION METADATA
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1281,7 +1430,7 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 13. VERIFY REPLENISHMENT ROLE PERMISSION ASSIGNMENTS
+        # 16. VERIFY REPLENISHMENT ROLE PERMISSION ASSIGNMENTS
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1322,7 +1471,7 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 14. VERIFY REPLENISHMENT PERMISSION METADATA
+        # 17. VERIFY REPLENISHMENT PERMISSION METADATA
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1346,7 +1495,83 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
-        # 15. VERIFY INVENTORY VIEW PERMISSION METADATA
+        # 18. VERIFY PROCUREMENT ROLE ASSIGNMENTS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying procurement role assignments..."
+            )
+        )
+
+        for role_code, expected_permissions in (
+            PROCUREMENT_ROLE_ASSIGNMENTS.items()
+        ):
+
+            role = Role.objects.get(code=role_code)
+
+            assigned_codes = set(
+                role.permissions.filter(
+                    code__in=procurement_permission_set
+                ).values_list(
+                    "code",
+                    flat=True,
+                )
+            )
+
+            expected_codes = set(expected_permissions)
+
+            if assigned_codes != expected_codes:
+                raise ValueError(
+                    f"Procurement permission verification failed "
+                    f"for role '{role_code}'. "
+                    f"Expected: {sorted(expected_codes)}. "
+                    f"Found: {sorted(assigned_codes)}."
+                )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{role_code}: procurement permissions verified."
+                )
+            )
+
+        # --------------------------------------------------
+        # 19. VERIFY PROCUREMENT PERMISSION METADATA
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying procurement permission metadata..."
+            )
+        )
+
+        for definition in PROCUREMENT_PERMISSIONS:
+
+            permission = permission_map[definition["code"]]
+            permission.refresh_from_db()
+
+            if (
+                permission.name != definition["name"]
+                or permission.module != "procurement"
+                or permission.description != definition["description"]
+                or not permission.is_active
+            ):
+                raise ValueError(
+                    f"Procurement permission metadata verification "
+                    f"failed for '{definition['code']}'."
+                )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{permission.code} | "
+                    f"{permission.name} | "
+                    f"Module: {permission.module} | "
+                    f"Active: {permission.is_active}"
+                )
+            )
+
+        # --------------------------------------------------
+        # 20. VERIFY INVENTORY VIEW PERMISSION METADATA
         # --------------------------------------------------
 
         inventory_view.refresh_from_db()
@@ -1357,28 +1582,61 @@ class Command(BaseCommand):
             )
         )
 
-        self.stdout.write(
-            f"Code: {inventory_view.code}"
+        self.stdout.write(f"Code: {inventory_view.code}")
+        self.stdout.write(f"Name: {inventory_view.name}")
+        self.stdout.write(f"Module: {inventory_view.module}")
+        self.stdout.write(f"Description: {inventory_view.description}")
+        self.stdout.write(f"Active: {inventory_view.is_active}")
+
+        # --------------------------------------------------
+        # 21. VERIFY SUPPLY CHAIN OFFICER HAS EXACTLY 11
+        #     GRANULAR PROCUREMENT PERMISSIONS
+        # --------------------------------------------------
+
+        supply_chain_role = Role.objects.get(
+            code="SUPPLY_CHAIN_OFFICER"
         )
 
-        self.stdout.write(
-            f"Name: {inventory_view.name}"
+        supply_chain_procurement_codes = set(
+            supply_chain_role.permissions.filter(
+                code__in=procurement_permission_set
+            ).values_list(
+                "code",
+                flat=True,
+            )
         )
 
-        self.stdout.write(
-            f"Module: {inventory_view.module}"
+        expected_supply_chain_codes = set(
+            PROCUREMENT_ROLE_ASSIGNMENTS["SUPPLY_CHAIN_OFFICER"]
         )
 
-        self.stdout.write(
-            f"Description: {inventory_view.description}"
-        )
+        if (
+            supply_chain_procurement_codes
+            != expected_supply_chain_codes
+        ):
+            raise ValueError(
+                "Supply Chain Officer procurement permission "
+                "verification failed. "
+                f"Expected: {sorted(expected_supply_chain_codes)}. "
+                f"Found: {sorted(supply_chain_procurement_codes)}."
+            )
+
+        if len(supply_chain_procurement_codes) != 11:
+            raise ValueError(
+                "Supply Chain Officer must have exactly 11 "
+                "granular procurement permissions. "
+                f"Found: {len(supply_chain_procurement_codes)}."
+            )
 
         self.stdout.write(
-            f"Active: {inventory_view.is_active}"
+            self.style.SUCCESS(
+                "SUPPLY_CHAIN_OFFICER: exactly 11 granular "
+                "procurement permissions verified."
+            )
         )
 
         # --------------------------------------------------
-        # 16. SUCCESS MESSAGE
+        # 22. SUCCESS MESSAGE
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1402,7 +1660,21 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                "Replenishment request and workflow permissions and "
-                "role assignments verified successfully."
+                "Replenishment request and workflow permissions "
+                "and role assignments verified successfully."
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Procurement permissions and role assignments "
+                "verified successfully."
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Supply Chain Officer has exactly 11 "
+                "granular procurement permissions."
             )
         )
