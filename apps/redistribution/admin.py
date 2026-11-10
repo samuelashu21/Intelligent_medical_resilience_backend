@@ -13,6 +13,16 @@ from apps.redistribution.optimization_models import (
 )
 
 
+from django.contrib import admin
+
+from apps.redistribution.transfer_models import (
+    TransferRequest,
+    TransferRequestLine,
+    TransferApprovalStage,
+    TransferApprovalDecision,
+)
+
+
 @admin.register(RedistributionRecommendation)
 class RedistributionRecommendationAdmin(admin.ModelAdmin):
 
@@ -165,3 +175,131 @@ class RedistributionOptimizationAllocationAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+
+class TransferRequestLineInline(admin.TabularInline):
+    model = TransferRequestLine
+    extra = 0
+    can_delete = False
+    readonly_fields = [
+        "medicine",
+        "batch",
+        "requested_quantity",
+        "approved_quantity",
+        "reserved_quantity",
+        "unit_code",
+    ]
+
+
+class TransferApprovalDecisionInline(admin.TabularInline):
+    model = TransferApprovalDecision
+    extra = 0
+    can_delete = False
+    readonly_fields = [
+        "stage",
+        "decision",
+        "decided_by",
+        "comments",
+        "decided_at",
+    ]
+
+
+@admin.register(TransferRequest)
+class TransferRequestAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "transfer_number",
+        "donor_facility",
+        "recipient_facility",
+        "priority",
+        "status",
+        "requested_by",
+        "created_at",
+    ]
+
+    list_filter = [
+        "status",
+        "priority",
+        "source",
+        "created_at",
+    ]
+
+    search_fields = [
+        "transfer_number",
+        "donor_facility__name",
+        "recipient_facility__name",
+    ]
+
+    readonly_fields = [
+        "transfer_number",
+        "source",
+        "optimization_run",
+        "requested_by",
+        "submitted_at",
+        "approved_at",
+        "reserved_at",
+        "created_at",
+        "updated_at",
+    ]
+
+    inlines = [
+        TransferRequestLineInline,
+        TransferApprovalDecisionInline,
+    ]
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(TransferApprovalStage)
+class TransferApprovalStageAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "organization",
+        "level",
+        "name",
+        "required_role_code",
+        "is_active",
+    ]
+
+    list_filter = [
+        "organization",
+        "is_active",
+    ]
+
+
+@admin.register(TransferApprovalDecision)
+class TransferApprovalDecisionAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "transfer",
+        "stage",
+        "decision",
+        "decided_by",
+        "decided_at",
+    ]
+
+    list_filter = [
+        "decision",
+        "stage",
+        "decided_at",
+    ]
+
+    readonly_fields = [
+        "transfer",
+        "stage",
+        "decision",
+        "decided_by",
+        "comments",
+        "decided_at",
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False    

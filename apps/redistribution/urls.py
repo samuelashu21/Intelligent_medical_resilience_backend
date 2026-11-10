@@ -9,4 +9,8 @@ urlpatterns = [
         "optimization/",
         include("apps.redistribution.optimization_urls"),
     ),
+    path(
+    "transfers/",
+    include("apps.redistribution.transfer_urls"),
+),
 ]

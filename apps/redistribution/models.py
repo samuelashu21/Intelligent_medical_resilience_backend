@@ -10,3 +10,10 @@ from apps.redistribution.optimization_models import (
     RedistributionOptimizationRun,
     RedistributionOptimizationAllocation,
 )
+
+from apps.redistribution.transfer_models import (
+    TransferRequest,
+    TransferRequestLine,
+    TransferApprovalStage,
+    TransferApprovalDecision,
+)

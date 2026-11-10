@@ -268,6 +268,62 @@ REDISTRIBUTION_OPTIMIZATION_PERMISSIONS = [
 
 
 # ==========================================================
+# REDISTRIBUTION TRANSFER PERMISSION CATALOG
+# ==========================================================
+
+REDISTRIBUTION_TRANSFER_PERMISSIONS = [
+    {
+        "code": "redistribution.transfer.view",
+        "name": "View Transfer Requests",
+        "module": "redistribution",
+        "description": (
+            "View authorized inter-facility transfer requests."
+        ),
+    },
+    {
+        "code": "redistribution.transfer.create",
+        "name": "Create Transfer Requests",
+        "module": "redistribution",
+        "description": (
+            "Create manual or optimization-based transfer requests."
+        ),
+    },
+    {
+        "code": "redistribution.transfer.submit",
+        "name": "Submit Transfer Requests",
+        "module": "redistribution",
+        "description": (
+            "Submit transfer requests for approval."
+        ),
+    },
+    {
+        "code": "redistribution.transfer.approve",
+        "name": "Approve Transfer Requests",
+        "module": "redistribution",
+        "description": (
+            "Approve or reject transfer requests at authorized stages."
+        ),
+    },
+    {
+        "code": "redistribution.transfer.cancel",
+        "name": "Cancel Transfer Requests",
+        "module": "redistribution",
+        "description": (
+            "Cancel transfers and release their reservations."
+        ),
+    },
+    {
+        "code": "redistribution.transfer.policy.manage",
+        "name": "Manage Transfer Approval Policies",
+        "module": "redistribution",
+        "description": (
+            "Configure transfer approval stages."
+        ),
+    },
+]
+
+
+# ==========================================================
 # PERMISSION DESCRIPTIONS
 # ==========================================================
 
@@ -415,6 +471,44 @@ REDISTRIBUTION_OPTIMIZATION_PERMISSION_CODES = {
     "run": "redistribution.optimization.run",
     "manage_profiles": "redistribution.transport_profile.manage",
 }
+
+
+# ==========================================================
+# REDISTRIBUTION TRANSFER PERMISSION DEFINITIONS
+# ==========================================================
+
+REDISTRIBUTION_TRANSFER_PERMISSION_CODES = {
+    "view": "redistribution.transfer.view",
+    "create": "redistribution.transfer.create",
+    "submit": "redistribution.transfer.submit",
+    "approve": "redistribution.transfer.approve",
+    "cancel": "redistribution.transfer.cancel",
+    "manage_policy": "redistribution.transfer.policy.manage",
+}
+
+
+# ==========================================================
+# ROLE ASSIGNMENT HELPER
+# ==========================================================
+
+def apply_role_assignments(assignments, assignment_name):
+    """Add configured permissions to their respective roles."""
+
+    for role_code, permission_codes in assignments.items():
+        if role_code not in ROLES:
+            raise ValueError(
+                f"{assignment_name} role '{role_code}' "
+                "does not exist in ROLES."
+            )
+
+        role_permissions = ROLES[role_code]["permissions"]
+
+        if role_permissions == ["*"]:
+            continue
+
+        for permission_code in permission_codes:
+            if permission_code not in role_permissions:
+                role_permissions.append(permission_code)
 
 
 # ==========================================================
@@ -646,6 +740,67 @@ REDISTRIBUTION_OPTIMIZATION_ROLE_ASSIGNMENTS = {
     ],
     "FACILITY_PHARMACIST": [
         "redistribution.optimization.view",
+    ],
+}
+
+
+# ==========================================================
+# REDISTRIBUTION TRANSFER ROLE ASSIGNMENTS
+# ==========================================================
+
+REDISTRIBUTION_TRANSFER_ROLE_ASSIGNMENTS = {
+    "MINISTRY_ADMIN": [
+        "redistribution.transfer.view",
+        "redistribution.transfer.create",
+        "redistribution.transfer.submit",
+        "redistribution.transfer.approve",
+        "redistribution.transfer.cancel",
+        "redistribution.transfer.policy.manage",
+    ],
+    "REGIONAL_ADMIN": [
+        "redistribution.transfer.view",
+        "redistribution.transfer.create",
+        "redistribution.transfer.submit",
+        "redistribution.transfer.approve",
+        "redistribution.transfer.cancel",
+    ],
+    "DISTRICT_OFFICER": [
+        "redistribution.transfer.view",
+        "redistribution.transfer.create",
+        "redistribution.transfer.submit",
+        "redistribution.transfer.approve",
+        "redistribution.transfer.cancel",
+    ],
+    "DISTRICT_PHARMACIST": [
+        "redistribution.transfer.view",
+        "redistribution.transfer.create",
+        "redistribution.transfer.submit",
+        "redistribution.transfer.cancel",
+    ],
+    "FACILITY_ADMIN": [
+        "redistribution.transfer.view",
+        "redistribution.transfer.create",
+        "redistribution.transfer.submit",
+        "redistribution.transfer.cancel",
+    ],
+    "FACILITY_PHARMACIST": [
+        "redistribution.transfer.view",
+        "redistribution.transfer.create",
+        "redistribution.transfer.submit",
+        "redistribution.transfer.cancel",
+    ],
+    "SUPPLY_CHAIN_OFFICER": [
+        "redistribution.transfer.view",
+        "redistribution.transfer.create",
+        "redistribution.transfer.submit",
+        "redistribution.transfer.approve",
+        "redistribution.transfer.cancel",
+    ],
+    "DATA_ANALYST": [
+        "redistribution.transfer.view",
+    ],
+    "AUDITOR": [
+        "redistribution.transfer.view",
     ],
 }
 
@@ -943,25 +1098,10 @@ ROLES = {
 # APPLY ROLE ASSIGNMENTS
 # ==========================================================
 
-def apply_role_assignments(assignments, assignment_name):
-    """Add configured permissions to their respective roles."""
-
-    for role_code, permission_codes in assignments.items():
-        if role_code not in ROLES:
-            raise ValueError(
-                f"{assignment_name} role '{role_code}' "
-                "does not exist in ROLES."
-            )
-
-        role_permissions = ROLES[role_code]["permissions"]
-
-        if role_permissions == ["*"]:
-            continue
-
-        for permission_code in permission_codes:
-            if permission_code not in role_permissions:
-                role_permissions.append(permission_code)
-
+apply_role_assignments(
+    REPLENISHMENT_ROLE_ASSIGNMENTS,
+    "Replenishment",
+)
 
 apply_role_assignments(
     PROCUREMENT_ROLE_ASSIGNMENTS,
@@ -976,6 +1116,11 @@ apply_role_assignments(
 apply_role_assignments(
     REDISTRIBUTION_OPTIMIZATION_ROLE_ASSIGNMENTS,
     "Redistribution optimization",
+)
+
+apply_role_assignments(
+    REDISTRIBUTION_TRANSFER_ROLE_ASSIGNMENTS,
+    "Redistribution transfer",
 )
 
 
@@ -1147,6 +1292,10 @@ class Command(BaseCommand):
                 "redistribution optimization",
                 REDISTRIBUTION_OPTIMIZATION_PERMISSIONS,
             ),
+            (
+                "redistribution transfer",
+                REDISTRIBUTION_TRANSFER_PERMISSIONS,
+            ),
         ]
 
         for catalog_name, catalog in specialized_catalogs:
@@ -1206,6 +1355,9 @@ class Command(BaseCommand):
             "redistribution optimization": list(
                 REDISTRIBUTION_OPTIMIZATION_PERMISSION_CODES.values()
             ),
+            "redistribution transfer": list(
+                REDISTRIBUTION_TRANSFER_PERMISSION_CODES.values()
+            ),
         }
 
         for catalog_name, permission_codes in (
@@ -1226,6 +1378,7 @@ class Command(BaseCommand):
                     )
 
         inventory_view = permission_map["inventory.view"]
+
         visibility_permission = permission_map[
             INVENTORY_VISIBILITY_PERMISSION
         ]
@@ -1286,6 +1439,13 @@ class Command(BaseCommand):
                 REDISTRIBUTION_OPTIMIZATION_ROLE_ASSIGNMENTS,
                 set(
                     REDISTRIBUTION_OPTIMIZATION_PERMISSION_CODES.values()
+                ),
+            ),
+            (
+                "Redistribution transfer",
+                REDISTRIBUTION_TRANSFER_ROLE_ASSIGNMENTS,
+                set(
+                    REDISTRIBUTION_TRANSFER_PERMISSION_CODES.values()
                 ),
             ),
         ]
@@ -1443,6 +1603,13 @@ class Command(BaseCommand):
                     REDISTRIBUTION_OPTIMIZATION_PERMISSION_CODES.values()
                 ),
             ),
+            (
+                "Redistribution transfer",
+                REDISTRIBUTION_TRANSFER_ROLE_ASSIGNMENTS,
+                set(
+                    REDISTRIBUTION_TRANSFER_PERMISSION_CODES.values()
+                ),
+            ),
         ]
 
         for policy_name, assignments, permission_set in (
@@ -1506,6 +1673,12 @@ class Command(BaseCommand):
                     REDISTRIBUTION_OPTIMIZATION_PERMISSION_CODES.values()
                 ),
             ),
+            (
+                "Redistribution transfer",
+                set(
+                    REDISTRIBUTION_TRANSFER_PERMISSION_CODES.values()
+                ),
+            ),
         ]
 
         for policy_name, expected_codes in super_admin_permission_sets:
@@ -1546,6 +1719,10 @@ class Command(BaseCommand):
             (
                 "Redistribution optimization",
                 REDISTRIBUTION_OPTIMIZATION_PERMISSIONS,
+            ),
+            (
+                "Redistribution transfer",
+                REDISTRIBUTION_TRANSFER_PERMISSIONS,
             ),
         ]
 
@@ -1671,7 +1848,64 @@ class Command(BaseCommand):
         )
 
         # --------------------------------------------------
-        # 15. SUCCESS MESSAGES
+        # 15. VERIFY REDISTRIBUTION TRANSFER PERMISSIONS
+        # --------------------------------------------------
+
+        transfer_permission_set = set(
+            REDISTRIBUTION_TRANSFER_PERMISSION_CODES.values()
+        )
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying redistribution transfer permissions..."
+            )
+        )
+
+        for role_code, expected_permissions in (
+            REDISTRIBUTION_TRANSFER_ROLE_ASSIGNMENTS.items()
+        ):
+            role = Role.objects.get(code=role_code)
+
+            assigned_codes = set(
+                role.permissions.filter(
+                    code__in=transfer_permission_set
+                ).values_list(
+                    "code",
+                    flat=True,
+                )
+            )
+
+            expected_codes = set(expected_permissions)
+
+            if assigned_codes != expected_codes:
+                raise ValueError(
+                    "Redistribution transfer permission verification "
+                    f"failed for '{role_code}'. "
+                    f"Expected: {sorted(expected_codes)}. "
+                    f"Found: {sorted(assigned_codes)}."
+                )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{role_code}: {len(expected_codes)} transfer "
+                    "permissions verified."
+                )
+            )
+
+        if len(transfer_permission_set) != 6:
+            raise ValueError(
+                "Redistribution transfer must contain exactly "
+                f"6 permissions. Found: {len(transfer_permission_set)}."
+            )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "All six redistribution transfer permissions verified."
+            )
+        )
+
+        # --------------------------------------------------
+        # 16. SUCCESS MESSAGES
         # --------------------------------------------------
 
         self.stdout.write(
@@ -1731,5 +1965,19 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 "Redistribution optimization permissions and "
                 "role assignments verified successfully."
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Redistribution transfer permissions and "
+                "role assignments verified successfully."
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "All RBAC permission metadata and role assignments "
+                "verified successfully."
             )
         )
