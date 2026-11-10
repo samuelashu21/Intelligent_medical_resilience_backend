@@ -10,97 +10,308 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('inventory', '0002_alter_stockbatch_status_batchexpiryalert_and_more'),
-        ('warehouses', '0001_initial'),
+        ("inventory", "0002_alter_stockbatch_status_batchexpiryalert_and_more"),
+        ("warehouses", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='StockCount',
+            name="StockCount",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('reference_number', models.CharField(max_length=100, unique=True)),
-                ('count_method', models.CharField(choices=[('FULL', 'Full physical count'), ('CYCLE', 'Cycle count'), ('SPOT', 'Spot check')], default='FULL', max_length=20)),
-                ('status', models.CharField(choices=[('DRAFT', 'Draft'), ('IN_PROGRESS', 'In progress'), ('SUBMITTED', 'Submitted'), ('UNDER_REVIEW', 'Under review'), ('APPROVED', 'Approved'), ('REJECTED', 'Rejected'), ('POSTED', 'Posted'), ('CANCELLED', 'Cancelled')], default='DRAFT', max_length=20)),
-                ('scheduled_date', models.DateField(default=django.utils.timezone.localdate)),
-                ('started_at', models.DateTimeField(blank=True, null=True)),
-                ('submitted_at', models.DateTimeField(blank=True, null=True)),
-                ('approved_at', models.DateTimeField(blank=True, null=True)),
-                ('posted_at', models.DateTimeField(blank=True, null=True)),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('approved_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='approved_stock_counts', to=settings.AUTH_USER_MODEL)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='created_stock_counts', to=settings.AUTH_USER_MODEL)),
-                ('submitted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='submitted_stock_counts', to=settings.AUTH_USER_MODEL)),
-                ('warehouse', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='stock_counts', to='warehouses.warehouse')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("reference_number", models.CharField(max_length=100, unique=True)),
+                (
+                    "count_method",
+                    models.CharField(
+                        choices=[
+                            ("FULL", "Full physical count"),
+                            ("CYCLE", "Cycle count"),
+                            ("SPOT", "Spot check"),
+                        ],
+                        default="FULL",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("DRAFT", "Draft"),
+                            ("IN_PROGRESS", "In progress"),
+                            ("SUBMITTED", "Submitted"),
+                            ("UNDER_REVIEW", "Under review"),
+                            ("APPROVED", "Approved"),
+                            ("REJECTED", "Rejected"),
+                            ("POSTED", "Posted"),
+                            ("CANCELLED", "Cancelled"),
+                        ],
+                        default="DRAFT",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "scheduled_date",
+                    models.DateField(default=django.utils.timezone.localdate),
+                ),
+                ("started_at", models.DateTimeField(blank=True, null=True)),
+                ("submitted_at", models.DateTimeField(blank=True, null=True)),
+                ("approved_at", models.DateTimeField(blank=True, null=True)),
+                ("posted_at", models.DateTimeField(blank=True, null=True)),
+                ("notes", models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "approved_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="approved_stock_counts",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="created_stock_counts",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "submitted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="submitted_stock_counts",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "warehouse",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stock_counts",
+                        to="warehouses.warehouse",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='StockCountLine',
+            name="StockCountLine",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('system_quantity', models.DecimalField(decimal_places=3, default=0, max_digits=16)),
-                ('physical_quantity', models.DecimalField(blank=True, decimal_places=3, max_digits=16, null=True)),
-                ('variance', models.DecimalField(decimal_places=3, default=0, max_digits=16)),
-                ('reason', models.CharField(blank=True, choices=[('DATA_ENTRY_ERROR', 'Data entry error'), ('UNRECORDED_RECEIPT', 'Unrecorded receipt'), ('UNRECORDED_ISSUE', 'Unrecorded issue'), ('DAMAGE', 'Damaged stock'), ('LOSS', 'Stock loss'), ('THEFT', 'Suspected theft'), ('EXPIRY', 'Expired stock'), ('COUNTING_ERROR', 'Counting error'), ('OTHER', 'Other')], max_length=30)),
-                ('explanation', models.TextField(blank=True)),
-                ('counted_at', models.DateTimeField(blank=True, null=True)),
-                ('is_reviewed', models.BooleanField(default=False)),
-                ('batch', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='stock_count_lines', to='inventory.stockbatch')),
-                ('counted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='stock_count_lines', to=settings.AUTH_USER_MODEL)),
-                ('stock_count', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='lines', to='inventory.stockcount')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "system_quantity",
+                    models.DecimalField(decimal_places=3, default=0, max_digits=16),
+                ),
+                (
+                    "physical_quantity",
+                    models.DecimalField(
+                        blank=True, decimal_places=3, max_digits=16, null=True
+                    ),
+                ),
+                (
+                    "variance",
+                    models.DecimalField(decimal_places=3, default=0, max_digits=16),
+                ),
+                (
+                    "reason",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("DATA_ENTRY_ERROR", "Data entry error"),
+                            ("UNRECORDED_RECEIPT", "Unrecorded receipt"),
+                            ("UNRECORDED_ISSUE", "Unrecorded issue"),
+                            ("DAMAGE", "Damaged stock"),
+                            ("LOSS", "Stock loss"),
+                            ("THEFT", "Suspected theft"),
+                            ("EXPIRY", "Expired stock"),
+                            ("COUNTING_ERROR", "Counting error"),
+                            ("OTHER", "Other"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("explanation", models.TextField(blank=True)),
+                ("counted_at", models.DateTimeField(blank=True, null=True)),
+                ("is_reviewed", models.BooleanField(default=False)),
+                (
+                    "batch",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stock_count_lines",
+                        to="inventory.stockbatch",
+                    ),
+                ),
+                (
+                    "counted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stock_count_lines",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "stock_count",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="lines",
+                        to="inventory.stockcount",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['batch__batch_number'],
+                "ordering": ["batch__batch_number"],
             },
         ),
         migrations.CreateModel(
-            name='StockReconciliation',
+            name="StockReconciliation",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('system_quantity', models.DecimalField(decimal_places=3, max_digits=16)),
-                ('physical_quantity', models.DecimalField(decimal_places=3, max_digits=16)),
-                ('variance', models.DecimalField(decimal_places=3, max_digits=16)),
-                ('reason', models.CharField(choices=[('DATA_ENTRY_ERROR', 'Data entry error'), ('UNRECORDED_RECEIPT', 'Unrecorded receipt'), ('UNRECORDED_ISSUE', 'Unrecorded issue'), ('DAMAGE', 'Damaged stock'), ('LOSS', 'Stock loss'), ('THEFT', 'Suspected theft'), ('EXPIRY', 'Expired stock'), ('COUNTING_ERROR', 'Counting error'), ('OTHER', 'Other')], max_length=30)),
-                ('explanation', models.TextField()),
-                ('posted_at', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('adjustment_movement', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='reconciliations', to='inventory.stockmovement')),
-                ('count_line', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, related_name='reconciliation', to='inventory.stockcountline')),
-                ('posted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='posted_reconciliations', to=settings.AUTH_USER_MODEL)),
-                ('stock_count', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='reconciliations', to='inventory.stockcount')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "system_quantity",
+                    models.DecimalField(decimal_places=3, max_digits=16),
+                ),
+                (
+                    "physical_quantity",
+                    models.DecimalField(decimal_places=3, max_digits=16),
+                ),
+                ("variance", models.DecimalField(decimal_places=3, max_digits=16)),
+                (
+                    "reason",
+                    models.CharField(
+                        choices=[
+                            ("DATA_ENTRY_ERROR", "Data entry error"),
+                            ("UNRECORDED_RECEIPT", "Unrecorded receipt"),
+                            ("UNRECORDED_ISSUE", "Unrecorded issue"),
+                            ("DAMAGE", "Damaged stock"),
+                            ("LOSS", "Stock loss"),
+                            ("THEFT", "Suspected theft"),
+                            ("EXPIRY", "Expired stock"),
+                            ("COUNTING_ERROR", "Counting error"),
+                            ("OTHER", "Other"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("explanation", models.TextField()),
+                ("posted_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "adjustment_movement",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="reconciliations",
+                        to="inventory.stockmovement",
+                    ),
+                ),
+                (
+                    "count_line",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="reconciliation",
+                        to="inventory.stockcountline",
+                    ),
+                ),
+                (
+                    "posted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="posted_reconciliations",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "stock_count",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="reconciliations",
+                        to="inventory.stockcount",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.AddIndex(
-            model_name='stockcount',
-            index=models.Index(fields=['warehouse', 'status'], name='inventory_s_warehou_2dc132_idx'),
+            model_name="stockcount",
+            index=models.Index(
+                fields=["warehouse", "status"], name="inventory_s_warehou_2dc132_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='stockcount',
-            index=models.Index(fields=['scheduled_date', 'status'], name='inventory_s_schedul_2946ab_idx'),
+            model_name="stockcount",
+            index=models.Index(
+                fields=["scheduled_date", "status"],
+                name="inventory_s_schedul_2946ab_idx",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='stockcountline',
-            constraint=models.UniqueConstraint(fields=('stock_count', 'batch'), name='uniq_batch_per_stock_count'),
+            model_name="stockcountline",
+            constraint=models.UniqueConstraint(
+                fields=("stock_count", "batch"), name="uniq_batch_per_stock_count"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='stockcountline',
-            constraint=models.CheckConstraint(condition=models.Q(('system_quantity__gte', 0)), name='stock_count_system_qty_nonnegative'),
+            model_name="stockcountline",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("system_quantity__gte", 0)),
+                name="stock_count_system_qty_nonnegative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='stockcountline',
-            constraint=models.CheckConstraint(condition=models.Q(('physical_quantity__isnull', True), ('physical_quantity__gte', 0), _connector='OR'), name='stock_count_physical_qty_nonnegative'),
+            model_name="stockcountline",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("physical_quantity__isnull", True),
+                    ("physical_quantity__gte", 0),
+                    _connector="OR",
+                ),
+                name="stock_count_physical_qty_nonnegative",
+            ),
         ),
         migrations.AddIndex(
-            model_name='stockreconciliation',
-            index=models.Index(fields=['stock_count', 'created_at'], name='inventory_s_stock_c_333245_idx'),
+            model_name="stockreconciliation",
+            index=models.Index(
+                fields=["stock_count", "created_at"],
+                name="inventory_s_stock_c_333245_idx",
+            ),
         ),
     ]

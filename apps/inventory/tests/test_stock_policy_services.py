@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 from datetime import timedelta
 
@@ -42,17 +41,15 @@ from apps.inventory.stock_policy_services import (
     evaluate_stock_policy,
 )
 
-
 # ==========================================================
 # STOCK POLICY CALCULATION TESTS
 # ==========================================================
 
+
 class StockPolicyCalculationTests(TestCase):
 
     def test_daily_demand(self):
-        result = calculate_daily_demand(
-            Decimal("300")
-        )
+        result = calculate_daily_demand(Decimal("300"))
 
         self.assertEqual(
             result,
@@ -88,6 +85,7 @@ class StockPolicyCalculationTests(TestCase):
 # ==========================================================
 # STOCK POLICY MODEL TESTS
 # ==========================================================
+
 
 class StockPolicyModelTests(TestCase):
 
@@ -231,6 +229,7 @@ class StockPolicyModelTests(TestCase):
 # STOCK POLICY EVALUATION TESTS
 # ==========================================================
 
+
 class StockPolicyEvaluationTests(TestCase):
 
     def setUp(self):
@@ -356,9 +355,7 @@ class StockPolicyEvaluationTests(TestCase):
             location=self.storage_location,
             batch_number="EVAL-BATCH-001",
             received_date=timezone.localdate(),
-            expiry_date=(
-                timezone.localdate() + timedelta(days=365)
-            ),
+            expiry_date=(timezone.localdate() + timedelta(days=365)),
         )
 
         return InventoryBalance.objects.create(
@@ -373,24 +370,22 @@ class StockPolicyEvaluationTests(TestCase):
 
     def test_policy_missing(self):
 
-    # Remove the policy created by setUp().
-    # This ensures that no matching policy exists in the database.
-      self.policy.delete()
+        # Remove the policy created by setUp().
+        # This ensures that no matching policy exists in the database.
+        self.policy.delete()
 
-      result = evaluate_stock_policy(
-        facility_id=self.facility.pk,
-         medicine_id=self.medicine.pk,
-        policy=None,
-       )
+        result = evaluate_stock_policy(
+            facility_id=self.facility.pk,
+            medicine_id=self.medicine.pk,
+            policy=None,
+        )
 
-      self.assertFalse(
-        result["policy_configured"]
-      )
+        self.assertFalse(result["policy_configured"])
 
-      self.assertEqual(
-        result["status"],
-        "POLICY_MISSING",
-    ) 
+        self.assertEqual(
+            result["status"],
+            "POLICY_MISSING",
+        )
 
     # ------------------------------------------------------
     # Evaluation Without Consumption History
@@ -406,9 +401,7 @@ class StockPolicyEvaluationTests(TestCase):
             policy=self.policy,
         )
 
-        self.assertTrue(
-            result["policy_configured"]
-        )
+        self.assertTrue(result["policy_configured"])
 
         self.assertEqual(
             result["status"],

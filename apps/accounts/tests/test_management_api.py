@@ -58,9 +58,7 @@ class UserManagementAPITests(APITestCase):
         )
 
     def test_list_users(self):
-        response = self.client.get(
-            "/api/v1/accounts/users/"
-        )
+        response = self.client.get("/api/v1/accounts/users/")
 
         self.assertEqual(
             response.status_code,
@@ -92,18 +90,12 @@ class UserManagementAPITests(APITestCase):
             response.data,
         )
 
-        self.assertTrue(
-            User.objects.filter(
-                email="new.user@example.com"
-            ).exists()
-        )
+        self.assertTrue(User.objects.filter(email="new.user@example.com").exists())
 
     def test_user_without_token_cannot_access_users(self):
         self.client.credentials()
 
-        response = self.client.get(
-            "/api/v1/accounts/users/"
-        )
+        response = self.client.get("/api/v1/accounts/users/")
 
         self.assertEqual(
             response.status_code,

@@ -72,9 +72,7 @@ class OrganizationModelTests(TestCase):
     def test_get_descendants(self):
         descendants = self.national.get_descendants()
 
-        descendant_ids = {
-            item.id for item in descendants
-        }
+        descendant_ids = {item.id for item in descendants}
 
         self.assertIn(self.region.id, descendant_ids)
         self.assertIn(self.district.id, descendant_ids)

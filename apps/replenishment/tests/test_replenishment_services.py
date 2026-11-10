@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -133,9 +132,7 @@ class ReplenishmentWorkflowTests(TestCase):
         return create_replenishment_request(
             facility_id=self.facility.pk,
             requested_by=self.requester,
-            justification=(
-                "Medicine stock is below the required level."
-            ),
+            justification=("Medicine stock is below the required level."),
             items=[
                 {
                     "medicine_id": self.medicine.pk,
@@ -165,9 +162,7 @@ class ReplenishmentWorkflowTests(TestCase):
             1,
         )
 
-        self.assertTrue(
-            request.request_number.startswith("MR-")
-        )
+        self.assertTrue(request.request_number.startswith("MR-"))
 
     # ======================================================
     # TEST 2: SUBMIT REQUEST
@@ -187,9 +182,7 @@ class ReplenishmentWorkflowTests(TestCase):
             ReplenishmentRequest.Status.SUBMITTED,
         )
 
-        self.assertIsNotNone(
-            result.submitted_at
-        )
+        self.assertIsNotNone(result.submitted_at)
 
     # ======================================================
     # TEST 3: ONLY REQUESTER CAN SUBMIT

@@ -112,7 +112,6 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Warehouse {'created' if created else 'updated'}: "
-                f"{warehouse.code}"
+                f"Warehouse {'created' if created else 'updated'}: " f"{warehouse.code}"
             )
         )

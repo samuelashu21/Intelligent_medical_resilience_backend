@@ -10,4 +10,4 @@ router.register(
     basename="audit-event",
 )
 
-urlpatterns = router.urls 
+urlpatterns = router.urls

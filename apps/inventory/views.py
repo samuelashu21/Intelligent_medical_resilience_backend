@@ -528,10 +528,6 @@
 #         )
 
 
-
-
-
-
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
 
@@ -592,9 +588,7 @@ class InventoryScopedViewSet(viewsets.GenericViewSet):
         if organization_ids is None:
             return queryset
 
-        return queryset.filter(
-            **{f"{field}__organization_id__in": organization_ids}
-        )
+        return queryset.filter(**{f"{field}__organization_id__in": organization_ids})
 
 
 class StockBatchViewSet(viewsets.ModelViewSet):
@@ -657,9 +651,7 @@ class StockBatchViewSet(viewsets.ModelViewSet):
                 permission_code="inventory.view",
             )
 
-            queryset = queryset.filter(
-                warehouse__organization_id__in=organization_ids
-            )
+            queryset = queryset.filter(warehouse__organization_id__in=organization_ids)
 
         medicine = self.request.query_params.get("medicine")
 
@@ -705,9 +697,7 @@ class StockBatchViewSet(viewsets.ModelViewSet):
         )
 
     def destroy(self, request, *args, **kwargs):
-        raise ValidationError(
-            "Stock batches cannot be deleted."
-        )
+        raise ValidationError("Stock batches cannot be deleted.")
 
     @action(detail=True, methods=["post"])
     def receive(self, request, pk=None, **kwargs):
@@ -719,9 +709,7 @@ class StockBatchViewSet(viewsets.ModelViewSet):
                 batch_id=batch.pk,
                 quantity=request.data.get("quantity"),
                 performed_by=request.user,
-                reference_number=request.data.get(
-                    "reference_number", ""
-                ),
+                reference_number=request.data.get("reference_number", ""),
                 notes=request.data.get("notes", ""),
                 request=request,
             )
@@ -745,9 +733,7 @@ class StockBatchViewSet(viewsets.ModelViewSet):
                 batch_id=batch.pk,
                 quantity=request.data.get("quantity"),
                 performed_by=request.user,
-                reference_number=request.data.get(
-                    "reference_number", ""
-                ),
+                reference_number=request.data.get("reference_number", ""),
                 notes=request.data.get("notes", ""),
                 request=request,
             )
@@ -773,9 +759,7 @@ class StockBatchViewSet(viewsets.ModelViewSet):
                 direction=request.data.get("direction"),
                 performed_by=request.user,
                 reason=request.data.get("reason", ""),
-                reference_number=request.data.get(
-                    "reference_number", ""
-                ),
+                reference_number=request.data.get("reference_number", ""),
                 request=request,
             )
         except (DjangoValidationError, ValueError, TypeError) as exc:
@@ -819,14 +803,10 @@ class InventoryBalanceViewSet(viewsets.ReadOnlyModelViewSet):
         warehouse = self.request.query_params.get("warehouse")
 
         if medicine:
-            queryset = queryset.filter(
-                batch__medicine_id=medicine
-            )
+            queryset = queryset.filter(batch__medicine_id=medicine)
 
         if warehouse:
-            queryset = queryset.filter(
-                batch__warehouse_id=warehouse
-            )
+            queryset = queryset.filter(batch__warehouse_id=warehouse)
 
         return queryset
 
@@ -866,9 +846,7 @@ class StockMovementViewSet(viewsets.ReadOnlyModelViewSet):
         movement_type = self.request.query_params.get("movement_type")
 
         if movement_type:
-            queryset = queryset.filter(
-                movement_type=movement_type.upper()
-            )
+            queryset = queryset.filter(movement_type=movement_type.upper())
 
         return queryset
 
@@ -926,9 +904,7 @@ class StockReservationViewSet(viewsets.ModelViewSet):
                 "inventory.issue",
                 organization=batch.warehouse.organization,
             ):
-                raise ValidationError(
-                    "You cannot reserve stock in this organization."
-                )
+                raise ValidationError("You cannot reserve stock in this organization.")
 
         from apps.inventory.services import reserve_stock
 
@@ -936,9 +912,7 @@ class StockReservationViewSet(viewsets.ModelViewSet):
             reservation = reserve_stock(
                 batch_id=batch.pk,
                 quantity=serializer.validated_data["quantity"],
-                reference_number=serializer.validated_data[
-                    "reference_number"
-                ],
+                reference_number=serializer.validated_data["reference_number"],
                 reserved_by=request.user,
                 purpose=serializer.validated_data.get("purpose", ""),
                 expires_at=serializer.validated_data.get("expires_at"),
@@ -958,9 +932,7 @@ class StockReservationViewSet(viewsets.ModelViewSet):
         reservation = self.get_object()
 
         try:
-            reservation = release_reservation(
-                reservation_id=reservation.pk
-            )
+            reservation = release_reservation(reservation_id=reservation.pk)
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
@@ -997,14 +969,10 @@ class InventoryReportViewSet(InventoryScopedViewSet):
         try:
             days = int(days)
         except (ValueError, TypeError):
-            raise ValidationError({
-                "days": "Must be an integer."
-            })
+            raise ValidationError({"days": "Must be an integer."})
 
         if days < 0 or days > 3650:
-            raise ValidationError({
-                "days": "Days must be between 0 and 3650."
-            })
+            raise ValidationError({"days": "Days must be between 0 and 3650."})
 
         queryset = get_expiring_batches(days=days)
 
@@ -1014,13 +982,9 @@ class InventoryReportViewSet(InventoryScopedViewSet):
                 permission_code="inventory.view",
             )
 
-            queryset = queryset.filter(
-                warehouse__organization_id__in=organization_ids
-            )
+            queryset = queryset.filter(warehouse__organization_id__in=organization_ids)
 
-        return Response(
-            StockBatchSerializer(queryset, many=True).data
-        )
+        return Response(StockBatchSerializer(queryset, many=True).data)
 
     @action(detail=False, methods=["get"])
     def fefo(self, request, **kwargs):
@@ -1029,27 +993,21 @@ class InventoryReportViewSet(InventoryScopedViewSet):
         presentation_id = request.query_params.get("presentation")
 
         if not medicine_id or not warehouse_id:
-            raise ValidationError({
-                "detail": "medicine and warehouse are required."
-            })
+            raise ValidationError({"detail": "medicine and warehouse are required."})
 
         if not request.user.is_superuser:
             from apps.accounts.services import user_has_permission
 
             from apps.warehouses.models import Warehouse
 
-            warehouse = Warehouse.objects.filter(
-                pk=warehouse_id
-            ).first()
+            warehouse = Warehouse.objects.filter(pk=warehouse_id).first()
 
             if not warehouse or not user_has_permission(
                 request.user,
                 "inventory.view",
                 organization=warehouse.organization,
             ):
-                raise ValidationError(
-                    "You cannot view stock in this warehouse."
-                )
+                raise ValidationError("You cannot view stock in this warehouse.")
 
         batches = get_fefo_batches(
             medicine_id=medicine_id,
@@ -1057,6 +1015,4 @@ class InventoryReportViewSet(InventoryScopedViewSet):
             presentation_id=presentation_id,
         )
 
-        return Response(
-            StockBatchSerializer(batches, many=True).data
-        )
+        return Response(StockBatchSerializer(batches, many=True).data)

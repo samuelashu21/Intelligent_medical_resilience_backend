@@ -13,7 +13,7 @@ def get_client_ip(request):
         return None
 
     return request.META.get("REMOTE_ADDR")
- 
+
 
 def record_audit_event(
     *,
@@ -56,4 +56,4 @@ def record_audit_event(
         metadata=metadata or {},
         ip_address=ip_address,
         user_agent=user_agent,
-    ) 
+    )

@@ -11,7 +11,6 @@ from apps.inventory.reporting_views import (
     StockStatusReportView,
 )
 
-
 urlpatterns = [
     path(
         "dashboard/",

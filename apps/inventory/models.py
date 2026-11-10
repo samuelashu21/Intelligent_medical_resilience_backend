@@ -156,10 +156,7 @@ class StockBatch(models.Model):
                 nulls_distinct=False,
             ),
             models.CheckConstraint(
-                condition=(
-                    Q(unit_cost__isnull=True)
-                    | Q(unit_cost__gte=0)
-                ),
+                condition=(Q(unit_cost__isnull=True) | Q(unit_cost__gte=0)),
                 name="stock_batch_cost_nonnegative",
             ),
         ]
@@ -167,46 +164,37 @@ class StockBatch(models.Model):
     def clean(self):
         super().clean()
 
-        if (
-            self.manufacture_date
-            and self.manufacture_date > self.expiry_date
-        ):
-            raise ValidationError({
-                "manufacture_date": (
-                    "Manufacture date cannot be after expiry date."
-                )
-            })
+        if self.manufacture_date and self.manufacture_date > self.expiry_date:
+            raise ValidationError(
+                {"manufacture_date": ("Manufacture date cannot be after expiry date.")}
+            )
 
         if self.location_id and self.warehouse_id:
             if self.location.zone.warehouse_id != self.warehouse_id:
-                raise ValidationError({
-                    "location": (
-                        "The storage location must belong to this warehouse."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "location": (
+                            "The storage location must belong to this warehouse."
+                        )
+                    }
+                )
 
         if self.presentation_id and self.medicine_id:
             if self.presentation.medicine_id != self.medicine_id:
-                raise ValidationError({
-                    "presentation": (
-                        "The presentation must belong to this medicine."
-                    )
-                })
+                raise ValidationError(
+                    {"presentation": ("The presentation must belong to this medicine.")}
+                )
 
         if self.supplier_id and not self.supplier.is_active:
-            raise ValidationError({
-                "supplier": (
-                    "Inactive suppliers cannot be used for new batches."
-                )
-            })
+            raise ValidationError(
+                {"supplier": ("Inactive suppliers cannot be used for new batches.")}
+            )
 
         # Only validate expiry vs received date on creation.
         if self._state.adding and self.expiry_date < self.received_date:
-            raise ValidationError({
-                "expiry_date": (
-                    "An expired batch cannot be newly received."
-                )
-            })
+            raise ValidationError(
+                {"expiry_date": ("An expired batch cannot be newly received.")}
+            )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -298,9 +286,7 @@ class InventoryBalance(models.Model):
                 name="inventory_reserved_nonnegative",
             ),
             models.CheckConstraint(
-                condition=Q(
-                    quantity_reserved__lte=models.F("quantity_on_hand")
-                ),
+                condition=Q(quantity_reserved__lte=models.F("quantity_on_hand")),
                 name="inventory_reserved_lte_on_hand",
             ),
         ]
@@ -310,10 +296,7 @@ class InventoryBalance(models.Model):
         return self.quantity_on_hand - self.quantity_reserved
 
     def __str__(self):
-        return (
-            f"{self.batch.batch_number}: "
-            f"{self.quantity_on_hand}"
-        )
+        return f"{self.batch.batch_number}: " f"{self.quantity_on_hand}"
 
 
 class StockMovement(models.Model):
@@ -414,23 +397,16 @@ class StockMovement(models.Model):
             )
 
         if not self._state.adding:
-            raise ValidationError(
-                "Existing stock movements cannot be updated."
-            )
+            raise ValidationError("Existing stock movements cannot be updated.")
 
         self.full_clean()
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        raise ValidationError(
-            "Stock movements cannot be deleted."
-        )
+        raise ValidationError("Stock movements cannot be deleted.")
 
     def __str__(self):
-        return (
-            f"{self.movement_type}: "
-            f"{self.batch.batch_number} ({self.quantity})"
-        )
+        return f"{self.movement_type}: " f"{self.batch.batch_number} ({self.quantity})"
 
 
 class StockReservation(models.Model):
@@ -574,15 +550,11 @@ class BatchLifecycleEvent(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk and type(self).objects.filter(pk=self.pk).exists():
-            raise ValidationError(
-                "Batch lifecycle events are immutable."
-            )
+            raise ValidationError("Batch lifecycle events are immutable.")
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        raise ValidationError(
-            "Batch lifecycle events cannot be deleted."
-        )
+        raise ValidationError("Batch lifecycle events cannot be deleted.")
 
 
 # Define these enums before StockCount and StockCountLine.
@@ -794,19 +766,15 @@ class StockCountLine(models.Model):
                 )
 
         if self.physical_quantity is not None:
-            self.variance = (
-                self.physical_quantity - self.system_quantity
-            )
+            self.variance = self.physical_quantity - self.system_quantity
 
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return (
-            f"{self.stock_count.reference_number} - "
-            f"{self.batch.batch_number}"
-        )
+        return f"{self.stock_count.reference_number} - " f"{self.batch.batch_number}"
+
 
 class StockReconciliation(models.Model):
     id = models.UUIDField(
@@ -879,9 +847,7 @@ class StockReconciliation(models.Model):
         ]
 
     def clean(self):
-        expected_variance = (
-            self.physical_quantity - self.system_quantity
-        )
+        expected_variance = self.physical_quantity - self.system_quantity
 
         if self.variance != expected_variance:
             raise ValidationError(
@@ -956,7 +922,7 @@ class BatchExpiryAlert(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.batch.batch_number}: {self.alert_level}"    
+        return f"{self.batch.batch_number}: {self.alert_level}"
 
 
 class StockPolicy(models.Model):
@@ -1153,9 +1119,7 @@ class StockPolicy(models.Model):
 
         if self.policy_level == self.PolicyLevel.FACILITY:
             if not self.facility_id:
-                errors["facility"] = (
-                    "A facility-specific policy requires a facility."
-                )
+                errors["facility"] = "A facility-specific policy requires a facility."
 
             elif (
                 self.organization_id
@@ -1183,21 +1147,12 @@ class StockPolicy(models.Model):
                 "Maximum stock cannot be lower than minimum stock."
             )
 
-        if self.effective_until and (
-            self.effective_until < self.effective_from
-        ):
-            errors["effective_until"] = (
-                "End date cannot be before the start date."
-            )
+        if self.effective_until and (self.effective_until < self.effective_from):
+            errors["effective_until"] = "End date cannot be before the start date."
 
         if self.status == self.PolicyStatus.ACTIVE:
-            if (
-                self.effective_until
-                and self.effective_until < timezone.localdate()
-            ):
-                errors["status"] = (
-                    "An expired policy cannot be activated."
-                )
+            if self.effective_until and self.effective_until < timezone.localdate():
+                errors["status"] = "An expired policy cannot be activated."
 
         if errors:
             raise ValidationError(errors)
@@ -1207,7 +1162,4 @@ class StockPolicy(models.Model):
         return super().save(*args, **kwargs)
 
     def __str__(self):
-        return (
-            f"{self.medicine} - "
-            f"{self.facility or self.organization}"
-        )
+        return f"{self.medicine} - " f"{self.facility or self.organization}"

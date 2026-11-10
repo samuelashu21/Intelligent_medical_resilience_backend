@@ -12,7 +12,6 @@ from apps.consumption.analytics_views import (
     DetectConsumptionAnomaliesView,
 )
 
-
 router = DefaultRouter()
 
 router.register(

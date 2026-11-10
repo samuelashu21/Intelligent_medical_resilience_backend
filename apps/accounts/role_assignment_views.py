@@ -1,4 +1,3 @@
-
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -90,8 +89,7 @@ class UserRoleAssignmentViewSet(viewsets.ModelViewSet):
         facility_ids = get_user_accessible_facility_ids(user)
 
         return queryset.filter(
-            Q(organization_id__in=organization_ids)
-            | Q(facility_id__in=facility_ids)
+            Q(organization_id__in=organization_ids) | Q(facility_id__in=facility_ids)
         )
 
     def create(self, request, *args, **kwargs):
@@ -118,9 +116,7 @@ class UserRoleAssignmentViewSet(viewsets.ModelViewSet):
                 "users.assign_roles",
                 facility=facility,
             ):
-                raise PermissionDenied(
-                    "You cannot assign roles at this facility."
-                )
+                raise PermissionDenied("You cannot assign roles at this facility.")
 
         elif organization is not None:
             if not user_has_permission(
@@ -149,20 +145,14 @@ class UserRoleAssignmentViewSet(viewsets.ModelViewSet):
                 action="ROLE_ASSIGNED",
                 target_type="UserRole",
                 target_id=assignment.pk,
-                description=(
-                    f"Assigned {role.code} to {target_user.email}."
-                ),
+                description=(f"Assigned {role.code} to {target_user.email}."),
                 organization=organization,
                 facility=facility,
                 changes={
                     "role": role.code,
                     "is_active": True,
-                    "valid_from": (
-                        valid_from.isoformat() if valid_from else None
-                    ),
-                    "valid_until": (
-                        valid_until.isoformat() if valid_until else None
-                    ),
+                    "valid_from": (valid_from.isoformat() if valid_from else None),
+                    "valid_until": (valid_until.isoformat() if valid_until else None),
                 },
                 request=request,
             )
@@ -211,12 +201,10 @@ class UserRoleAssignmentViewSet(viewsets.ModelViewSet):
 
         before = {
             "valid_from": (
-                assignment.valid_from.isoformat()
-                if assignment.valid_from else None
+                assignment.valid_from.isoformat() if assignment.valid_from else None
             ),
             "valid_until": (
-                assignment.valid_until.isoformat()
-                if assignment.valid_until else None
+                assignment.valid_until.isoformat() if assignment.valid_until else None
             ),
         }
 
@@ -224,12 +212,10 @@ class UserRoleAssignmentViewSet(viewsets.ModelViewSet):
 
         after = {
             "valid_from": (
-                updated.valid_from.isoformat()
-                if updated.valid_from else None
+                updated.valid_from.isoformat() if updated.valid_from else None
             ),
             "valid_until": (
-                updated.valid_until.isoformat()
-                if updated.valid_until else None
+                updated.valid_until.isoformat() if updated.valid_until else None
             ),
         }
 
@@ -261,14 +247,10 @@ class UserRoleAssignmentViewSet(viewsets.ModelViewSet):
         assignment = self.get_object()
 
         if not assignment.is_active:
-            return Response({
-                "detail": "Role assignment is already inactive."
-            })
+            return Response({"detail": "Role assignment is already inactive."})
 
         if assignment.user_id == request.user.pk:
-            raise PermissionDenied(
-                "You cannot revoke your own role assignment."
-            )
+            raise PermissionDenied("You cannot revoke your own role assignment.")
 
         # Scope-specific authorization.
         if assignment.facility_id:
@@ -289,9 +271,7 @@ class UserRoleAssignmentViewSet(viewsets.ModelViewSet):
             allowed = request.user.is_superuser
 
         if not allowed:
-            raise PermissionDenied(
-                "You cannot revoke this role assignment."
-            )
+            raise PermissionDenied("You cannot revoke this role assignment.")
 
         assignment = revoke_role_assignment(assignment)
 
@@ -302,8 +282,7 @@ class UserRoleAssignmentViewSet(viewsets.ModelViewSet):
             target_type="UserRole",
             target_id=assignment.pk,
             description=(
-                f"Revoked {assignment.role.code} from "
-                f"{assignment.user.email}."
+                f"Revoked {assignment.role.code} from " f"{assignment.user.email}."
             ),
             organization=assignment.organization,
             facility=assignment.facility,
@@ -316,6 +295,4 @@ class UserRoleAssignmentViewSet(viewsets.ModelViewSet):
             request=request,
         )
 
-        return Response({
-            "detail": "Role assignment revoked successfully."
-        })
+        return Response({"detail": "Role assignment revoked successfully."})

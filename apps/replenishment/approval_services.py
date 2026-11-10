@@ -1,4 +1,3 @@
-
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
@@ -17,7 +16,6 @@ from apps.replenishment.models import (
 )
 
 from apps.audit.models import AuditEvent
-
 
 PRIORITY_RANK = {
     "LOW": 1,
@@ -46,9 +44,7 @@ def find_organization_for_stage(
     """
     Find the nearest matching organization in the hierarchy.
     """
-    organizations = get_organization_ancestors(
-        facility_organization
-    )
+    organizations = get_organization_ancestors(facility_organization)
 
     for organization in organizations:
         organization_type = getattr(
@@ -59,8 +55,7 @@ def find_organization_for_stage(
 
         if (
             organization_type
-            and organization_type.code.upper()
-            == organization_type_code.upper()
+            and organization_type.code.upper() == organization_type_code.upper()
         ):
             return organization
 
@@ -82,43 +77,28 @@ def get_active_approval_workflow(organization):
 
     if not workflow:
         raise ValidationError(
-            "No active approval workflow is configured "
-            "for this organization."
+            "No active approval workflow is configured " "for this organization."
         )
 
     if not workflow.stages.exists():
-        raise ValidationError(
-            "The approval workflow has no stages."
-        )
+        raise ValidationError("The approval workflow has no stages.")
 
     return workflow
 
 
 @transaction.atomic
 def initialize_approval_workflow(request):
-    request = ReplenishmentRequest.objects.select_for_update().get(
-        pk=request.pk
-    )
+    request = ReplenishmentRequest.objects.select_for_update().get(pk=request.pk)
 
     if request.status != ReplenishmentRequest.Status.SUBMITTED:
-        raise ValidationError(
-            "Only submitted requests can enter approval routing."
-        )
+        raise ValidationError("Only submitted requests can enter approval routing.")
 
-    workflow = get_active_approval_workflow(
-        request.organization
-    )
+    workflow = get_active_approval_workflow(request.organization)
 
-    stages = list(
-        workflow.stages.filter(
-            sequence__gt=0
-        ).order_by("sequence")
-    )
+    stages = list(workflow.stages.filter(sequence__gt=0).order_by("sequence"))
 
     if not stages:
-        raise ValidationError(
-            "The workflow has no valid approval stages."
-        )
+        raise ValidationError("The workflow has no valid approval stages.")
 
     previous_sequence = 0
 
@@ -134,16 +114,11 @@ def initialize_approval_workflow(request):
     for stage in stages:
 
         if stage.sequence <= previous_sequence:
-            raise ValidationError(
-                "Approval sequences must be increasing."
-            )
+            raise ValidationError("Approval sequences must be increasing.")
 
         previous_sequence = stage.sequence
 
-        if (
-            PRIORITY_RANK[request.priority]
-            < PRIORITY_RANK[stage.minimum_priority]
-        ):
+        if PRIORITY_RANK[request.priority] < PRIORITY_RANK[stage.minimum_priority]:
             continue
 
         target_organization = find_organization_for_stage(
@@ -163,15 +138,11 @@ def initialize_approval_workflow(request):
         approvals.append(approval)
 
     if not approvals:
-        raise ValidationError(
-            "No approval stages apply to this request priority."
-        )
+        raise ValidationError("No approval stages apply to this request priority.")
 
     ReplenishmentApproval.objects.bulk_create(approvals)
 
-    return request.approval_stages.filter(
-        cycle_number=cycle_number
-    ).order_by(
+    return request.approval_stages.filter(cycle_number=cycle_number).order_by(
         "workflow_stage__sequence"
     )
 
@@ -185,9 +156,7 @@ def submit_replenishment_request(request):
     after its previous approval cycle has no pending approvals.
     """
 
-    request = ReplenishmentRequest.objects.select_for_update().get(
-        pk=request.pk
-    )
+    request = ReplenishmentRequest.objects.select_for_update().get(pk=request.pk)
 
     allowed_statuses = [
         ReplenishmentRequest.Status.DRAFT,
@@ -196,18 +165,19 @@ def submit_replenishment_request(request):
 
     if request.status not in allowed_statuses:
         raise ValidationError(
-            "Only draft or revision-requested requests "
-            "can be submitted."
+            "Only draft or revision-requested requests " "can be submitted."
         )
 
     if request.status == ReplenishmentRequest.Status.REVISION_REQUESTED:
 
-        latest_cycle = request.approval_stages.order_by(
-            "-cycle_number"
-        ).values_list(
-            "cycle_number",
-            flat=True,
-        ).first()
+        latest_cycle = (
+            request.approval_stages.order_by("-cycle_number")
+            .values_list(
+                "cycle_number",
+                flat=True,
+            )
+            .first()
+        )
 
         unfinished = request.approval_stages.filter(
             cycle_number=latest_cycle,
@@ -215,9 +185,7 @@ def submit_replenishment_request(request):
         ).exists()
 
         if unfinished:
-            raise ValidationError(
-                "The previous approval cycle is not complete."
-            )
+            raise ValidationError("The previous approval cycle is not complete.")
 
     request.status = ReplenishmentRequest.Status.SUBMITTED
     request.submitted_at = timezone.now()
@@ -235,22 +203,26 @@ def submit_replenishment_request(request):
 
 def get_current_approval(request):
 
-    latest_cycle = request.approval_stages.order_by(
-        "-cycle_number"
-    ).values_list(
-        "cycle_number",
-        flat=True,
-    ).first()
+    latest_cycle = (
+        request.approval_stages.order_by("-cycle_number")
+        .values_list(
+            "cycle_number",
+            flat=True,
+        )
+        .first()
+    )
 
     if latest_cycle is None:
         return None
 
-    return request.approval_stages.filter(
-        cycle_number=latest_cycle,
-        status=ReplenishmentApproval.Status.PENDING,
-    ).order_by(
-        "workflow_stage__sequence"
-    ).first()
+    return (
+        request.approval_stages.filter(
+            cycle_number=latest_cycle,
+            status=ReplenishmentApproval.Status.PENDING,
+        )
+        .order_by("workflow_stage__sequence")
+        .first()
+    )
 
 
 def user_has_approval_role(user, approval):
@@ -302,26 +274,18 @@ def decide_approval_stage(
     )
 
     if request.status != ReplenishmentRequest.Status.SUBMITTED:
-        raise ValidationError(
-            "This request is not awaiting approval."
-        )
+        raise ValidationError("This request is not awaiting approval.")
 
     current = get_current_approval(request)
 
     if not current or current.pk != approval.pk:
-        raise ValidationError(
-            "This approval stage is not currently actionable."
-        )
+        raise ValidationError("This approval stage is not currently actionable.")
 
     if approval.status != ReplenishmentApproval.Status.PENDING:
-        raise ValidationError(
-            "This approval stage has already been completed."
-        )
+        raise ValidationError("This approval stage has already been completed.")
 
     if request.requested_by_id == user.pk:
-        raise ValidationError(
-            "The requester cannot approve their own request."
-        )
+        raise ValidationError("The requester cannot approve their own request.")
 
     if not user_has_approval_role(user, approval):
         raise ValidationError(
@@ -330,9 +294,7 @@ def decide_approval_stage(
         )
 
     if not comments or not comments.strip():
-        raise ValidationError(
-            "Comments are required for approval decisions."
-        )
+        raise ValidationError("Comments are required for approval decisions.")
 
     allowed = [
         ApprovalDecision.Decision.APPROVED,
@@ -341,32 +303,21 @@ def decide_approval_stage(
     ]
 
     if decision not in allowed:
-        raise ValidationError(
-            "Unsupported approval decision."
-        )
+        raise ValidationError("Unsupported approval decision.")
 
     if (
         decision == ApprovalDecision.Decision.REVISION_REQUESTED
         and not approval.workflow_stage.allow_revision
     ):
-        raise ValidationError(
-            "This stage does not allow revision requests."
-        )
+        raise ValidationError("This stage does not allow revision requests.")
 
-    if (
-        decision == ApprovalDecision.Decision.REJECTED
-        and not comments.strip()
-    ):
-        raise ValidationError(
-            "A rejection reason is required."
-        )
+    if decision == ApprovalDecision.Decision.REJECTED and not comments.strip():
+        raise ValidationError("A rejection reason is required.")
 
     request.approval_stages.filter(
         cycle_number=approval.cycle_number,
         status=ReplenishmentApproval.Status.PENDING,
-    ).exclude(
-        pk=approval.pk
-    ).update(
+    ).exclude(pk=approval.pk).update(
         status=ReplenishmentApproval.Status.SKIPPED,
         completed_at=timezone.now(),
     )
@@ -378,9 +329,7 @@ def decide_approval_stage(
         approval.status = ReplenishmentApproval.Status.REJECTED
 
     else:
-        approval.status = (
-            ReplenishmentApproval.Status.REVISION_REQUESTED
-        )
+        approval.status = ReplenishmentApproval.Status.REVISION_REQUESTED
 
     approval.decided_by = user
     approval.completed_at = timezone.now()
@@ -420,9 +369,7 @@ def decide_approval_stage(
         metadata={
             "request_id": str(request.pk),
             "request_number": request.request_number,
-            "workflow_stage_id": str(
-                approval.workflow_stage_id
-            ),
+            "workflow_stage_id": str(approval.workflow_stage_id),
             "decision_id": str(approval_decision.pk),
         },
     )
@@ -444,9 +391,7 @@ def decide_approval_stage(
         )
 
     elif decision == ApprovalDecision.Decision.REVISION_REQUESTED:
-        request.status = (
-            ReplenishmentRequest.Status.REVISION_REQUESTED
-        )
+        request.status = ReplenishmentRequest.Status.REVISION_REQUESTED
 
         request.save(
             update_fields=[

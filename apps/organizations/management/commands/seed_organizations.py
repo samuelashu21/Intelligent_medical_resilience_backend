@@ -3,9 +3,8 @@ from django.db import transaction
 
 from apps.organizations.models import OrganizationUnitType
 
-
 ORGANIZATION_TYPES = [
-    { 
+    {
         "code": "NATIONAL",
         "name": "National",
         "level": 1,
@@ -41,32 +40,20 @@ class Command(BaseCommand):
             parent = None
 
             if item["parent_code"]:
-                parent = OrganizationUnitType.objects.get(
-                    code=item["parent_code"]
-                )
+                parent = OrganizationUnitType.objects.get(code=item["parent_code"])
 
-            organization_type, created = (
-                OrganizationUnitType.objects.update_or_create(
-                    code=item["code"],
-                    defaults={
-                        "name": item["name"],
-                        "level": item["level"],
-                        "parent_type": parent,
-                        "is_active": True,
-                    },
-                )
+            organization_type, created = OrganizationUnitType.objects.update_or_create(
+                code=item["code"],
+                defaults={
+                    "name": item["name"],
+                    "level": item["level"],
+                    "parent_type": parent,
+                    "is_active": True,
+                },
             )
 
             action = "Created" if created else "Updated"
 
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"{action}: {organization_type.code}"
-                )
-            )
+            self.stdout.write(self.style.SUCCESS(f"{action}: {organization_type.code}"))
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                "Organization types seeded successfully."
-            )
-        ) 
+        self.stdout.write(self.style.SUCCESS("Organization types seeded successfully."))

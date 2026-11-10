@@ -35,17 +35,13 @@ def audit_warehouse(
 
 @transaction.atomic
 def activate_warehouse(*, warehouse_id, request=None):
-    warehouse = Warehouse.objects.select_for_update().get(
-        pk=warehouse_id
-    )
+    warehouse = Warehouse.objects.select_for_update().get(pk=warehouse_id)
 
     if warehouse.status not in [
         WarehouseStatus.DRAFT,
         WarehouseStatus.MAINTENANCE,
     ]:
-        raise ValidationError(
-            "Only draft or maintenance warehouses can be activated."
-        )
+        raise ValidationError("Only draft or maintenance warehouses can be activated.")
 
     warehouse.status = WarehouseStatus.ACTIVE
     warehouse.save()
@@ -68,19 +64,13 @@ def suspend_warehouse(
     reason,
     request=None,
 ):
-    warehouse = Warehouse.objects.select_for_update().get(
-        pk=warehouse_id
-    )
+    warehouse = Warehouse.objects.select_for_update().get(pk=warehouse_id)
 
     if warehouse.status != WarehouseStatus.ACTIVE:
-        raise ValidationError(
-            "Only active warehouses can be suspended."
-        )
+        raise ValidationError("Only active warehouses can be suspended.")
 
     warehouse.status = WarehouseStatus.SUSPENDED
-    warehouse.notes = (
-        f"{warehouse.notes}\nSuspension reason: {reason}".strip()
-    )
+    warehouse.notes = f"{warehouse.notes}\nSuspension reason: {reason}".strip()
     warehouse.save()
 
     if request:
@@ -101,19 +91,13 @@ def set_warehouse_maintenance(
     reason,
     request=None,
 ):
-    warehouse = Warehouse.objects.select_for_update().get(
-        pk=warehouse_id
-    )
+    warehouse = Warehouse.objects.select_for_update().get(pk=warehouse_id)
 
     if warehouse.status != WarehouseStatus.ACTIVE:
-        raise ValidationError(
-            "Only active warehouses can enter maintenance."
-        )
+        raise ValidationError("Only active warehouses can enter maintenance.")
 
     warehouse.status = WarehouseStatus.MAINTENANCE
-    warehouse.notes = (
-        f"{warehouse.notes}\nMaintenance reason: {reason}".strip()
-    )
+    warehouse.notes = f"{warehouse.notes}\nMaintenance reason: {reason}".strip()
     warehouse.save()
 
     if request:
@@ -134,17 +118,13 @@ def close_warehouse(
     reason,
     request=None,
 ):
-    warehouse = Warehouse.objects.select_for_update().get(
-        pk=warehouse_id
-    )
+    warehouse = Warehouse.objects.select_for_update().get(pk=warehouse_id)
 
     if warehouse.status == WarehouseStatus.CLOSED:
         return warehouse
 
     warehouse.status = WarehouseStatus.CLOSED
-    warehouse.notes = (
-        f"{warehouse.notes}\nClosure reason: {reason}".strip()
-    )
+    warehouse.notes = f"{warehouse.notes}\nClosure reason: {reason}".strip()
     warehouse.save()
 
     if request:
@@ -168,19 +148,13 @@ def assign_warehouse_manager(
     valid_until=None,
 ):
     if warehouse.status == WarehouseStatus.CLOSED:
-        raise ValidationError(
-            "Cannot assign a manager to a closed warehouse."
-        )
+        raise ValidationError("Cannot assign a manager to a closed warehouse.")
 
     if not user.is_active:
-        raise ValidationError(
-            "Cannot assign an inactive user."
-        )
+        raise ValidationError("Cannot assign an inactive user.")
 
     if valid_until and valid_from and valid_until <= valid_from:
-        raise ValidationError(
-            "Assignment end must be after assignment start."
-        )
+        raise ValidationError("Assignment end must be after assignment start.")
 
     assignment = WarehouseManagerAssignment.objects.create(
         warehouse=warehouse,
@@ -221,10 +195,7 @@ def classify_temperature_reading(reading):
             "message": "No storage zone is associated with this reading.",
         }
 
-    if (
-        zone.minimum_temperature is None
-        or zone.maximum_temperature is None
-    ):
+    if zone.minimum_temperature is None or zone.maximum_temperature is None:
         return {
             "status": "UNCONFIGURED",
             "message": "Temperature limits are not configured.",
@@ -268,11 +239,7 @@ def get_warehouse_temperature_summary(warehouse):
         "total_readings": readings.count(),
         "latest_reading": {
             "temperature": str(latest.temperature),
-            "humidity": (
-                str(latest.humidity)
-                if latest.humidity is not None
-                else None
-            ),
+            "humidity": (str(latest.humidity) if latest.humidity is not None else None),
             "recorded_at": latest.recorded_at,
             "zone": latest.zone.name if latest.zone else None,
         },
@@ -294,11 +261,7 @@ def get_warehouse_capacity_summary(warehouse):
 
     total = latest.used_capacity + latest.available_capacity
 
-    utilization = (
-        float(latest.used_capacity / total * 100)
-        if total > 0
-        else 0
-    )
+    utilization = float(latest.used_capacity / total * 100) if total > 0 else 0
 
     return {
         "used_capacity": str(latest.used_capacity),

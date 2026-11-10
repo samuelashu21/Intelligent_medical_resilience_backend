@@ -40,12 +40,8 @@ class FacilityStockVisibilityView(APIView):
         medicine_id = request.query_params.get("medicine")
 
         if medicine_id:
-            if not Medicine.objects.filter(
-                pk=medicine_id
-            ).exists():
-                raise ValidationError({
-                    "medicine": "Medicine not found."
-                })
+            if not Medicine.objects.filter(pk=medicine_id).exists():
+                raise ValidationError({"medicine": "Medicine not found."})
 
         rows = get_visible_facility_medicine_stock(
             user=request.user,
@@ -57,10 +53,12 @@ class FacilityStockVisibilityView(APIView):
             many=True,
         )
 
-        return Response({
-            "count": len(serializer.data),
-            "results": serializer.data,
-        })
+        return Response(
+            {
+                "count": len(serializer.data),
+                "results": serializer.data,
+            }
+        )
 
 
 class MedicineFacilityAvailabilityView(APIView):
@@ -79,16 +77,10 @@ class MedicineFacilityAvailabilityView(APIView):
         medicine_id = request.query_params.get("medicine")
 
         if not medicine_id:
-            raise ValidationError({
-                "medicine": "Medicine ID is required."
-            })
+            raise ValidationError({"medicine": "Medicine ID is required."})
 
-        if not Medicine.objects.filter(
-            pk=medicine_id
-        ).exists():
-            raise ValidationError({
-                "medicine": "Medicine not found."
-            })
+        if not Medicine.objects.filter(pk=medicine_id).exists():
+            raise ValidationError({"medicine": "Medicine not found."})
 
         rows = get_visible_facility_medicine_stock(
             user=request.user,
@@ -100,11 +92,13 @@ class MedicineFacilityAvailabilityView(APIView):
             many=True,
         )
 
-        return Response({
-            "medicine": medicine_id,
-            "facility_count": len(serializer.data),
-            "results": serializer.data,
-        })
+        return Response(
+            {
+                "medicine": medicine_id,
+                "facility_count": len(serializer.data),
+                "results": serializer.data,
+            }
+        )
 
 
 class FacilityStockPortfolioView(APIView):
@@ -120,9 +114,7 @@ class FacilityStockPortfolioView(APIView):
 
     def get(self, request, facility_id):
 
-        visible_ids = get_visible_facility_ids(
-            request.user
-        )
+        visible_ids = get_visible_facility_ids(request.user)
 
         facility = Facility.objects.filter(
             pk=facility_id,
@@ -133,20 +125,21 @@ class FacilityStockPortfolioView(APIView):
         if not facility:
             # Avoid disclosing whether an inaccessible facility exists.
             from rest_framework.exceptions import NotFound
+
             raise NotFound("Facility not found.")
 
-        rows = get_facility_stock_by_medicine(
-            facility_id=facility.pk
-        )
+        rows = get_facility_stock_by_medicine(facility_id=facility.pk)
 
-        return Response({
-            "facility": {
-                "id": str(facility.pk),
-                "code": facility.code,
-                "name": facility.name,
-            },
-            "results": list(rows),
-        })
+        return Response(
+            {
+                "facility": {
+                    "id": str(facility.pk),
+                    "code": facility.code,
+                    "name": facility.name,
+                },
+                "results": list(rows),
+            }
+        )
 
 
 class FacilityStockClassificationView(APIView):
@@ -166,22 +159,18 @@ class FacilityStockClassificationView(APIView):
         facility_id = request.query_params.get("facility")
 
         if not medicine_id or not facility_id:
-            raise ValidationError({
-                "detail": (
-                    "Both medicine and facility query parameters are required."
-                )
-            })
+            raise ValidationError(
+                {
+                    "detail": (
+                        "Both medicine and facility query parameters are required."
+                    )
+                }
+            )
 
-        if not Medicine.objects.filter(
-            pk=medicine_id
-        ).exists():
-            raise ValidationError({
-                "medicine": "Medicine not found."
-            })
+        if not Medicine.objects.filter(pk=medicine_id).exists():
+            raise ValidationError({"medicine": "Medicine not found."})
 
-        visible_ids = get_visible_facility_ids(
-            request.user
-        )
+        visible_ids = get_visible_facility_ids(request.user)
 
         if not Facility.objects.filter(
             pk=facility_id,
@@ -189,6 +178,7 @@ class FacilityStockClassificationView(APIView):
             is_active=True,
         ).exists():
             from rest_framework.exceptions import NotFound
+
             raise NotFound("Facility not found.")
 
         result = classify_facility_medicine_stock(
@@ -196,8 +186,6 @@ class FacilityStockClassificationView(APIView):
             medicine_id=medicine_id,
         )
 
-        serializer = FacilityStockClassificationSerializer(
-            result
-        )
+        serializer = FacilityStockClassificationSerializer(result)
 
         return Response(serializer.data)

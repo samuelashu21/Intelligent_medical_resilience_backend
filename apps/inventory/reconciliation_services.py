@@ -32,12 +32,8 @@ def create_stock_count(
     if not reference_number or not reference_number.strip():
         raise ValidationError("A reference number is required.")
 
-    if StockCount.objects.filter(
-        reference_number=reference_number
-    ).exists():
-        raise ValidationError(
-            "This stock count reference number already exists."
-        )
+    if StockCount.objects.filter(reference_number=reference_number).exists():
+        raise ValidationError("This stock count reference number already exists.")
 
     stock_count = StockCount.objects.create(
         warehouse_id=warehouse_id,
@@ -70,14 +66,10 @@ def create_stock_count(
 
 @transaction.atomic
 def start_stock_count(stock_count_id):
-    stock_count = StockCount.objects.select_for_update().get(
-        pk=stock_count_id
-    )
+    stock_count = StockCount.objects.select_for_update().get(pk=stock_count_id)
 
     if stock_count.status != StockCountStatus.DRAFT:
-        raise ValidationError(
-            "Only draft stock counts can be started."
-        )
+        raise ValidationError("Only draft stock counts can be started.")
 
     stock_count.status = StockCountStatus.IN_PROGRESS
     stock_count.started_at = timezone.now()
@@ -102,21 +94,21 @@ def record_physical_count(
     explanation="",
 ):
     if physical_quantity is None:
-        raise ValidationError(
-            "A physical quantity is required."
-        )
+        raise ValidationError("A physical quantity is required.")
 
     physical_quantity = Decimal(str(physical_quantity))
 
     if physical_quantity < 0:
-        raise ValidationError(
-            "Physical quantity cannot be negative."
-        )
+        raise ValidationError("Physical quantity cannot be negative.")
 
-    line = StockCountLine.objects.select_for_update().select_related(
-        "stock_count",
-        "batch",
-    ).get(pk=line_id)
+    line = (
+        StockCountLine.objects.select_for_update()
+        .select_related(
+            "stock_count",
+            "batch",
+        )
+        .get(pk=line_id)
+    )
 
     if line.stock_count.status != StockCountStatus.IN_PROGRESS:
         raise ValidationError(
@@ -126,9 +118,7 @@ def record_physical_count(
     variance = physical_quantity - line.system_quantity
 
     if variance != 0 and not reason:
-        raise ValidationError(
-            "A variance reason is required when quantities differ."
-        )
+        raise ValidationError("A variance reason is required when quantities differ.")
 
     line.physical_quantity = physical_quantity
     line.variance = variance
@@ -144,27 +134,19 @@ def record_physical_count(
 
 @transaction.atomic
 def submit_stock_count(stock_count_id, submitted_by):
-    stock_count = StockCount.objects.select_for_update().get(
-        pk=stock_count_id
-    )
+    stock_count = StockCount.objects.select_for_update().get(pk=stock_count_id)
 
     if stock_count.status != StockCountStatus.IN_PROGRESS:
-        raise ValidationError(
-            "Only an active stock count can be submitted."
-        )
+        raise ValidationError("Only an active stock count can be submitted.")
 
     if stock_count.created_by_id == submitted_by.pk:
         # The creator may submit the count, but must not approve it.
         pass
 
-    incomplete = stock_count.lines.filter(
-        physical_quantity__isnull=True
-    ).exists()
+    incomplete = stock_count.lines.filter(physical_quantity__isnull=True).exists()
 
     if incomplete:
-        raise ValidationError(
-            "Every stock count line must have a physical count."
-        )
+        raise ValidationError("Every stock count line must have a physical count.")
 
     stock_count.status = StockCountStatus.SUBMITTED
     stock_count.submitted_by = submitted_by
@@ -184,27 +166,19 @@ def submit_stock_count(stock_count_id, submitted_by):
 
 @transaction.atomic
 def approve_stock_count(stock_count_id, approved_by):
-    stock_count = StockCount.objects.select_for_update().get(
-        pk=stock_count_id
-    )
+    stock_count = StockCount.objects.select_for_update().get(pk=stock_count_id)
 
     if stock_count.status not in [
         StockCountStatus.SUBMITTED,
         StockCountStatus.UNDER_REVIEW,
     ]:
-        raise ValidationError(
-            "Only submitted stock counts can be approved."
-        )
+        raise ValidationError("Only submitted stock counts can be approved.")
 
     if stock_count.created_by_id == approved_by.pk:
-        raise ValidationError(
-            "The person who created the count cannot approve it."
-        )
+        raise ValidationError("The person who created the count cannot approve it.")
 
     if stock_count.submitted_by_id == approved_by.pk:
-        raise ValidationError(
-            "The person who submitted the count cannot approve it."
-        )
+        raise ValidationError("The person who submitted the count cannot approve it.")
 
     stock_count.status = StockCountStatus.APPROVED
     stock_count.approved_by = approved_by
@@ -226,31 +200,21 @@ def approve_stock_count(stock_count_id, approved_by):
 def reject_stock_count(stock_count_id, rejected_by, reason):
     _require_reason(reason)
 
-    stock_count = StockCount.objects.select_for_update().get(
-        pk=stock_count_id
-    )
+    stock_count = StockCount.objects.select_for_update().get(pk=stock_count_id)
 
     if stock_count.status not in [
         StockCountStatus.SUBMITTED,
         StockCountStatus.UNDER_REVIEW,
     ]:
-        raise ValidationError(
-            "Only submitted counts can be rejected."
-        )
+        raise ValidationError("Only submitted counts can be rejected.")
 
     if stock_count.created_by_id == rejected_by.pk:
-        raise ValidationError(
-            "The count creator cannot reject their own submission."
-        )
+        raise ValidationError("The count creator cannot reject their own submission.")
 
     stock_count.status = StockCountStatus.REJECTED
-    stock_count.notes = (
-        f"{stock_count.notes}\nRejection: {reason}".strip()
-    )
+    stock_count.notes = f"{stock_count.notes}\nRejection: {reason}".strip()
 
-    stock_count.save(
-        update_fields=["status", "notes", "updated_at"]
-    )
+    stock_count.save(update_fields=["status", "notes", "updated_at"])
 
     return stock_count
 
@@ -260,28 +224,18 @@ def post_stock_reconciliation(
     stock_count_id,
     posted_by,
 ):
-    stock_count = StockCount.objects.select_for_update().get(
-        pk=stock_count_id
-    )
+    stock_count = StockCount.objects.select_for_update().get(pk=stock_count_id)
 
     if stock_count.status != StockCountStatus.APPROVED:
-        raise ValidationError(
-            "Only approved stock counts can be posted."
-        )
+        raise ValidationError("Only approved stock counts can be posted.")
 
     if stock_count.created_by_id == posted_by.pk:
-        raise ValidationError(
-            "The count creator cannot post their own reconciliation."
-        )
+        raise ValidationError("The count creator cannot post their own reconciliation.")
 
     if stock_count.approved_by_id == posted_by.pk:
-        raise ValidationError(
-            "The approver cannot post their own reconciliation."
-        )
+        raise ValidationError("The approver cannot post their own reconciliation.")
 
-    lines = list(
-        stock_count.lines.select_related("batch").order_by("batch_id")
-    )
+    lines = list(stock_count.lines.select_related("batch").order_by("batch_id"))
 
     for line in lines:
         if line.physical_quantity is None:
@@ -297,9 +251,7 @@ def post_stock_reconciliation(
                 f"Batch {line.batch.batch_number} requires a variance reason."
             )
 
-        balance = InventoryBalance.objects.select_for_update().get(
-            batch=line.batch
-        )
+        balance = InventoryBalance.objects.select_for_update().get(batch=line.batch)
 
         # Do not apply a stale count against a balance that changed
         # after the original system snapshot was captured.
@@ -346,8 +298,6 @@ def post_stock_reconciliation(
     stock_count.status = StockCountStatus.POSTED
     stock_count.posted_at = timezone.now()
 
-    stock_count.save(
-        update_fields=["status", "posted_at", "updated_at"]
-    )
+    stock_count.save(update_fields=["status", "posted_at", "updated_at"])
 
     return stock_count

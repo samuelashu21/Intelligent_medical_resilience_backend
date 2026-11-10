@@ -1,4 +1,3 @@
-
 from django.utils import timezone
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
@@ -34,10 +33,10 @@ from apps.redistribution.recommendation_serializers import (
     GenerateRecommendationSerializer,
 )
 
-
 # ==========================================================
 # ATOMIC RECOMMENDATION REVIEW SERVICE
 # ==========================================================
+
 
 @transaction.atomic
 def review_recommendation_record(
@@ -59,8 +58,7 @@ def review_recommendation_record(
 
     try:
         recommendation = (
-            RedistributionRecommendation.objects
-            .select_for_update()
+            RedistributionRecommendation.objects.select_for_update()
             .select_related(
                 "medicine",
                 "donor_facility",
@@ -72,21 +70,14 @@ def review_recommendation_record(
         )
 
     except RedistributionRecommendation.DoesNotExist:
-        raise NotFound(
-            "Redistribution recommendation not found."
-        )
+        raise NotFound("Redistribution recommendation not found.")
 
     # Only pending recommendations can be reviewed.
     if recommendation.status != RecommendationStatus.PENDING:
-        raise ValidationError(
-            "Only pending recommendations can be reviewed."
-        )
+        raise ValidationError("Only pending recommendations can be reviewed.")
 
     # Check expiration while holding the database row lock.
-    if (
-        recommendation.expires_at
-        and recommendation.expires_at <= timezone.now()
-    ):
+    if recommendation.expires_at and recommendation.expires_at <= timezone.now():
         recommendation.status = RecommendationStatus.EXPIRED
 
         recommendation.save(
@@ -96,9 +87,7 @@ def review_recommendation_record(
             ]
         )
 
-        raise ValidationError(
-            "This recommendation has expired."
-        )
+        raise ValidationError("This recommendation has expired.")
 
     # Preserve the original status for audit logging.
     old_status = recommendation.status
@@ -130,18 +119,10 @@ def review_recommendation_record(
             },
         },
         metadata={
-            "donor_facility_id": str(
-                recommendation.donor_facility_id
-            ),
-            "recipient_facility_id": str(
-                recommendation.recipient_facility_id
-            ),
-            "medicine_id": str(
-                recommendation.medicine_id
-            ),
-            "recommended_quantity": str(
-                recommendation.recommended_quantity
-            ),
+            "donor_facility_id": str(recommendation.donor_facility_id),
+            "recipient_facility_id": str(recommendation.recipient_facility_id),
+            "medicine_id": str(recommendation.medicine_id),
+            "recommended_quantity": str(recommendation.recommended_quantity),
         },
     )
 
@@ -152,9 +133,8 @@ def review_recommendation_record(
 # REDISTRIBUTION RECOMMENDATION VIEWSET
 # ==========================================================
 
-class RedistributionRecommendationViewSet(
-    viewsets.ReadOnlyModelViewSet
-):
+
+class RedistributionRecommendationViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = RedistributionRecommendationSerializer
 
@@ -186,9 +166,7 @@ class RedistributionRecommendationViewSet(
 
     def get_permissions(self):
 
-        self.required_permissions = [
-            self.get_required_permission()
-        ]
+        self.required_permissions = [self.get_required_permission()]
 
         return super().get_permissions()
 
@@ -196,16 +174,13 @@ class RedistributionRecommendationViewSet(
 
         user = self.request.user
 
-        queryset = (
-            RedistributionRecommendation.objects
-            .select_related(
-                "medicine",
-                "donor_facility",
-                "recipient_facility",
-                "donor_organization",
-                "recipient_organization",
-                "reviewed_by",
-            )
+        queryset = RedistributionRecommendation.objects.select_related(
+            "medicine",
+            "donor_facility",
+            "recipient_facility",
+            "donor_organization",
+            "recipient_organization",
+            "reviewed_by",
         )
 
         # --------------------------------------------------
@@ -235,29 +210,19 @@ class RedistributionRecommendationViewSet(
         recipient_id = self.request.query_params.get("recipient")
 
         if medicine_id:
-            queryset = queryset.filter(
-                medicine_id=medicine_id
-            )
+            queryset = queryset.filter(medicine_id=medicine_id)
 
         if priority:
-            queryset = queryset.filter(
-                priority=priority
-            )
+            queryset = queryset.filter(priority=priority)
 
         if recommendation_status:
-            queryset = queryset.filter(
-                status=recommendation_status
-            )
+            queryset = queryset.filter(status=recommendation_status)
 
         if donor_id:
-            queryset = queryset.filter(
-                donor_facility_id=donor_id
-            )
+            queryset = queryset.filter(donor_facility_id=donor_id)
 
         if recipient_id:
-            queryset = queryset.filter(
-                recipient_facility_id=recipient_id
-            )
+            queryset = queryset.filter(recipient_facility_id=recipient_id)
 
         return queryset
 
@@ -282,26 +247,18 @@ class RedistributionRecommendationViewSet(
     @action(detail=False, methods=["post"])
     def generate(self, request):
 
-        serializer = self.get_serializer(
-            data=request.data
-        )
+        serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         try:
-            recommendations = (
-                generate_redistribution_recommendations(
-                    user=request.user,
-                    medicine_id=serializer.validated_data["medicine"],
-                    amc_months=serializer.validated_data["amc_months"],
-                    maximum_distance_km=(
-                        serializer.validated_data.get(
-                            "maximum_distance_km"
-                        )
-                    ),
-                )
+            recommendations = generate_redistribution_recommendations(
+                user=request.user,
+                medicine_id=serializer.validated_data["medicine"],
+                amc_months=serializer.validated_data["amc_months"],
+                maximum_distance_km=(
+                    serializer.validated_data.get("maximum_distance_km")
+                ),
             )
 
         except DjangoValidationError as exc:
@@ -334,13 +291,9 @@ class RedistributionRecommendationViewSet(
         to the atomic, row-locked review service.
         """
 
-        serializer = RecommendationReviewSerializer(
-            data=request.data
-        )
+        serializer = RecommendationReviewSerializer(data=request.data)
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         try:
             recommendation = review_recommendation_record(
@@ -353,11 +306,7 @@ class RedistributionRecommendationViewSet(
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            RedistributionRecommendationSerializer(
-                recommendation
-            ).data
-        )
+        return Response(RedistributionRecommendationSerializer(recommendation).data)
 
     # ------------------------------------------------------
     # ACCEPT RECOMMENDATION

@@ -12,23 +12,18 @@ class Command(BaseCommand):
         try:
             discrepancies = check_inventory_balance_integrity()
         except Exception as exc:
-            raise CommandError(
-                f"Inventory integrity check failed: {exc}"
-            ) from exc
+            raise CommandError(f"Inventory integrity check failed: {exc}") from exc
 
         if not discrepancies:
             self.stdout.write(
                 self.style.SUCCESS(
-                    "Inventory integrity check passed. "
-                    "No discrepancies detected."
+                    "Inventory integrity check passed. " "No discrepancies detected."
                 )
             )
             return
 
         self.stdout.write(
-            self.style.ERROR(
-                f"Detected {len(discrepancies)} stock discrepancies."
-            )
+            self.style.ERROR(f"Detected {len(discrepancies)} stock discrepancies.")
         )
 
         for item in discrepancies:
@@ -41,6 +36,4 @@ class Command(BaseCommand):
                 f"Difference: {item['discrepancy']}"
             )
 
-        raise CommandError(
-            "Inventory integrity check found discrepancies."
-        )
+        raise CommandError("Inventory integrity check found discrepancies.")

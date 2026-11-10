@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-
 # These are reporting defaults, not official national stock policies.
 # They will become configurable organization/facility settings later.
 

@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -44,10 +43,10 @@ from apps.procurement.services import (
     acknowledge_purchase_order,
 )
 
-
 # ============================================================
 # VALIDATION ERROR CONVERSION
 # ============================================================
+
 
 def convert_validation_error(exc):
     if hasattr(exc, "messages"):
@@ -59,6 +58,7 @@ def convert_validation_error(exc):
 # ============================================================
 # BASE PROCUREMENT VIEWSET
 # ============================================================
+
 
 class ProcurementScopedViewSet(viewsets.GenericViewSet):
 
@@ -92,6 +92,7 @@ class ProcurementScopedViewSet(viewsets.GenericViewSet):
 # PURCHASE REQUISITION VIEWSET
 # ============================================================
 
+
 class PurchaseRequisitionViewSet(ProcurementScopedViewSet):
 
     def get_queryset(self):
@@ -109,9 +110,7 @@ class PurchaseRequisitionViewSet(ProcurementScopedViewSet):
             "procurement.requisition.view"
         )
 
-        return queryset.filter(
-            organization_id__in=organization_ids
-        )
+        return queryset.filter(organization_id__in=organization_ids)
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -136,9 +135,7 @@ class PurchaseRequisitionViewSet(ProcurementScopedViewSet):
         return super().get_permissions()
 
     def list(self, request):
-        queryset = self.filter_queryset(
-            self.get_queryset()
-        )
+        queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
 
@@ -148,9 +145,7 @@ class PurchaseRequisitionViewSet(ProcurementScopedViewSet):
                 many=True,
             )
 
-            return self.get_paginated_response(
-                serializer.data
-            )
+            return self.get_paginated_response(serializer.data)
 
         return Response(
             PurchaseRequisitionSerializer(
@@ -162,24 +157,18 @@ class PurchaseRequisitionViewSet(ProcurementScopedViewSet):
     def retrieve(self, request, pk=None):
         obj = self.get_object()
 
-        return Response(
-            PurchaseRequisitionSerializer(obj).data
-        )
+        return Response(PurchaseRequisitionSerializer(obj).data)
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        request_id = serializer.validated_data[
-            "replenishment_request"
-        ]
+        request_id = serializer.validated_data["replenishment_request"]
 
         try:
             from apps.replenishment.models import ReplenishmentRequest
 
-            source = ReplenishmentRequest.objects.get(
-                pk=request_id
-            )
+            source = ReplenishmentRequest.objects.get(pk=request_id)
 
             self.check_organization_permission(
                 source.organization,
@@ -189,9 +178,7 @@ class PurchaseRequisitionViewSet(ProcurementScopedViewSet):
             requisition = create_purchase_requisition(
                 replenishment_request_id=request_id,
                 user=request.user,
-                justification=serializer.validated_data.get(
-                    "justification"
-                ),
+                justification=serializer.validated_data.get("justification"),
                 notes=serializer.validated_data.get(
                     "notes",
                     "",
@@ -224,9 +211,7 @@ class PurchaseRequisitionViewSet(ProcurementScopedViewSet):
         except DjangoValidationError as exc:
             raise convert_validation_error(exc)
 
-        return Response(
-            PurchaseRequisitionSerializer(result).data
-        )
+        return Response(PurchaseRequisitionSerializer(result).data)
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
@@ -246,14 +231,13 @@ class PurchaseRequisitionViewSet(ProcurementScopedViewSet):
         except DjangoValidationError as exc:
             raise convert_validation_error(exc)
 
-        return Response(
-            PurchaseRequisitionSerializer(result).data
-        )
+        return Response(PurchaseRequisitionSerializer(result).data)
 
 
 # ============================================================
 # SUPPLIER QUOTATION VIEWSET
 # ============================================================
+
 
 class SupplierQuotationViewSet(ProcurementScopedViewSet):
 
@@ -272,9 +256,7 @@ class SupplierQuotationViewSet(ProcurementScopedViewSet):
             "procurement.quotation.view"
         )
 
-        return queryset.filter(
-            requisition__organization_id__in=organization_ids
-        )
+        return queryset.filter(requisition__organization_id__in=organization_ids)
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -318,11 +300,7 @@ class SupplierQuotationViewSet(ProcurementScopedViewSet):
         )
 
     def retrieve(self, request, pk=None):
-        return Response(
-            SupplierQuotationSerializer(
-                self.get_object()
-            ).data
-        )
+        return Response(SupplierQuotationSerializer(self.get_object()).data)
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -331,9 +309,7 @@ class SupplierQuotationViewSet(ProcurementScopedViewSet):
         data = serializer.validated_data
 
         try:
-            requisition = PurchaseRequisition.objects.get(
-                pk=data["requisition"]
-            )
+            requisition = PurchaseRequisition.objects.get(pk=data["requisition"])
 
             self.check_organization_permission(
                 requisition.organization,
@@ -370,47 +346,45 @@ class SupplierQuotationViewSet(ProcurementScopedViewSet):
     @action(detail=False, methods=["get"])
     def compare(self, request):
 
-        requisition_id = request.query_params.get(
-            "requisition"
-        )
+        requisition_id = request.query_params.get("requisition")
 
         if not requisition_id:
-            raise ValidationError({
-                "requisition": "This query parameter is required."
-            })
+            raise ValidationError({"requisition": "This query parameter is required."})
 
         # get_queryset() enforces organization-level visibility.
-        quotations = self.get_queryset().filter(
-            requisition_id=requisition_id,
-            status__in=[
-                "RECEIVED",
-                "UNDER_REVIEW",
-            ],
-        ).prefetch_related("items")
+        quotations = (
+            self.get_queryset()
+            .filter(
+                requisition_id=requisition_id,
+                status__in=[
+                    "RECEIVED",
+                    "UNDER_REVIEW",
+                ],
+            )
+            .prefetch_related("items")
+        )
 
         if not quotations.exists():
             return Response(
-                {
-                    "detail": "No eligible quotations were found."
-                },
+                {"detail": "No eligible quotations were found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        currencies = set(
-            quotations.values_list("currency", flat=True)
-        )
+        currencies = set(quotations.values_list("currency", flat=True))
 
         # Do not compare prices across different currencies.
         if len(currencies) > 1:
-            return Response({
-                "detail": (
-                    "Quotations use different currencies. "
-                    "Convert them using an approved exchange-rate "
-                    "source before comparing total prices."
-                ),
-                "currencies": sorted(currencies),
-                "results": [],
-            })
+            return Response(
+                {
+                    "detail": (
+                        "Quotations use different currencies. "
+                        "Convert them using an approved exchange-rate "
+                        "source before comparing total prices."
+                    ),
+                    "currencies": sorted(currencies),
+                    "results": [],
+                }
+            )
 
         from apps.procurement.services import (
             calculate_quotation_total,
@@ -419,17 +393,17 @@ class SupplierQuotationViewSet(ProcurementScopedViewSet):
         results = []
 
         for quotation in quotations:
-            results.append({
-                "quotation_id": str(quotation.pk),
-                "quotation_number": quotation.quotation_number,
-                "supplier": quotation.supplier.name,
-                "currency": quotation.currency,
-                "total": str(
-                    calculate_quotation_total(quotation)
-                ),
-                "delivery_days": quotation.delivery_days,
-                "valid_until": quotation.valid_until.isoformat(),
-            })
+            results.append(
+                {
+                    "quotation_id": str(quotation.pk),
+                    "quotation_number": quotation.quotation_number,
+                    "supplier": quotation.supplier.name,
+                    "currency": quotation.currency,
+                    "total": str(calculate_quotation_total(quotation)),
+                    "delivery_days": quotation.delivery_days,
+                    "valid_until": quotation.valid_until.isoformat(),
+                }
+            )
 
         # Lowest total first, then shortest delivery time.
         results.sort(
@@ -439,16 +413,18 @@ class SupplierQuotationViewSet(ProcurementScopedViewSet):
             )
         )
 
-        return Response({
-            "requisition": requisition_id,
-            "currency": next(iter(currencies)),
-            "comparison": results,
-            "selection_notice": (
-                "The lowest price is not automatically the best "
-                "supplier. Review delivery, quality, availability, "
-                "and contractual terms before selection."
-            ),
-        })
+        return Response(
+            {
+                "requisition": requisition_id,
+                "currency": next(iter(currencies)),
+                "comparison": results,
+                "selection_notice": (
+                    "The lowest price is not automatically the best "
+                    "supplier. Review delivery, quality, availability, "
+                    "and contractual terms before selection."
+                ),
+            }
+        )
 
     # --------------------------------------------------------
     # SELECT SUPPLIER QUOTATION
@@ -463,9 +439,7 @@ class SupplierQuotationViewSet(ProcurementScopedViewSet):
             "procurement.quotation.select",
         )
 
-        serializer = SupplierSelectionSerializer(
-            data=request.data
-        )
+        serializer = SupplierSelectionSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 
@@ -473,22 +447,19 @@ class SupplierQuotationViewSet(ProcurementScopedViewSet):
             result = select_supplier_quotation(
                 quotation_id=quotation.pk,
                 user=request.user,
-                justification=serializer.validated_data[
-                    "justification"
-                ],
+                justification=serializer.validated_data["justification"],
             )
 
         except DjangoValidationError as exc:
             raise convert_validation_error(exc)
 
-        return Response(
-            SupplierQuotationSerializer(result).data
-        )
+        return Response(SupplierQuotationSerializer(result).data)
 
 
 # ============================================================
 # PURCHASE ORDER VIEWSET
 # ============================================================
+
 
 class PurchaseOrderViewSet(ProcurementScopedViewSet):
 
@@ -505,13 +476,9 @@ class PurchaseOrderViewSet(ProcurementScopedViewSet):
         if self.request.user.is_superuser:
             return queryset
 
-        organization_ids = self.get_scoped_organization_ids(
-            "procurement.order.view"
-        )
+        organization_ids = self.get_scoped_organization_ids("procurement.order.view")
 
-        return queryset.filter(
-            organization_id__in=organization_ids
-        )
+        return queryset.filter(organization_id__in=organization_ids)
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -558,11 +525,7 @@ class PurchaseOrderViewSet(ProcurementScopedViewSet):
         )
 
     def retrieve(self, request, pk=None):
-        return Response(
-            PurchaseOrderSerializer(
-                self.get_object()
-            ).data
-        )
+        return Response(PurchaseOrderSerializer(self.get_object()).data)
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -591,9 +554,7 @@ class PurchaseOrderViewSet(ProcurementScopedViewSet):
                     "shipping_amount",
                     0,
                 ),
-                expected_delivery_date=data.get(
-                    "expected_delivery_date"
-                ),
+                expected_delivery_date=data.get("expected_delivery_date"),
                 notes=data.get("notes", ""),
             )
 
@@ -623,9 +584,7 @@ class PurchaseOrderViewSet(ProcurementScopedViewSet):
         except DjangoValidationError as exc:
             raise convert_validation_error(exc)
 
-        return Response(
-            PurchaseOrderSerializer(result).data
-        )
+        return Response(PurchaseOrderSerializer(result).data)
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
@@ -645,9 +604,7 @@ class PurchaseOrderViewSet(ProcurementScopedViewSet):
         except DjangoValidationError as exc:
             raise convert_validation_error(exc)
 
-        return Response(
-            PurchaseOrderSerializer(result).data
-        )
+        return Response(PurchaseOrderSerializer(result).data)
 
     @action(detail=True, methods=["post"])
     def send(self, request, pk=None):
@@ -667,9 +624,7 @@ class PurchaseOrderViewSet(ProcurementScopedViewSet):
         except DjangoValidationError as exc:
             raise convert_validation_error(exc)
 
-        return Response(
-            PurchaseOrderSerializer(result).data
-        )
+        return Response(PurchaseOrderSerializer(result).data)
 
     @action(detail=True, methods=["post"])
     def acknowledge(self, request, pk=None):
@@ -689,6 +644,4 @@ class PurchaseOrderViewSet(ProcurementScopedViewSet):
         except DjangoValidationError as exc:
             raise convert_validation_error(exc)
 
-        return Response(
-            PurchaseOrderSerializer(result).data
-        )
+        return Response(PurchaseOrderSerializer(result).data)

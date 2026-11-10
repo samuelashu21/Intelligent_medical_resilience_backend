@@ -96,51 +96,48 @@ class StockPolicySerializer(serializers.ModelSerializer):
         )
 
         if not organization:
-            raise serializers.ValidationError({
-                "organization": "Organization is required."
-            })
+            raise serializers.ValidationError(
+                {"organization": "Organization is required."}
+            )
 
         if maximum_stock is None:
-            raise serializers.ValidationError({
-                "maximum_stock": "Maximum stock is required."
-            })
+            raise serializers.ValidationError(
+                {"maximum_stock": "Maximum stock is required."}
+            )
 
         if maximum_stock < minimum_stock:
-            raise serializers.ValidationError({
-                "maximum_stock": (
-                    "Maximum stock must be greater than or equal "
-                    "to minimum stock."
-                )
-            })
+            raise serializers.ValidationError(
+                {
+                    "maximum_stock": (
+                        "Maximum stock must be greater than or equal "
+                        "to minimum stock."
+                    )
+                }
+            )
 
         if policy_level == StockPolicy.PolicyLevel.FACILITY:
             if not facility:
-                raise serializers.ValidationError({
-                    "facility": (
-                        "Facility is required for a facility policy."
-                    )
-                })
+                raise serializers.ValidationError(
+                    {"facility": ("Facility is required for a facility policy.")}
+                )
 
             if facility.organization_id != organization.pk:
-                raise serializers.ValidationError({
-                    "facility": (
-                        "Facility must belong to the selected organization."
-                    )
-                })
+                raise serializers.ValidationError(
+                    {"facility": ("Facility must belong to the selected organization.")}
+                )
 
         elif policy_level == StockPolicy.PolicyLevel.ORGANIZATION:
             if facility:
-                raise serializers.ValidationError({
-                    "facility": (
-                        "Organization default policies cannot select "
-                        "a facility."
-                    )
-                })
+                raise serializers.ValidationError(
+                    {
+                        "facility": (
+                            "Organization default policies cannot select " "a facility."
+                        )
+                    }
+                )
 
         else:
-            raise serializers.ValidationError({
-                "policy_level": "Invalid policy level."
-            })
+            raise serializers.ValidationError({"policy_level": "Invalid policy level."})
 
         if self.instance and self.instance.status == "ACTIVE":
             raise serializers.ValidationError(

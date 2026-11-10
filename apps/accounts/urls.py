@@ -1,4 +1,3 @@
-
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
@@ -21,7 +20,6 @@ urlpatterns = [
     path("auth/login/", LoginView.as_view(), name="login"),
     path("auth/refresh/", RefreshView.as_view(), name="token-refresh"),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
-
     # User account
     path("auth/me/", CurrentUserView.as_view(), name="current-user"),
     path(
@@ -29,7 +27,6 @@ urlpatterns = [
         PasswordChangeView.as_view(),
         name="change-password",
     ),
-
     # Phase 7 RBAC verification
     path("rbac-test/", RBACTestView.as_view(), name="rbac-test"),
 ]
@@ -51,4 +48,3 @@ router.register(
 
 # Append router-generated routes without replacing existing routes
 urlpatterns += router.urls
- 

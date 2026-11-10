@@ -162,10 +162,7 @@ class Warehouse(models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                condition=(
-                    Q(total_capacity__isnull=True)
-                    | Q(total_capacity__gt=0)
-                ),
+                condition=(Q(total_capacity__isnull=True) | Q(total_capacity__gt=0)),
                 name="warehouse_capacity_positive",
             ),
         ]
@@ -178,32 +175,36 @@ class Warehouse(models.Model):
 
         if self.facility_id:
             if self.facility.organization_id != self.organization_id:
-                raise ValidationError({
-                    "facility": (
-                        "The facility must belong to the selected organization."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "facility": (
+                            "The facility must belong to the selected organization."
+                        )
+                    }
+                )
 
         if self.latitude is not None:
             if not -90 <= self.latitude <= 90:
-                raise ValidationError({
-                    "latitude": "Latitude must be between -90 and 90."
-                })
+                raise ValidationError(
+                    {"latitude": "Latitude must be between -90 and 90."}
+                )
 
         if self.longitude is not None:
             if not -180 <= self.longitude <= 180:
-                raise ValidationError({
-                    "longitude": "Longitude must be between -180 and 180."
-                })
+                raise ValidationError(
+                    {"longitude": "Longitude must be between -180 and 180."}
+                )
 
         if self.is_cold_chain_capable:
             if not self.has_temperature_monitoring:
-                raise ValidationError({
-                    "has_temperature_monitoring": (
-                        "Cold-chain warehouses must have temperature "
-                        "monitoring configured."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "has_temperature_monitoring": (
+                            "Cold-chain warehouses must have temperature "
+                            "monitoring configured."
+                        )
+                    }
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -289,21 +290,14 @@ class StorageZone(models.Model):
                 name="unique_warehouse_zone_code",
             ),
             models.CheckConstraint(
-                condition=(
-                    Q(capacity__isnull=True)
-                    | Q(capacity__gt=0)
-                ),
+                condition=(Q(capacity__isnull=True) | Q(capacity__gt=0)),
                 name="storage_zone_capacity_positive",
             ),
             models.CheckConstraint(
                 condition=(
                     Q(minimum_temperature__isnull=True)
                     | Q(maximum_temperature__isnull=True)
-                    | Q(
-                        maximum_temperature__gte=models.F(
-                            "minimum_temperature"
-                        )
-                    )
+                    | Q(maximum_temperature__gte=models.F("minimum_temperature"))
                 ),
                 name="storage_zone_temperature_range",
             ),
@@ -311,11 +305,7 @@ class StorageZone(models.Model):
                 condition=(
                     Q(humidity_minimum__isnull=True)
                     | Q(humidity_maximum__isnull=True)
-                    | Q(
-                        humidity_maximum__gte=models.F(
-                            "humidity_minimum"
-                        )
-                    )
+                    | Q(humidity_maximum__gte=models.F("humidity_minimum"))
                 ),
                 name="storage_zone_humidity_range",
             ),
@@ -329,11 +319,13 @@ class StorageZone(models.Model):
             and self.maximum_temperature is not None
             and self.minimum_temperature > self.maximum_temperature
         ):
-            raise ValidationError({
-                "maximum_temperature": (
-                    "Maximum temperature cannot be below minimum temperature."
-                )
-            })
+            raise ValidationError(
+                {
+                    "maximum_temperature": (
+                        "Maximum temperature cannot be below minimum temperature."
+                    )
+                }
+            )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -392,10 +384,7 @@ class StorageLocation(models.Model):
                 name="unique_storage_location_code",
             ),
             models.CheckConstraint(
-                condition=(
-                    Q(capacity__isnull=True)
-                    | Q(capacity__gt=0)
-                ),
+                condition=(Q(capacity__isnull=True) | Q(capacity__gt=0)),
                 name="storage_location_capacity_positive",
             ),
         ]
@@ -453,16 +442,14 @@ class WarehouseManagerAssignment(models.Model):
         super().clean()
 
         if self.valid_until and self.valid_until <= self.valid_from:
-            raise ValidationError({
-                "valid_until": (
-                    "Assignment end time must be after start time."
-                )
-            })
+            raise ValidationError(
+                {"valid_until": ("Assignment end time must be after start time.")}
+            )
 
         if not self.user.is_active:
-            raise ValidationError({
-                "user": "An inactive user cannot manage a warehouse."
-            })
+            raise ValidationError(
+                {"user": "An inactive user cannot manage a warehouse."}
+            )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -549,15 +536,15 @@ class WarehouseTemperatureReading(models.Model):
         super().clean()
 
         if self.zone_id and self.zone.warehouse_id != self.warehouse_id:
-            raise ValidationError({
-                "zone": "The zone must belong to the selected warehouse."
-            })
+            raise ValidationError(
+                {"zone": "The zone must belong to the selected warehouse."}
+            )
 
         if self.humidity is not None:
             if not 0 <= self.humidity <= 100:
-                raise ValidationError({
-                    "humidity": "Humidity must be between 0 and 100."
-                })
+                raise ValidationError(
+                    {"humidity": "Humidity must be between 0 and 100."}
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -625,9 +612,7 @@ class WarehouseCapacitySnapshot(models.Model):
         super().clean()
 
         if self.used_capacity < 0 or self.available_capacity < 0:
-            raise ValidationError(
-                "Capacity values cannot be negative."
-            )
+            raise ValidationError("Capacity values cannot be negative.")
 
         if self.warehouse.total_capacity is not None:
             total = self.used_capacity + self.available_capacity

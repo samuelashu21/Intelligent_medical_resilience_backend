@@ -65,24 +65,16 @@ def search_medicines(
         )
 
     if category:
-        queryset = queryset.filter(
-            therapeutic_category__code=category
-        )
+        queryset = queryset.filter(therapeutic_category__code=category)
 
     if dosage_form:
-        queryset = queryset.filter(
-            dosage_form__code=dosage_form
-        )
+        queryset = queryset.filter(dosage_form__code=dosage_form)
 
     if atc_code:
-        queryset = queryset.filter(
-            atc_code__istartswith=atc_code
-        )
+        queryset = queryset.filter(atc_code__istartswith=atc_code)
 
     if essential is not None:
-        queryset = queryset.filter(
-            is_essential=essential
-        )
+        queryset = queryset.filter(is_essential=essential)
 
     return queryset.order_by(
         "generic_name",

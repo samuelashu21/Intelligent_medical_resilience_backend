@@ -5,10 +5,10 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-
 # ==========================================
 # Base Abstract Model
 # ==========================================
+
 
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -21,6 +21,7 @@ class TimeStampedModel(models.Model):
 # ==========================================
 # Reference & Lookup Models
 # ==========================================
+
 
 class Country(models.Model):
     """
@@ -49,9 +50,7 @@ class Country(models.Model):
         self.code = self.code.strip().upper()
 
         if len(self.code) != 2 or not self.code.isalpha():
-            raise ValidationError({
-                "code": "Use a two-letter ISO country code."
-            })
+            raise ValidationError({"code": "Use a two-letter ISO country code."})
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -247,41 +246,43 @@ class ATCClassification(models.Model):
         self.code = self.code.strip().upper()
 
         if self.level < 1 or self.level > 5:
-            raise ValidationError({
-                "level": "ATC level must be between 1 and 5."
-            })
+            raise ValidationError({"level": "ATC level must be between 1 and 5."})
 
         if self.level == 1 and self.parent_id:
-            raise ValidationError({
-                "parent": "Level 1 ATC classifications cannot have parents."
-            })
+            raise ValidationError(
+                {"parent": "Level 1 ATC classifications cannot have parents."}
+            )
 
         if self.level > 1:
             if not self.parent_id:
-                raise ValidationError({
-                    "parent": "Levels 2–5 require a parent classification."
-                })
+                raise ValidationError(
+                    {"parent": "Levels 2–5 require a parent classification."}
+                )
 
             if self.parent.level != self.level - 1:
-                raise ValidationError({
-                    "parent": (
-                        "Parent classification must be exactly "
-                        "one level above this classification."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "parent": (
+                            "Parent classification must be exactly "
+                            "one level above this classification."
+                        )
+                    }
+                )
 
             if not self.code.startswith(self.parent.code):
-                raise ValidationError({
-                    "code": (
-                        "The classification code must begin with "
-                        "its parent's code."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "code": (
+                            "The classification code must begin with "
+                            "its parent's code."
+                        )
+                    }
+                )
 
         if self.parent_id and self.pk == self.parent_id:
-            raise ValidationError({
-                "parent": "A classification cannot be its own parent."
-            })
+            raise ValidationError(
+                {"parent": "A classification cannot be its own parent."}
+            )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -294,6 +295,7 @@ class ATCClassification(models.Model):
 # ==========================================
 # Core Medicine Model
 # ==========================================
+
 
 class Medicine(TimeStampedModel):
     id = models.UUIDField(
@@ -420,17 +422,11 @@ class Medicine(TimeStampedModel):
         ]
         constraints = [
             models.CheckConstraint(
-                condition=(
-                    Q(strength_value__isnull=True)
-                    | Q(strength_value__gt=0)
-                ),
+                condition=(Q(strength_value__isnull=True) | Q(strength_value__gt=0)),
                 name="medicine_strength_positive",
             ),
             models.CheckConstraint(
-                condition=(
-                    Q(pack_size__isnull=True)
-                    | Q(pack_size__gt=0)
-                ),
+                condition=(Q(pack_size__isnull=True) | Q(pack_size__gt=0)),
                 name="medicine_pack_size_positive",
             ),
         ]
@@ -444,19 +440,15 @@ class Medicine(TimeStampedModel):
         self.atc_code = (self.atc_code or "").strip().upper()
 
         if not self.generic_name:
-            raise ValidationError({
-                "generic_name": "Generic medicine name is required."
-            })
+            raise ValidationError(
+                {"generic_name": "Generic medicine name is required."}
+            )
 
         if self.strength_value is not None and self.strength_value <= 0:
-            raise ValidationError({
-                "strength_value": "Strength must be positive."
-            })
+            raise ValidationError({"strength_value": "Strength must be positive."})
 
         if self.pack_size is not None and self.pack_size <= 0:
-            raise ValidationError({
-                "pack_size": "Pack size must be positive."
-            })
+            raise ValidationError({"pack_size": "Pack size must be positive."})
 
         if bool(self.strength_value) != bool(self.strength_unit_id):
             raise ValidationError(
@@ -468,10 +460,7 @@ class Medicine(TimeStampedModel):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        strength = (
-            f" {self.strength_display}"
-            if self.strength_display else ""
-        )
+        strength = f" {self.strength_display}" if self.strength_display else ""
 
         return f"{self.generic_name}{strength}"
 
@@ -479,6 +468,7 @@ class Medicine(TimeStampedModel):
 # ==========================================
 # Phase 11 Extension Models (Dependent on Medicine)
 # ==========================================
+
 
 class EssentialMedicineList(models.Model):
     """
@@ -533,15 +523,10 @@ class EssentialMedicineList(models.Model):
         ]
 
     def clean(self):
-        if (
-            self.effective_until
-            and self.effective_until < self.effective_from
-        ):
-            raise ValidationError({
-                "effective_until": (
-                    "End date cannot be earlier than start date."
-                )
-            })
+        if self.effective_until and self.effective_until < self.effective_from:
+            raise ValidationError(
+                {"effective_until": ("End date cannot be earlier than start date.")}
+            )
 
     def __str__(self):
         return f"{self.country.code} - {self.name} ({self.version})"
@@ -595,10 +580,7 @@ class EssentialMedicineItem(models.Model):
         ]
 
     def __str__(self):
-        return (
-            f"{self.medicine.generic_name} - "
-            f"{self.essential_list}"
-        )
+        return f"{self.medicine.generic_name} - " f"{self.essential_list}"
 
 
 class MedicineNationalCode(models.Model):
@@ -713,9 +695,9 @@ class MedicinePresentation(models.Model):
 
     def clean(self):
         if self.units_per_package <= 0:
-            raise ValidationError({
-                "units_per_package": "Package quantity must be positive."
-            })
+            raise ValidationError(
+                {"units_per_package": "Package quantity must be positive."}
+            )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -804,28 +786,29 @@ class MedicineEligibilityRule(models.Model):
     def clean(self):
         super().clean()
 
-        if (
-            self.effective_until
-            and self.effective_until < self.effective_from
-        ):
-            raise ValidationError({
-                "effective_until": "Invalid eligibility date range."
-            })
+        if self.effective_until and self.effective_until < self.effective_from:
+            raise ValidationError(
+                {"effective_until": "Invalid eligibility date range."}
+            )
 
         if self.facility_id and not self.organization_id:
-            raise ValidationError({
-                "organization": (
-                    "A facility-level rule must specify its organization."
-                )
-            })
+            raise ValidationError(
+                {
+                    "organization": (
+                        "A facility-level rule must specify its organization."
+                    )
+                }
+            )
 
         if self.facility_id and self.organization_id:
             if self.facility.organization_id != self.organization_id:
-                raise ValidationError({
-                    "facility": (
-                        "The facility must belong to the selected organization."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "facility": (
+                            "The facility must belong to the selected organization."
+                        )
+                    }
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -836,7 +819,6 @@ class MedicineEligibilityRule(models.Model):
             f"{self.medicine.generic_name} - "
             f"{'Allowed' if self.is_allowed else 'Restricted'}"
         )
-
 
 
 class MedicineImportBatch(models.Model):
@@ -886,7 +868,6 @@ class MedicineImportBatch(models.Model):
 
     def __str__(self):
         return f"{self.filename} - {self.status}"
-
 
 
 class MedicineImportRow(models.Model):

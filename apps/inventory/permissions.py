@@ -27,6 +27,5 @@ class HasInventoryPermission(BasePermission):
         from apps.accounts.services import user_has_permission
 
         return all(
-            user_has_permission(user, permission_code)
-            for permission_code in required
+            user_has_permission(user, permission_code) for permission_code in required
         )

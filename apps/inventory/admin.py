@@ -11,6 +11,7 @@ from apps.inventory.models import (
 
 from apps.inventory.models import StockPolicy
 
+
 @admin.register(StockBatch)
 class StockBatchAdmin(admin.ModelAdmin):
     list_display = [
@@ -85,10 +86,7 @@ class StockMovementAdmin(admin.ModelAdmin):
         "reference_number",
     ]
 
-    readonly_fields = [
-        field.name
-        for field in StockMovement._meta.fields
-    ]
+    readonly_fields = [field.name for field in StockMovement._meta.fields]
 
     def has_add_permission(self, request):
         return False
@@ -155,10 +153,7 @@ class BatchLifecycleEventAdmin(admin.ModelAdmin):
         "reason",
     ]
 
-    readonly_fields = [
-        field.name
-        for field in BatchLifecycleEvent._meta.fields
-    ]
+    readonly_fields = [field.name for field in BatchLifecycleEvent._meta.fields]
 
     def has_add_permission(self, request):
         return False
@@ -191,10 +186,7 @@ class BatchExpiryAlertAdmin(admin.ModelAdmin):
         "batch__medicine__generic_name",
     ]
 
-    readonly_fields = [
-        field.name
-        for field in BatchExpiryAlert._meta.fields
-    ]
+    readonly_fields = [field.name for field in BatchExpiryAlert._meta.fields]
 
     def has_add_permission(self, request):
         return False
@@ -252,4 +244,4 @@ class StockPolicyAdmin(admin.ModelAdmin):
     ordering = [
         "organization__name",
         "medicine__generic_name",
-    ]    
+    ]

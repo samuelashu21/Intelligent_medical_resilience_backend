@@ -3,7 +3,6 @@ from django.db import transaction
 
 from apps.medicines.models import Country
 
-
 COUNTRIES = [
     ("ET", "Ethiopia"),
     ("KE", "Kenya"),
@@ -31,7 +30,5 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Seeded {len(COUNTRIES)} country records."
-            )
+            self.style.SUCCESS(f"Seeded {len(COUNTRIES)} country records.")
         )

@@ -105,8 +105,4 @@ class MedicineModelTests(TestCase):
         medicine.is_active = False
         medicine.save()
 
-        self.assertTrue(
-            Medicine.objects.filter(
-                pk=medicine.pk
-            ).exists()
-        ) 
+        self.assertTrue(Medicine.objects.filter(pk=medicine.pk).exists())

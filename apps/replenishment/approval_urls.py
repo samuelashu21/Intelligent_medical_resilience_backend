@@ -7,7 +7,6 @@ from apps.replenishment.approval_views import (
     ReplenishmentApprovalViewSet,
 )
 
-
 router = DefaultRouter()
 
 router.register(

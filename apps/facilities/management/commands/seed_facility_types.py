@@ -3,7 +3,6 @@ from django.db import transaction
 
 from apps.facilities.models import FacilityType
 
-
 FACILITY_TYPES = [
     ("HOSPITAL", "Hospital"),
     ("HEALTH_CENTER", "Health Center"),
@@ -31,14 +30,6 @@ class Command(BaseCommand):
 
             action = "Created" if created else "Updated"
 
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"{action}: {facility_type.name}"
-                )
-            )
+            self.stdout.write(self.style.SUCCESS(f"{action}: {facility_type.name}"))
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                "Facility types seeded successfully."
-            )
-        )
+        self.stdout.write(self.style.SUCCESS("Facility types seeded successfully."))

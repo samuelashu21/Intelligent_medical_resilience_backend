@@ -64,9 +64,7 @@ class ATCClassificationViewSet(
     serializer_class = ATCClassificationSerializer
 
     def get_queryset(self):
-        queryset = ATCClassification.objects.select_related(
-            "parent"
-        ).all()
+        queryset = ATCClassification.objects.select_related("parent").all()
 
         level = self.request.query_params.get("level")
         search = self.request.query_params.get("search")
@@ -74,17 +72,14 @@ class ATCClassificationViewSet(
 
         if level:
             if level not in {"1", "2", "3", "4", "5"}:
-                raise ValidationError({
-                    "level": "Level must be between 1 and 5."
-                })
+                raise ValidationError({"level": "Level must be between 1 and 5."})
             queryset = queryset.filter(level=int(level))
 
         if search:
             from django.db.models import Q
 
             queryset = queryset.filter(
-                Q(code__icontains=search)
-                | Q(name__icontains=search)
+                Q(code__icontains=search) | Q(name__icontains=search)
             )
 
         if parent_code:
@@ -114,9 +109,7 @@ class EssentialMedicineListViewSet(
     CatalogPermissionMixin,
     viewsets.ModelViewSet,
 ):
-    queryset = EssentialMedicineList.objects.select_related(
-        "country"
-    ).all()
+    queryset = EssentialMedicineList.objects.select_related("country").all()
 
     serializer_class = EssentialMedicineListSerializer
 
@@ -229,9 +222,7 @@ class CurrentEssentialMedicinesViewSet(
         country_code = request.query_params.get("country")
 
         if not country_code:
-            raise ValidationError({
-                "country": "Country ISO code is required."
-            })
+            raise ValidationError({"country": "Country ISO code is required."})
 
         country = Country.objects.filter(
             code=country_code.upper(),
@@ -239,9 +230,7 @@ class CurrentEssentialMedicinesViewSet(
         ).first()
 
         if not country:
-            raise ValidationError({
-                "country": "Country was not found."
-            })
+            raise ValidationError({"country": "Country was not found."})
 
         medicines = get_current_essential_medicines(country)
 
@@ -253,6 +242,4 @@ class CurrentEssentialMedicinesViewSet(
             serializer = MedicineSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        return Response(
-            MedicineSerializer(medicines, many=True).data
-        )
+        return Response(MedicineSerializer(medicines, many=True).data)

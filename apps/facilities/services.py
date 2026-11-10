@@ -23,5 +23,5 @@ def create_facility(
 
     facility.full_clean()
     facility.save()
- 
-    return facility  
+
+    return facility

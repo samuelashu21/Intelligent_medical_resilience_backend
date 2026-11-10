@@ -72,9 +72,7 @@ def quarantine_batch(
     reason,
     reference_number="",
 ):
-    batch = StockBatch.objects.select_for_update().get(
-        pk=batch_id
-    )
+    batch = StockBatch.objects.select_for_update().get(pk=batch_id)
 
     if not reason or not reason.strip():
         raise ValidationError("A quarantine reason is required.")
@@ -105,24 +103,16 @@ def release_quarantined_batch(
     reason,
     reference_number="",
 ):
-    batch = StockBatch.objects.select_for_update().get(
-        pk=batch_id
-    )
+    batch = StockBatch.objects.select_for_update().get(pk=batch_id)
 
     if batch.status != BatchStatus.QUARANTINED:
-        raise ValidationError(
-            "Only quarantined batches can be released."
-        )
+        raise ValidationError("Only quarantined batches can be released.")
 
     if not reason or not reason.strip():
-        raise ValidationError(
-            "A release justification is required."
-        )
+        raise ValidationError("A release justification is required.")
 
     if batch.expiry_date < timezone.localdate():
-        raise ValidationError(
-            "An expired batch cannot be released for use."
-        )
+        raise ValidationError("An expired batch cannot be released for use.")
 
     return _change_batch_status(
         batch=batch,
@@ -141,9 +131,7 @@ def mark_batch_damaged(
     reason,
     reference_number="",
 ):
-    batch = StockBatch.objects.select_for_update().get(
-        pk=batch_id
-    )
+    batch = StockBatch.objects.select_for_update().get(pk=batch_id)
 
     if not reason or not reason.strip():
         raise ValidationError("A damage reason is required.")
@@ -174,22 +162,16 @@ def recall_batch(
     reason,
     reference_number,
 ):
-    batch = StockBatch.objects.select_for_update().get(
-        pk=batch_id
-    )
+    batch = StockBatch.objects.select_for_update().get(pk=batch_id)
 
     if not reason or not reason.strip():
         raise ValidationError("A recall reason is required.")
 
     if not reference_number or not reference_number.strip():
-        raise ValidationError(
-            "A recall reference number is required."
-        )
+        raise ValidationError("A recall reference number is required.")
 
     if batch.status == BatchStatus.DISPOSED:
-        raise ValidationError(
-            "A disposed batch cannot be recalled."
-        )
+        raise ValidationError("A disposed batch cannot be recalled.")
 
     return _change_batch_status(
         batch=batch,
@@ -208,9 +190,7 @@ def dispose_batch(
     reason,
     reference_number="",
 ):
-    batch = StockBatch.objects.select_for_update().get(
-        pk=batch_id
-    )
+    batch = StockBatch.objects.select_for_update().get(pk=batch_id)
 
     if batch.status not in [
         BatchStatus.QUARANTINED,
@@ -224,13 +204,9 @@ def dispose_batch(
         )
 
     if not reason or not reason.strip():
-        raise ValidationError(
-            "A disposal reason is required."
-        )
+        raise ValidationError("A disposal reason is required.")
 
-    balance = InventoryBalance.objects.select_for_update().get(
-        batch=batch
-    )
+    balance = InventoryBalance.objects.select_for_update().get(batch=batch)
 
     if balance.quantity_reserved > 0:
         raise ValidationError(
@@ -269,7 +245,6 @@ def get_expiry_level(days_remaining):
     return None
 
 
-
 @transaction.atomic
 def scan_batch_expiry(thresholds=(30, 60, 90)):
     """
@@ -286,15 +261,11 @@ def scan_batch_expiry(thresholds=(30, 60, 90)):
     today = timezone.localdate()
     now = timezone.now()
 
-    active_batches = (
-        StockBatch.objects
-        .select_for_update()
-        .filter(
-            status__in=[
-                BatchStatus.AVAILABLE,
-                BatchStatus.QUARANTINED,
-            ]
-        )
+    active_batches = StockBatch.objects.select_for_update().filter(
+        status__in=[
+            BatchStatus.AVAILABLE,
+            BatchStatus.QUARANTINED,
+        ]
     )
 
     created_count = 0
@@ -311,20 +282,16 @@ def scan_batch_expiry(thresholds=(30, 60, 90)):
             threshold = 0
         else:
             applicable = [
-                value
-                for value in sorted(thresholds)
-                if days_remaining <= value
+                value for value in sorted(thresholds) if days_remaining <= value
             ]
 
             if not applicable:
-                resolved_count += (
-                    BatchExpiryAlert.objects.filter(
-                        batch=batch,
-                        is_active=True,
-                    ).update(
-                        is_active=False,
-                        resolved_at=now,
-                    )
+                resolved_count += BatchExpiryAlert.objects.filter(
+                    batch=batch,
+                    is_active=True,
+                ).update(
+                    is_active=False,
+                    resolved_at=now,
                 )
                 continue
 
@@ -333,8 +300,7 @@ def scan_batch_expiry(thresholds=(30, 60, 90)):
 
         # Create or retrieve the active alert.
         message = (
-            f"Batch {batch.batch_number} has "
-            f"{days_remaining} days remaining."
+            f"Batch {batch.batch_number} has " f"{days_remaining} days remaining."
             if days_remaining >= 0
             else f"Batch {batch.batch_number} has expired."
         )

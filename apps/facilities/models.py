@@ -125,9 +125,7 @@ class Facility(models.Model):
 
     def clean(self):
         if self.organization_id and not self.organization.is_active:
-            raise ValidationError(
-                {"organization": "The organization must be active."}
-            )
+            raise ValidationError({"organization": "The organization must be active."})
 
         if self.facility_type_id and not self.facility_type.is_active:
             raise ValidationError(
@@ -135,9 +133,7 @@ class Facility(models.Model):
             )
 
         if self.latitude is not None and not -90 <= self.latitude <= 90:
-            raise ValidationError(
-                {"latitude": "Latitude must be between -90 and 90."}
-            )
+            raise ValidationError({"latitude": "Latitude must be between -90 and 90."})
 
         if self.longitude is not None and not -180 <= self.longitude <= 180:
             raise ValidationError(
@@ -149,4 +145,4 @@ class Facility(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} ({self.code})" 
+        return f"{self.name} ({self.code})"

@@ -133,7 +133,7 @@ class ApprovalWorkflowTests(TestCase):
 
     def create_submitted_request(self, priority="NORMAL"):
 
-         request = create_replenishment_request(
+        request = create_replenishment_request(
             facility_id=self.facility.pk,
             requested_by=self.requester,
             justification="The facility requires additional stock.",
@@ -148,15 +148,14 @@ class ApprovalWorkflowTests(TestCase):
             ],
         )
 
-         submit_replenishment_request(
+        submit_replenishment_request(
             request.pk,
             self.requester,
         )
 
-         request.refresh_from_db()
+        request.refresh_from_db()
 
-         return request
-      
+        return request
 
     def test_approval_stage_is_created_on_submission(self):
 
@@ -275,22 +274,22 @@ class ApprovalWorkflowTests(TestCase):
 
     def test_multiple_approval_stages_are_created(self):
 
-         regional_type = OrganizationUnitType.objects.create(
+        regional_type = OrganizationUnitType.objects.create(
             code="REGION",
             name="Region",
         )
 
-         regional = Organization.objects.create(
+        regional = Organization.objects.create(
             code="TEST-REGION",
             name="Test Region",
             organization_type=regional_type,
             parent=self.national,
         )
 
-         self.district.parent = regional
-         self.district.save()
+        self.district.parent = regional
+        self.district.save()
 
-         ApprovalWorkflowStage.objects.create(
+        ApprovalWorkflowStage.objects.create(
             workflow=self.workflow,
             sequence=2,
             name="Regional Review",
@@ -303,24 +302,18 @@ class ApprovalWorkflowTests(TestCase):
             is_final_stage=True,
         )
 
-         request = self.create_submitted_request(
-          priority="HIGH"
-          )
+        request = self.create_submitted_request(priority="HIGH")
 
-         approvals = list(
-            request.approval_stages.order_by(
-                "workflow_stage__sequence"
-            )
-        )
+        approvals = list(request.approval_stages.order_by("workflow_stage__sequence"))
 
-         self.assertEqual(len(approvals), 2)
+        self.assertEqual(len(approvals), 2)
 
-         self.assertEqual(
+        self.assertEqual(
             approvals[0].organization,
             self.district,
         )
 
-         self.assertEqual(
+        self.assertEqual(
             approvals[1].organization,
             regional,
-        )        
+        )

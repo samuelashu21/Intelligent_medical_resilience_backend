@@ -16,9 +16,7 @@ class StockReportingAPITests(TestCase):
         )
 
     def test_dashboard_requires_authentication(self):
-        response = self.client.get(
-            "/api/v1/inventory/reports/dashboard/"
-        )
+        response = self.client.get("/api/v1/inventory/reports/dashboard/")
 
         self.assertEqual(
             response.status_code,
@@ -26,9 +24,7 @@ class StockReportingAPITests(TestCase):
         )
 
     def test_stock_report_requires_authentication(self):
-        response = self.client.get(
-            "/api/v1/inventory/reports/status/"
-        )
+        response = self.client.get("/api/v1/inventory/reports/status/")
 
         self.assertEqual(
             response.status_code,
@@ -36,9 +32,7 @@ class StockReportingAPITests(TestCase):
         )
 
     def test_expiry_report_requires_authentication(self):
-        response = self.client.get(
-            "/api/v1/inventory/reports/expiry/"
-        )
+        response = self.client.get("/api/v1/inventory/reports/expiry/")
 
         self.assertEqual(
             response.status_code,
@@ -46,9 +40,7 @@ class StockReportingAPITests(TestCase):
         )
 
     def test_csv_export_requires_authentication(self):
-        response = self.client.get(
-            "/api/v1/inventory/reports/export/csv/"
-        )
+        response = self.client.get("/api/v1/inventory/reports/export/csv/")
 
         self.assertEqual(
             response.status_code,

@@ -27,17 +27,13 @@ class RecommendationLifecycleTests(TestCase):
 
         recommendation = self.create_recommendation()
 
-        self.assertTrue(
-            recommendation.recommendation_number.startswith("RR-")
-        )
+        self.assertTrue(recommendation.recommendation_number.startswith("RR-"))
 
     def test_donor_and_recipient_must_differ(self):
 
         recommendation = self.create_recommendation()
 
-        recommendation.recipient_facility = (
-            recommendation.donor_facility
-        )
+        recommendation.recipient_facility = recommendation.donor_facility
 
         with self.assertRaises(ValidationError):
             recommendation.full_clean()
@@ -80,8 +76,6 @@ class RecommendationLifecycleTests(TestCase):
             recipient_available_after="150",
             priority=RecommendationPriority.HIGH,
             priority_score="70",
-            explanation={
-                "reason": "Recipient is below its operational target."
-            },
+            explanation={"reason": "Recipient is below its operational target."},
             expires_at=timezone.now() + timedelta(days=2),
         )

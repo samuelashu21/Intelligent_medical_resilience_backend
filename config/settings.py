@@ -1,9 +1,7 @@
-
 import os
 from pathlib import Path
 from datetime import timedelta
 import environ
-
 
 # =====================================================
 # 1. BASE DIRECTORY
@@ -15,9 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 2. ENVIRONMENT CONFIGURATION
 # =====================================================
 
-env = environ.Env(
-    DEBUG=(bool, True)
-)
+env = environ.Env(DEBUG=(bool, True))
 
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -25,17 +21,11 @@ environ.Env.read_env(BASE_DIR / ".env")
 # 3. SECURITY CONFIGURATION
 # =====================================================
 
-SECRET_KEY = env(
-    "DJANGO_SECRET_KEY",
-    default="development-only-secret-key"
-)
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="development-only-secret-key")
 
 DEBUG = env("DJANGO_DEBUG", default=True)
 
-ALLOWED_HOSTS = env.list(
-    "DJANGO_ALLOWED_HOSTS",
-    default=["localhost", "127.0.0.1"]
-)
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
 # =====================================================
 # 4. INSTALLED APPLICATIONS
@@ -77,11 +67,7 @@ LOCAL_APPS = [
     "apps.audit.apps.AuditConfig",
 ]
 
-INSTALLED_APPS = (
-    DJANGO_APPS
-    + THIRD_PARTY_APPS
-    + LOCAL_APPS
-)
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 # =====================================================
 # 5. MIDDLEWARE
@@ -90,21 +76,13 @@ INSTALLED_APPS = (
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-
     "django.contrib.sessions.middleware.SessionMiddleware",
-
     "corsheaders.middleware.CorsMiddleware",
-
     "django.middleware.common.CommonMiddleware",
-
     "config.common.middleware.RequestLoggingMiddleware",
-
     "django.middleware.csrf.CsrfViewMiddleware",
-
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-
     "django.contrib.messages.middleware.MessageMiddleware",
-
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -144,30 +122,13 @@ ASGI_APPLICATION = "config.asgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-
         "NAME": env("DB_NAME"),
-
         "USER": env("DB_USER"),
-
         "PASSWORD": env("DB_PASSWORD"),
-
-        "HOST": env(
-            "DB_HOST",
-            default="localhost"
-        ),
-
-        "PORT": env(
-            "DB_PORT",
-            default="5432"
-        ),
-
-        "CONN_MAX_AGE": env.int(
-            "DB_CONN_MAX_AGE",
-            default=60
-        ),
-
+        "HOST": env("DB_HOST", default="localhost"),
+        "PORT": env("DB_PORT", default="5432"),
+        "CONN_MAX_AGE": env.int("DB_CONN_MAX_AGE", default=60),
         "CONN_HEALTH_CHECKS": True,
-
         "OPTIONS": {
             "connect_timeout": 10,
         },
@@ -187,25 +148,16 @@ AUTH_PASSWORD_VALIDATORS = [
         ),
     },
     {
-        "NAME": (
-            "django.contrib.auth.password_validation."
-            "MinimumLengthValidator"
-        ),
+        "NAME": ("django.contrib.auth.password_validation." "MinimumLengthValidator"),
         "OPTIONS": {
             "min_length": 10,
         },
     },
     {
-        "NAME": (
-            "django.contrib.auth.password_validation."
-            "CommonPasswordValidator"
-        ),
+        "NAME": ("django.contrib.auth.password_validation." "CommonPasswordValidator"),
     },
     {
-        "NAME": (
-            "django.contrib.auth.password_validation."
-            "NumericPasswordValidator"
-        ),
+        "NAME": ("django.contrib.auth.password_validation." "NumericPasswordValidator"),
     },
 ]
 
@@ -215,10 +167,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = env(
-    "TIME_ZONE",
-    default="Africa/Addis_Ababa"
-)
+TIME_ZONE = env("TIME_ZONE", default="Africa/Addis_Ababa")
 
 USE_I18N = True
 USE_TZ = True
@@ -245,61 +194,34 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 REST_FRAMEWORK = {
-
-     "DEFAULT_AUTHENTICATION_CLASSES": [
+    "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
-
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
-
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
-
-    "DEFAULT_PAGINATION_CLASS": (
-        "config.api.pagination.StandardResultsPagination"
-    ),
-
-    "PAGE_SIZE": env.int(
-        "API_PAGE_SIZE",
-        default=20
-    ),
-
-   
-
-    "DEFAULT_SCHEMA_CLASS": (
-        "drf_spectacular.openapi.AutoSchema"
-    ),
-
-    "DEFAULT_VERSIONING_CLASS": (
-        "rest_framework.versioning.URLPathVersioning"
-    ),
-
+    "DEFAULT_PAGINATION_CLASS": ("config.api.pagination.StandardResultsPagination"),
+    "PAGE_SIZE": env.int("API_PAGE_SIZE", default=20),
+    "DEFAULT_SCHEMA_CLASS": ("drf_spectacular.openapi.AutoSchema"),
+    "DEFAULT_VERSIONING_CLASS": ("rest_framework.versioning.URLPathVersioning"),
     "DEFAULT_VERSION": "v1",
-
     "ALLOWED_VERSIONS": ["v1"],
-
     "VERSION_PARAM": "version",
-
-    "EXCEPTION_HANDLER": (
-        "config.api.exceptions.custom_exception_handler"
-    ),
-
+    "EXCEPTION_HANDLER": ("config.api.exceptions.custom_exception_handler"),
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
-
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/hour",
         "user": "1000/hour",
         "login": "5/minute",
     },
-
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
@@ -307,11 +229,7 @@ REST_FRAMEWORK = {
 }
 
 
-
-API_MAX_PAGE_SIZE = env.int(
-    "API_MAX_PAGE_SIZE",
-    default=100
-)
+API_MAX_PAGE_SIZE = env.int("API_MAX_PAGE_SIZE", default=100)
 
 
 # =====================================================
@@ -328,7 +246,7 @@ SIMPLE_JWT = {
         days=env.int("JWT_REFRESH_TOKEN_DAYS", default=7)
     ),
     "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True, # Set to True if using token_blacklist
+    "BLACKLIST_AFTER_ROTATION": True,  # Set to True if using token_blacklist
     "UPDATE_LAST_LOGIN": True,
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
@@ -346,13 +264,11 @@ SIMPLE_JWT = {
 # =====================================================
 
 CORS_ALLOWED_ORIGINS = env.list(
-    "CORS_ALLOWED_ORIGINS",
-    default=["http://localhost:3000"]
+    "CORS_ALLOWED_ORIGINS", default=["http://localhost:3000"]
 )
 
 CSRF_TRUSTED_ORIGINS = env.list(
-    "CSRF_TRUSTED_ORIGINS",
-    default=["http://localhost:3000"]
+    "CSRF_TRUSTED_ORIGINS", default=["http://localhost:3000"]
 )
 
 CORS_ALLOW_CREDENTIALS = True
@@ -364,8 +280,7 @@ CORS_ALLOW_CREDENTIALS = True
 SPECTACULAR_SETTINGS = {
     "TITLE": "MediResilience AI API",
     "DESCRIPTION": (
-        "Healthcare Medicine Supply Chain "
-        "Management and AI Prediction Platform"
+        "Healthcare Medicine Supply Chain " "Management and AI Prediction Platform"
     ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
@@ -379,40 +294,29 @@ SPECTACULAR_SETTINGS = {
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-
     "formatters": {
         "standard": {
-            "format": (
-                "{levelname} {asctime} "
-                "{name} {message}"
-            ),
+            "format": ("{levelname} {asctime} " "{name} {message}"),
             "style": "{",
         },
     },
-
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "standard",
         },
-
         "file": {
             "class": "logging.FileHandler",
             "filename": BASE_DIR / "logs" / "application.log",
             "formatter": "standard",
         },
     },
-
     "loggers": {
         "mediresilience.api": {
             "handlers": ["console", "file"],
-            "level": env(
-                "LOG_LEVEL",
-                default="INFO"
-            ),
+            "level": env("LOG_LEVEL", default="INFO"),
             "propagate": False,
         },
-
         "django": {
             "handlers": ["console", "file"],
             "level": "INFO",
@@ -426,36 +330,20 @@ LOGGING = {
 # 17. APPLICATION SETTINGS
 # =====================================================
 
-FRONTEND_URL = env(
-    "FRONTEND_URL",
-    default="http://localhost:3000"
-)
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
-REDIS_URL = env(
-    "REDIS_URL",
-    default="redis://localhost:6379/0"
-)
-
+REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 
 
 # =====================================================
 # SECURITY SETTINGS
 # =====================================================
 
-SECURE_SSL_REDIRECT = env.bool(
-    "SECURE_SSL_REDIRECT",
-    default=False
-)
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=False)
 
-SESSION_COOKIE_SECURE = env.bool(
-    "SESSION_COOKIE_SECURE",
-    default=False
-)
+SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=False)
 
-CSRF_COOKIE_SECURE = env.bool(
-    "CSRF_COOKIE_SECURE",
-    default=False
-)
+CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=False)
 
 SESSION_COOKIE_HTTPONLY = True
 
@@ -476,7 +364,6 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 
-
 # =====================================================
 # LOGGING CONFIGURATION1
 # =====================================================
@@ -484,40 +371,29 @@ if not DEBUG:
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-
     "formatters": {
         "standard": {
-            "format": (
-                "{levelname} {asctime} "
-                "{name} {message}"
-            ),
+            "format": ("{levelname} {asctime} " "{name} {message}"),
             "style": "{",
         },
     },
-
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "standard",
         },
-
         "file": {
             "class": "logging.FileHandler",
             "filename": BASE_DIR / "logs" / "application.log",
             "formatter": "standard",
         },
     },
-
     "loggers": {
         "mediresilience.api": {
             "handlers": ["console", "file"],
-            "level": env(
-                "LOG_LEVEL",
-                default="INFO"
-            ),
+            "level": env("LOG_LEVEL", default="INFO"),
             "propagate": False,
         },
-
         "django": {
             "handlers": ["console", "file"],
             "level": "INFO",

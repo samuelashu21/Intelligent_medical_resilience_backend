@@ -63,10 +63,7 @@ class DailyConsumptionSerializer(serializers.ModelSerializer):
             )
 
         if batch and facility:
-            if (
-                batch.warehouse.organization_id
-                != facility.organization_id
-            ):
+            if batch.warehouse.organization_id != facility.organization_id:
                 raise serializers.ValidationError(
                     {"batch": "Batch is outside the facility organization."}
                 )
@@ -74,9 +71,7 @@ class DailyConsumptionSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class MonthlyConsumptionReportSerializer(
-    serializers.ModelSerializer
-):
+class MonthlyConsumptionReportSerializer(serializers.ModelSerializer):
     facility_name = serializers.CharField(
         source="facility.name",
         read_only=True,

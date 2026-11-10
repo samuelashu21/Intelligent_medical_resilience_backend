@@ -66,17 +66,13 @@ class WarehouseAPITests(APITestCase):
         )
 
         self.client.credentials(
-            HTTP_AUTHORIZATION=(
-                f"Bearer {AccessToken.for_user(self.user)}"
-            )
+            HTTP_AUTHORIZATION=(f"Bearer {AccessToken.for_user(self.user)}")
         )
 
     def test_unauthenticated_request(self):
         self.client.credentials()
 
-        response = self.client.get(
-            "/api/v1/warehouses/warehouses/"
-        )
+        response = self.client.get("/api/v1/warehouses/warehouses/")
 
         self.assertEqual(
             response.status_code,
@@ -123,15 +119,11 @@ class WarehouseAPITests(APITestCase):
             organization=self.organization,
         )
 
-        response = self.client.delete(
-            f"/api/v1/warehouses/warehouses/{warehouse.pk}/"
-        )
+        response = self.client.delete(f"/api/v1/warehouses/warehouses/{warehouse.pk}/")
 
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST,
         )
 
-        self.assertTrue(
-            Warehouse.objects.filter(pk=warehouse.pk).exists()
-        )
+        self.assertTrue(Warehouse.objects.filter(pk=warehouse.pk).exists())

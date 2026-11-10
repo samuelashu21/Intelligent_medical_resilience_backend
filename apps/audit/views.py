@@ -55,7 +55,7 @@ class AuditEventViewSet(viewsets.ReadOnlyModelViewSet):
             | Q(organization_id__in=organization_ids)
             | Q(facility_id__in=facility_ids)
         ).distinct()
-  
+
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
 
@@ -76,4 +76,4 @@ class AuditEventViewSet(viewsets.ReadOnlyModelViewSet):
         if target_id:
             queryset = queryset.filter(target_id=target_id)
 
-        return queryset 
+        return queryset

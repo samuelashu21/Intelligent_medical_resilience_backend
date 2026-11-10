@@ -1,5 +1,5 @@
 # import uuid
- 
+
 # from django.core.exceptions import ValidationError
 # from django.db import models
 
@@ -229,15 +229,11 @@
 #             current = pending.pop(0)
 #             descendants.append(current)
 #             pending.extend(current.children.all())
- 
+
 #         return descendants
 
 #     def __str__(self):
 #         return f"{self.name} ({self.code})"
-
-
-
-
 
 
 import uuid
@@ -311,7 +307,9 @@ class OrganizationUnitType(models.Model):
 
             if self.parent_type.level >= self.level:
                 raise ValidationError(
-                    {"level": "A child organization type must have a greater level than its parent type."}
+                    {
+                        "level": "A child organization type must have a greater level than its parent type."
+                    }
                 )
 
     def __str__(self):
@@ -420,12 +418,17 @@ class Organization(models.Model):
             while ancestor is not None:
                 if ancestor.pk == self.pk:
                     raise ValidationError(
-                        {"parent": "Circular organization relationships are not allowed."}
+                        {
+                            "parent": "Circular organization relationships are not allowed."
+                        }
                     )
 
                 ancestor = ancestor.parent
 
-        elif getattr(self, "organization_type_id", None) and self.organization_type.parent_type_id:
+        elif (
+            getattr(self, "organization_type_id", None)
+            and self.organization_type.parent_type_id
+        ):
             raise ValidationError(
                 {
                     "parent": (

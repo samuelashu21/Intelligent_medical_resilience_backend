@@ -1,4 +1,3 @@
-
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand
@@ -16,16 +15,13 @@ class Command(BaseCommand):
 
         now = timezone.now()
 
-        overdue = (
-            ReplenishmentApproval.objects.filter(
-                status=ReplenishmentApproval.Status.PENDING,
-                due_at__lt=now,
-            )
-            .select_related(
-                "request",
-                "workflow_stage",
-                "organization",
-            )
+        overdue = ReplenishmentApproval.objects.filter(
+            status=ReplenishmentApproval.Status.PENDING,
+            due_at__lt=now,
+        ).select_related(
+            "request",
+            "workflow_stage",
+            "organization",
         )
 
         count = 0
@@ -56,7 +52,5 @@ class Command(BaseCommand):
                 )
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Processed {count} overdue approval stages."
-            )
+            self.style.SUCCESS(f"Processed {count} overdue approval stages.")
         )

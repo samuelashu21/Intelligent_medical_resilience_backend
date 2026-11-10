@@ -1,4 +1,3 @@
-
 from datetime import timedelta
 from decimal import Decimal
 
@@ -168,30 +167,29 @@ class StockReportingTests(TestCase):
         )
 
     def test_facility_stock_summary(self):
-     self.create_balance(
-        "REPORT-BATCH-003",
-        100,
-        20,
-      )
+        self.create_balance(
+            "REPORT-BATCH-003",
+            100,
+            20,
+        )
 
-     result = get_facility_stock_summary(
-        facility_id=self.facility.pk,
-     )
+        result = get_facility_stock_summary(
+            facility_id=self.facility.pk,
+        )
 
-     self.assertEqual(
-        Decimal(result["total_on_hand"]),
-        Decimal("100"),
-     )
-     self.assertEqual(
-        Decimal(result["total_reserved"]),
-        Decimal("20"),
-     )
-     self.assertEqual(
-        Decimal(result["total_available"]),
-        Decimal("80"),
-     )
+        self.assertEqual(
+            Decimal(result["total_on_hand"]),
+            Decimal("100"),
+        )
+        self.assertEqual(
+            Decimal(result["total_reserved"]),
+            Decimal("20"),
+        )
+        self.assertEqual(
+            Decimal(result["total_available"]),
+            Decimal("80"),
+        )
 
-     
     def test_stock_status_without_consumption_history(self):
         self.create_balance(
             "REPORT-BATCH-004",

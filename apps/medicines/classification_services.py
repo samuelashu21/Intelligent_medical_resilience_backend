@@ -35,9 +35,7 @@ def get_medicines_by_atc(classification):
 
     classifications = get_atc_descendants(classification)
 
-    classification_ids = [
-        item.id for item in classifications
-    ]
+    classification_ids = [item.id for item in classifications]
 
     return Medicine.objects.filter(
         atc_classification_id__in=classification_ids,
@@ -52,19 +50,19 @@ def get_current_essential_medicines(country):
 
     today = timezone.localdate()
 
-    return Medicine.objects.filter(
-        essential_list_entries__is_active=True,
-        essential_list_entries__essential_list__country=country,
-        essential_list_entries__essential_list__is_active=True,
-        essential_list_entries__essential_list__effective_from__lte=today,
-    ).filter(
-        Q(
-            essential_list_entries__essential_list__effective_until__isnull=True
+    return (
+        Medicine.objects.filter(
+            essential_list_entries__is_active=True,
+            essential_list_entries__essential_list__country=country,
+            essential_list_entries__essential_list__is_active=True,
+            essential_list_entries__essential_list__effective_from__lte=today,
         )
-        | Q(
-            essential_list_entries__essential_list__effective_until__gte=today
+        .filter(
+            Q(essential_list_entries__essential_list__effective_until__isnull=True)
+            | Q(essential_list_entries__essential_list__effective_until__gte=today)
         )
-    ).distinct()
+        .distinct()
+    )
 
 
 def get_medicine_eligibility(
@@ -91,10 +89,7 @@ def get_medicine_eligibility(
         medicine=medicine,
         is_active=True,
         effective_from__lte=date,
-    ).filter(
-        Q(effective_until__isnull=True)
-        | Q(effective_until__gte=date)
-    )
+    ).filter(Q(effective_until__isnull=True) | Q(effective_until__gte=date))
 
     if facility:
         queryset = queryset.filter(
@@ -171,15 +166,9 @@ def get_medicine_eligibility(
 
     highest = max(specificity(rule) for rule in rules)
 
-    matching = [
-        rule for rule in rules
-        if specificity(rule) == highest
-    ]
+    matching = [rule for rule in rules if specificity(rule) == highest]
 
-    restrictions = [
-        rule for rule in matching
-        if not rule.is_allowed
-    ]
+    restrictions = [rule for rule in matching if not rule.is_allowed]
 
     selected = restrictions[0] if restrictions else matching[0]
 

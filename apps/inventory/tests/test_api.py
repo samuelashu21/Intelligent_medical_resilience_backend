@@ -128,15 +128,11 @@ class InventoryAPITests(APITestCase):
         InventoryBalance.objects.create(batch=self.batch)
 
         self.client.credentials(
-            HTTP_AUTHORIZATION=(
-                f"Bearer {AccessToken.for_user(self.user)}"
-            )
+            HTTP_AUTHORIZATION=(f"Bearer {AccessToken.for_user(self.user)}")
         )
 
     def test_list_stock_batches(self):
-        response = self.client.get(
-            "/api/v1/inventory/batches/"
-        )
+        response = self.client.get("/api/v1/inventory/batches/")
 
         self.assertEqual(
             response.status_code,
@@ -168,9 +164,7 @@ class InventoryAPITests(APITestCase):
         )
 
     def test_stock_balance_endpoint(self):
-        response = self.client.get(
-            "/api/v1/inventory/balances/"
-        )
+        response = self.client.get("/api/v1/inventory/balances/")
 
         self.assertEqual(
             response.status_code,
@@ -192,9 +186,7 @@ class InventoryAPITests(APITestCase):
     def test_unauthenticated_access_is_rejected(self):
         self.client.credentials()
 
-        response = self.client.get(
-            "/api/v1/inventory/batches/"
-        )
+        response = self.client.get("/api/v1/inventory/batches/")
 
         self.assertEqual(
             response.status_code,

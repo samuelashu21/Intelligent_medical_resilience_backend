@@ -1,4 +1,3 @@
-
 from django import forms
 from django.contrib.auth.forms import (
     UserCreationForm,
@@ -31,9 +30,7 @@ class CustomUserCreationForm(UserCreationForm):
 
         if User.objects.filter(email=email).exists():
 
-            raise forms.ValidationError(
-                "An account with this email already exists."
-            )
+            raise forms.ValidationError("An account with this email already exists.")
 
         return email
 

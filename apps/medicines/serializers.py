@@ -164,14 +164,14 @@ class MedicineSerializer(serializers.ModelSerializer):
         )
 
         if (strength_value is None) != (strength_unit is None):
-            raise serializers.ValidationError({
-                "strength_value": (
-                    "Provide both strength value and strength unit."
-                ),
-                "strength_unit": (
-                    "Provide both strength value and strength unit."
-                ),
-            })
+            raise serializers.ValidationError(
+                {
+                    "strength_value": (
+                        "Provide both strength value and strength unit."
+                    ),
+                    "strength_unit": ("Provide both strength value and strength unit."),
+                }
+            )
 
         pack_size = attrs.get(
             "pack_size",
@@ -179,8 +179,8 @@ class MedicineSerializer(serializers.ModelSerializer):
         )
 
         if pack_size is not None and pack_size <= 0:
-            raise serializers.ValidationError({
-                "pack_size": "Pack size must be greater than zero."
-            })
+            raise serializers.ValidationError(
+                {"pack_size": "Pack size must be greater than zero."}
+            )
 
         return attrs

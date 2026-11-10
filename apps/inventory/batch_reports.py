@@ -17,17 +17,11 @@ def get_batch_expiry_summary(organization_ids=None):
     batches = StockBatch.objects.all()
 
     if organization_ids is not None:
-        batches = batches.filter(
-            warehouse__organization_id__in=organization_ids
-        )
+        batches = batches.filter(warehouse__organization_id__in=organization_ids)
 
-    balances = InventoryBalance.objects.filter(
-        batch__in=batches
-    )
+    balances = InventoryBalance.objects.filter(batch__in=batches)
 
-    expired = balances.filter(
-        batch__expiry_date__lt=today
-    ).aggregate(
+    expired = balances.filter(batch__expiry_date__lt=today).aggregate(
         batches=Count("id"),
         units=Sum("quantity_on_hand"),
     )

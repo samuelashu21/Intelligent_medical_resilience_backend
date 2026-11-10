@@ -10,53 +10,165 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('inventory', '0001_initial'),
+        ("inventory", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='stockbatch',
-            name='status',
-            field=models.CharField(choices=[('AVAILABLE', 'Available'), ('QUARANTINED', 'Quarantined'), ('DAMAGED', 'Damaged'), ('RECALLED', 'Recalled'), ('EXPIRED', 'Expired'), ('DISPOSED', 'Disposed'), ('BLOCKED', 'Blocked')], default='AVAILABLE', max_length=20),
+            model_name="stockbatch",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("AVAILABLE", "Available"),
+                    ("QUARANTINED", "Quarantined"),
+                    ("DAMAGED", "Damaged"),
+                    ("RECALLED", "Recalled"),
+                    ("EXPIRED", "Expired"),
+                    ("DISPOSED", "Disposed"),
+                    ("BLOCKED", "Blocked"),
+                ],
+                default="AVAILABLE",
+                max_length=20,
+            ),
         ),
         migrations.CreateModel(
-            name='BatchExpiryAlert',
+            name="BatchExpiryAlert",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('alert_level', models.CharField(choices=[('CRITICAL', 'Critical'), ('HIGH', 'High'), ('WARNING', 'Warning'), ('EXPIRED', 'Expired')], max_length=20)),
-                ('threshold_days', models.PositiveIntegerField()),
-                ('message', models.TextField()),
-                ('is_active', models.BooleanField(default=True)),
-                ('first_detected_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('last_detected_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('resolved_at', models.DateTimeField(blank=True, null=True)),
-                ('batch', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='expiry_alerts', to='inventory.stockbatch')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "alert_level",
+                    models.CharField(
+                        choices=[
+                            ("CRITICAL", "Critical"),
+                            ("HIGH", "High"),
+                            ("WARNING", "Warning"),
+                            ("EXPIRED", "Expired"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("threshold_days", models.PositiveIntegerField()),
+                ("message", models.TextField()),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "first_detected_at",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                (
+                    "last_detected_at",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                ("resolved_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "batch",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="expiry_alerts",
+                        to="inventory.stockbatch",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-last_detected_at'],
-                'indexes': [models.Index(fields=['alert_level', 'is_active'], name='inventory_b_alert_l_f284f2_idx'), models.Index(fields=['is_active', 'last_detected_at'], name='inventory_b_is_acti_eb8dfe_idx')],
-                'constraints': [models.UniqueConstraint(condition=models.Q(('is_active', True)), fields=('batch', 'alert_level'), name='uniq_active_batch_expiry_alert')],
+                "ordering": ["-last_detected_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["alert_level", "is_active"],
+                        name="inventory_b_alert_l_f284f2_idx",
+                    ),
+                    models.Index(
+                        fields=["is_active", "last_detected_at"],
+                        name="inventory_b_is_acti_eb8dfe_idx",
+                    ),
+                ],
+                "constraints": [
+                    models.UniqueConstraint(
+                        condition=models.Q(("is_active", True)),
+                        fields=("batch", "alert_level"),
+                        name="uniq_active_batch_expiry_alert",
+                    )
+                ],
             },
         ),
         migrations.CreateModel(
-            name='BatchLifecycleEvent',
+            name="BatchLifecycleEvent",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('action', models.CharField(choices=[('QUARANTINED', 'Quarantined'), ('RELEASED', 'Released from quarantine'), ('MARKED_DAMAGED', 'Marked damaged'), ('MARKED_RECALLED', 'Marked recalled'), ('MARKED_EXPIRED', 'Marked expired'), ('DISPOSED', 'Disposed'), ('EXPIRY_WARNING', 'Expiry warning')], max_length=30)),
-                ('previous_status', models.CharField(blank=True, max_length=20)),
-                ('new_status', models.CharField(blank=True, max_length=20)),
-                ('reason', models.TextField()),
-                ('reference_number', models.CharField(blank=True, max_length=100)),
-                ('performed_by_label', models.CharField(default='SYSTEM', max_length=100)),
-                ('metadata', models.JSONField(blank=True, default=dict)),
-                ('occurred_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('batch', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='lifecycle_events', to='inventory.stockbatch')),
-                ('performed_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='batch_lifecycle_events', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "action",
+                    models.CharField(
+                        choices=[
+                            ("QUARANTINED", "Quarantined"),
+                            ("RELEASED", "Released from quarantine"),
+                            ("MARKED_DAMAGED", "Marked damaged"),
+                            ("MARKED_RECALLED", "Marked recalled"),
+                            ("MARKED_EXPIRED", "Marked expired"),
+                            ("DISPOSED", "Disposed"),
+                            ("EXPIRY_WARNING", "Expiry warning"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("previous_status", models.CharField(blank=True, max_length=20)),
+                ("new_status", models.CharField(blank=True, max_length=20)),
+                ("reason", models.TextField()),
+                ("reference_number", models.CharField(blank=True, max_length=100)),
+                (
+                    "performed_by_label",
+                    models.CharField(default="SYSTEM", max_length=100),
+                ),
+                ("metadata", models.JSONField(blank=True, default=dict)),
+                (
+                    "occurred_at",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                (
+                    "batch",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="lifecycle_events",
+                        to="inventory.stockbatch",
+                    ),
+                ),
+                (
+                    "performed_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="batch_lifecycle_events",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-occurred_at'],
-                'indexes': [models.Index(fields=['batch', 'occurred_at'], name='inventory_b_batch_i_8762ca_idx'), models.Index(fields=['action', 'occurred_at'], name='inventory_b_action_db839b_idx')],
+                "ordering": ["-occurred_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["batch", "occurred_at"],
+                        name="inventory_b_batch_i_8762ca_idx",
+                    ),
+                    models.Index(
+                        fields=["action", "occurred_at"],
+                        name="inventory_b_action_db839b_idx",
+                    ),
+                ],
             },
         ),
     ]

@@ -18,25 +18,19 @@ class ProcurementAPITests(TestCase):
 
     def test_anonymous_requisition_list_requires_authentication(self):
 
-        response = self.client.get(
-            "/api/v1/procurement/requisitions/"
-        )
+        response = self.client.get("/api/v1/procurement/requisitions/")
 
         self.assertEqual(response.status_code, 401)
 
     def test_anonymous_quotation_list_requires_authentication(self):
 
-        response = self.client.get(
-            "/api/v1/procurement/quotations/"
-        )
+        response = self.client.get("/api/v1/procurement/quotations/")
 
         self.assertEqual(response.status_code, 401)
 
     def test_anonymous_purchase_order_list_requires_authentication(self):
 
-        response = self.client.get(
-            "/api/v1/procurement/purchase-orders/"
-        )
+        response = self.client.get("/api/v1/procurement/purchase-orders/")
 
         self.assertEqual(response.status_code, 401)
 
@@ -44,8 +38,6 @@ class ProcurementAPITests(TestCase):
 
         self.client.force_authenticate(user=self.user)
 
-        response = self.client.get(
-            "/api/v1/procurement/requisitions/"
-        )
+        response = self.client.get("/api/v1/procurement/requisitions/")
 
         self.assertEqual(response.status_code, 403)

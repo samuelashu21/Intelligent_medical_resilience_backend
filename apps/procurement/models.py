@@ -1,4 +1,3 @@
-
 import uuid
 
 from decimal import Decimal
@@ -46,17 +45,11 @@ class PurchaseOrderStatus(models.TextChoices):
 
 
 def generate_requisition_number():
-    return (
-        f"PR-{timezone.now():%Y%m%d}-"
-        f"{uuid.uuid4().hex[:8].upper()}"
-    )
+    return f"PR-{timezone.now():%Y%m%d}-" f"{uuid.uuid4().hex[:8].upper()}"
 
 
 def generate_purchase_order_number():
-    return (
-        f"PO-{timezone.now():%Y%m%d}-"
-        f"{uuid.uuid4().hex[:8].upper()}"
-    )
+    return f"PO-{timezone.now():%Y%m%d}-" f"{uuid.uuid4().hex[:8].upper()}"
 
 
 class PurchaseRequisition(models.Model):
@@ -154,10 +147,7 @@ class PurchaseRequisition(models.Model):
 
     def clean(self):
         if self.replenishment_request_id:
-            if (
-                self.organization_id
-                != self.replenishment_request.organization_id
-            ):
+            if self.organization_id != self.replenishment_request.organization_id:
                 raise ValidationError(
                     "Requisition organization must match "
                     "the replenishment request organization."
@@ -357,22 +347,13 @@ class SupplierQuotation(models.Model):
     def clean(self):
         if self.valid_until and self.quotation_date:
             if self.valid_until < self.quotation_date:
-                raise ValidationError(
-                    "Quotation validity cannot end before its date."
-                )
+                raise ValidationError("Quotation validity cannot end before its date.")
 
-        if self.currency and (
-            len(self.currency) != 3
-            or not self.currency.isalpha()
-        ):
-            raise ValidationError(
-                "Currency must be a three-letter code."
-            )
+        if self.currency and (len(self.currency) != 3 or not self.currency.isalpha()):
+            raise ValidationError("Currency must be a three-letter code.")
 
         if self.supplier_id and self.supplier.status != "APPROVED":
-            raise ValidationError(
-                "Only approved suppliers can submit quotations."
-            )
+            raise ValidationError("Only approved suppliers can submit quotations.")
 
     def save(self, *args, **kwargs):
         self.currency = self.currency.upper()
@@ -437,10 +418,7 @@ class SupplierQuotationLine(models.Model):
 
     def clean(self):
         if self.quotation_id and self.requisition_line_id:
-            if (
-                self.quotation.requisition_id
-                != self.requisition_line.requisition_id
-            ):
+            if self.quotation.requisition_id != self.requisition_line.requisition_id:
                 raise ValidationError(
                     "Quotation line must belong to the same requisition."
                 )
@@ -623,9 +601,7 @@ class PurchaseOrder(models.Model):
             and self.order_date
             and self.expected_delivery_date < self.order_date
         ):
-            raise ValidationError(
-                "Expected delivery cannot precede the order date."
-            )
+            raise ValidationError("Expected delivery cannot precede the order date.")
 
         if self.status == PurchaseOrderStatus.APPROVED:
             if not self.approved_by_id or not self.approved_at:
@@ -724,9 +700,7 @@ class PurchaseOrderLine(models.Model):
                     "Purchase order quantity cannot exceed requisition quantity."
                 )
 
-        expected_total = (
-            self.quantity * self.unit_price
-        ).quantize(Decimal("0.0001"))
+        expected_total = (self.quantity * self.unit_price).quantize(Decimal("0.0001"))
 
         if self.line_total != expected_total:
             raise ValidationError(

@@ -1,4 +1,3 @@
-
 from django.test import TestCase
 
 from apps.accounts.models import User, UserProfile
@@ -21,9 +20,7 @@ class UserModelTests(TestCase):
             "test@example.com",
         )
 
-        self.assertTrue(
-            user.check_password("StrongPassword123!")
-        )
+        self.assertTrue(user.check_password("StrongPassword123!"))
 
         self.assertFalse(user.is_staff)
 

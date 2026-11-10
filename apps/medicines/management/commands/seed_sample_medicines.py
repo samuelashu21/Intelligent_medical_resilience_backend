@@ -9,7 +9,6 @@ from apps.medicines.models import (
     TherapeuticCategory,
 )
 
-
 SAMPLE_MEDICINES = [
     {
         "code": "MED-PAR-500-TAB",
@@ -100,17 +99,13 @@ class Command(BaseCommand):
             defaults = {
                 "generic_name": item["generic_name"],
                 "brand_name": item["brand_name"],
-                "dosage_form": DosageForm.objects.get(
-                    code=item["dosage_form"]
-                ),
+                "dosage_form": DosageForm.objects.get(code=item["dosage_form"]),
                 "administration_route": AdministrationRoute.objects.get(
                     code=item["route"]
                 ),
                 "strength_value": item["strength_value"],
                 "strength_unit": (
-                    MeasurementUnit.objects.get(
-                        code=item["strength_unit"]
-                    )
+                    MeasurementUnit.objects.get(code=item["strength_unit"])
                     if item["strength_unit"]
                     else None
                 ),
@@ -135,7 +130,5 @@ class Command(BaseCommand):
             count += 1
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Created or updated {count} sample medicines."
-            )
+            self.style.SUCCESS(f"Created or updated {count} sample medicines.")
         )

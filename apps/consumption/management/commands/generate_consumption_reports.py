@@ -9,8 +9,7 @@ from apps.consumption.services import generate_monthly_report
 
 class Command(BaseCommand):
     help = (
-        "Generate draft monthly consumption reports "
-        "from daily consumption records."
+        "Generate draft monthly consumption reports " "from daily consumption records."
     )
 
     def add_arguments(self, parser):
@@ -28,23 +27,17 @@ class Command(BaseCommand):
             timezone.localdate().year,
             timezone.localdate().month,
         ):
-            raise CommandError(
-                "Cannot generate reports for a future month."
-            )
+            raise CommandError("Cannot generate reports for a future month.")
 
         created_or_updated = 0
 
-        records = (
-            Facility.objects.filter(is_active=True)
-            .values_list("id", flat=True)
-        )
+        records = Facility.objects.filter(is_active=True).values_list("id", flat=True)
 
         for facility_id in records:
             facility = Facility.objects.get(pk=facility_id)
 
             medicine_ids = (
-                facility.daily_consumption_records
-                .filter(
+                facility.daily_consumption_records.filter(
                     consumption_date__year=year,
                     consumption_date__month=month,
                 )
@@ -82,7 +75,5 @@ class Command(BaseCommand):
                 created_or_updated += 1
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Processed {created_or_updated} monthly reports."
-            )
+            self.style.SUCCESS(f"Processed {created_or_updated} monthly reports.")
         )

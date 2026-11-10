@@ -1,4 +1,3 @@
-
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
@@ -18,7 +17,6 @@ from apps.accounts.serializers import (
     AdministrativeUserSerializer,
 )
 from apps.audit.services import record_audit_event
-
 
 User = get_user_model()
 
@@ -81,16 +79,18 @@ class AdministrativeUserViewSet(viewsets.ModelViewSet):
         facility_ids = get_user_accessible_facility_ids(user)
 
         return (
-            User.objects.filter(
-                role_assignments__is_active=True,
-            ).filter(
-                role_assignments__organization_id__in=organization_ids
+            (
+                User.objects.filter(
+                    role_assignments__is_active=True,
+                ).filter(role_assignments__organization_id__in=organization_ids)
+                | User.objects.filter(
+                    role_assignments__is_active=True,
+                    role_assignments__facility_id__in=facility_ids,
+                )
             )
-            | User.objects.filter(
-                role_assignments__is_active=True,
-                role_assignments__facility_id__in=facility_ids,
-            )
-        ).distinct().order_by("email")
+            .distinct()
+            .order_by("email")
+        )
 
     def perform_create(self, serializer):
         created_user = serializer.save()
@@ -151,9 +151,7 @@ class AdministrativeUserViewSet(viewsets.ModelViewSet):
         target_user = self.get_object()
 
         if target_user.pk == request.user.pk:
-            raise PermissionDenied(
-                "You cannot deactivate your own account."
-            )
+            raise PermissionDenied("You cannot deactivate your own account.")
 
         if target_user.is_superuser:
             raise PermissionDenied(
@@ -186,9 +184,7 @@ class AdministrativeUserViewSet(viewsets.ModelViewSet):
             request=request,
         )
 
-        return Response({
-            "detail": "User deactivated successfully."
-        })
+        return Response({"detail": "User deactivated successfully."})
 
     @action(detail=True, methods=["post"])
     @transaction.atomic
@@ -196,9 +192,7 @@ class AdministrativeUserViewSet(viewsets.ModelViewSet):
         target_user = self.get_object()
 
         if target_user.is_active:
-            return Response({
-                "detail": "User is already active."
-            })
+            return Response({"detail": "User is already active."})
 
         target_user.is_active = True
         target_user.save(update_fields=["is_active"])
@@ -215,6 +209,4 @@ class AdministrativeUserViewSet(viewsets.ModelViewSet):
             request=request,
         )
 
-        return Response({
-            "detail": "User activated. Assign roles explicitly."
-        })
+        return Response({"detail": "User activated. Assign roles explicitly."})

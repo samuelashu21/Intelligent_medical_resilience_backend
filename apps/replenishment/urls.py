@@ -6,7 +6,6 @@ from apps.replenishment.views import (
     ReplenishmentRequestViewSet,
 )
 
-
 router = DefaultRouter()
 
 router.register(

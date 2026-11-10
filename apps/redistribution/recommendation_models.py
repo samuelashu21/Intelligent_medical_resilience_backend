@@ -1,4 +1,3 @@
-
 import uuid
 
 from django.conf import settings
@@ -7,10 +6,10 @@ from django.db import models
 from django.db.models import F, Q
 from django.utils import timezone
 
-
 # ============================================================
 # RECOMMENDATION STATUS
 # ============================================================
+
 
 class RecommendationStatus(models.TextChoices):
     PENDING = "PENDING", "Pending"
@@ -24,6 +23,7 @@ class RecommendationStatus(models.TextChoices):
 # RECOMMENDATION PRIORITY
 # ============================================================
 
+
 class RecommendationPriority(models.TextChoices):
     LOW = "LOW", "Low"
     NORMAL = "NORMAL", "Normal"
@@ -34,6 +34,7 @@ class RecommendationPriority(models.TextChoices):
 # ============================================================
 # REDISTRIBUTION RECOMMENDATION MODEL
 # ============================================================
+
 
 class RedistributionRecommendation(models.Model):
 
@@ -239,15 +240,11 @@ class RedistributionRecommendation(models.Model):
                 condition=Q(recommended_quantity__gt=0),
                 name="redistribution_recommendation_positive_qty",
             ),
-
             # Donor and recipient must be different facilities.
             models.CheckConstraint(
-                condition=~Q(
-                    donor_facility=F("recipient_facility")
-                ),
+                condition=~Q(donor_facility=F("recipient_facility")),
                 name="redistribution_different_facilities",
             ),
-
             models.CheckConstraint(
                 condition=Q(priority_score__gte=0),
                 name="redistribution_score_nonnegative",
@@ -286,8 +283,7 @@ class RedistributionRecommendation(models.Model):
         if (
             self.donor_organization_id
             and self.donor_facility_id
-            and self.donor_facility.organization_id
-            != self.donor_organization_id
+            and self.donor_facility.organization_id != self.donor_organization_id
         ):
             raise ValidationError(
                 {
@@ -319,16 +315,9 @@ class RedistributionRecommendation(models.Model):
         # Validate recommended quantity
         # ----------------------------------------------------
 
-        if (
-            self.recommended_quantity is not None
-            and self.recommended_quantity <= 0
-        ):
+        if self.recommended_quantity is not None and self.recommended_quantity <= 0:
             raise ValidationError(
-                {
-                    "recommended_quantity": (
-                        "Recommended quantity must be positive."
-                    )
-                }
+                {"recommended_quantity": ("Recommended quantity must be positive.")}
             )
 
         # ----------------------------------------------------
@@ -341,11 +330,7 @@ class RedistributionRecommendation(models.Model):
             and self.expires_at <= self.generated_at
         ):
             raise ValidationError(
-                {
-                    "expires_at": (
-                        "Recommendation expiry must be after generation."
-                    )
-                }
+                {"expires_at": ("Recommendation expiry must be after generation.")}
             )
 
     # ========================================================
@@ -356,8 +341,7 @@ class RedistributionRecommendation(models.Model):
 
         if not self.recommendation_number:
             self.recommendation_number = (
-                f"RR-{timezone.now():%Y%m%d}-"
-                f"{uuid.uuid4().hex[:10].upper()}"
+                f"RR-{timezone.now():%Y%m%d}-" f"{uuid.uuid4().hex[:10].upper()}"
             )
 
         self.full_clean()

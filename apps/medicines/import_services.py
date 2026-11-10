@@ -27,9 +27,7 @@ def normalize_boolean(value, default=False):
     if normalized in ["false", "0", "no", "n"]:
         return False
 
-    raise ValueError(
-        f"Invalid boolean value: {value}"
-    )
+    raise ValueError(f"Invalid boolean value: {value}")
 
 
 def normalize_optional_integer(value):
@@ -78,28 +76,20 @@ def load_import_rows(file_path):
         if not headers:
             return []
 
-        headers = [
-            str(value).strip()
-            if value is not None else ""
-            for value in headers
-        ]
+        headers = [str(value).strip() if value is not None else "" for value in headers]
 
         data = []
 
         for values in rows:
-            data.append({
-                header: value
-                for header, value in zip(headers, values)
-                if header
-            })
+            data.append(
+                {header: value for header, value in zip(headers, values) if header}
+            )
 
         workbook.close()
 
         return data
 
-    raise ValueError(
-        "Only CSV and XLSX files are supported."
-    )
+    raise ValueError("Only CSV and XLSX files are supported.")
 
 
 def process_medicine_row(row):
@@ -111,13 +101,9 @@ def process_medicine_row(row):
 
     code = str(row.get("code") or "").strip().upper()
 
-    generic_name = str(
-        row.get("generic_name") or ""
-    ).strip()
+    generic_name = str(row.get("generic_name") or "").strip()
 
-    dosage_form_code = str(
-        row.get("dosage_form_code") or ""
-    ).strip().upper()
+    dosage_form_code = str(row.get("dosage_form_code") or "").strip().upper()
 
     if not code:
         raise ValueError("Medicine code is required.")
@@ -134,13 +120,9 @@ def process_medicine_row(row):
     ).first()
 
     if not dosage_form:
-        raise ValueError(
-            f"Unknown dosage form code: {dosage_form_code}"
-        )
+        raise ValueError(f"Unknown dosage form code: {dosage_form_code}")
 
-    route_code = str(
-        row.get("route_code") or ""
-    ).strip().upper()
+    route_code = str(row.get("route_code") or "").strip().upper()
 
     route = None
 
@@ -151,13 +133,9 @@ def process_medicine_row(row):
         ).first()
 
         if not route:
-            raise ValueError(
-                f"Unknown administration route: {route_code}"
-            )
+            raise ValueError(f"Unknown administration route: {route_code}")
 
-    category_code = str(
-        row.get("category_code") or ""
-    ).strip().upper()
+    category_code = str(row.get("category_code") or "").strip().upper()
 
     category = None
 
@@ -168,13 +146,9 @@ def process_medicine_row(row):
         ).first()
 
         if not category:
-            raise ValueError(
-                f"Unknown therapeutic category: {category_code}"
-            )
+            raise ValueError(f"Unknown therapeutic category: {category_code}")
 
-    pack_size = normalize_optional_integer(
-        row.get("pack_size")
-    )
+    pack_size = normalize_optional_integer(row.get("pack_size"))
 
     defaults = {
         "generic_name": generic_name,
@@ -182,12 +156,8 @@ def process_medicine_row(row):
         "dosage_form": dosage_form,
         "administration_route": route,
         "therapeutic_category": category,
-        "strength_display": str(
-            row.get("strength_display") or ""
-        ).strip(),
-        "atc_code": str(
-            row.get("atc_code") or ""
-        ).strip().upper(),
+        "strength_display": str(row.get("strength_display") or "").strip(),
+        "atc_code": str(row.get("atc_code") or "").strip().upper(),
         "is_essential": normalize_boolean(
             row.get("is_essential"),
             False,

@@ -9,102 +9,261 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='AdministrationRoute',
+            name="AdministrationRoute",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('code', models.CharField(max_length=40, unique=True)),
-                ('name', models.CharField(max_length=100, unique=True)),
-                ('description', models.TextField(blank=True)),
-                ('is_active', models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("code", models.CharField(max_length=40, unique=True)),
+                ("name", models.CharField(max_length=100, unique=True)),
+                ("description", models.TextField(blank=True)),
+                ("is_active", models.BooleanField(default=True)),
             ],
             options={
-                'ordering': ['name'],
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='DosageForm',
+            name="DosageForm",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('code', models.CharField(max_length=40, unique=True)),
-                ('name', models.CharField(max_length=100, unique=True)),
-                ('description', models.TextField(blank=True)),
-                ('is_active', models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("code", models.CharField(max_length=40, unique=True)),
+                ("name", models.CharField(max_length=100, unique=True)),
+                ("description", models.TextField(blank=True)),
+                ("is_active", models.BooleanField(default=True)),
             ],
             options={
-                'ordering': ['name'],
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='MeasurementUnit',
+            name="MeasurementUnit",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('code', models.CharField(max_length=30, unique=True)),
-                ('name', models.CharField(max_length=100, unique=True)),
-                ('symbol', models.CharField(blank=True, max_length=30)),
-                ('unit_type', models.CharField(choices=[('COUNT', 'Count'), ('MASS', 'Mass'), ('VOLUME', 'Volume'), ('OTHER', 'Other')], default='COUNT', max_length=30)),
-                ('is_active', models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("code", models.CharField(max_length=30, unique=True)),
+                ("name", models.CharField(max_length=100, unique=True)),
+                ("symbol", models.CharField(blank=True, max_length=30)),
+                (
+                    "unit_type",
+                    models.CharField(
+                        choices=[
+                            ("COUNT", "Count"),
+                            ("MASS", "Mass"),
+                            ("VOLUME", "Volume"),
+                            ("OTHER", "Other"),
+                        ],
+                        default="COUNT",
+                        max_length=30,
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
             ],
             options={
-                'ordering': ['name'],
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='TherapeuticCategory',
+            name="TherapeuticCategory",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('code', models.CharField(max_length=50, unique=True)),
-                ('name', models.CharField(max_length=150, unique=True)),
-                ('description', models.TextField(blank=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='children', to='medicines.therapeuticcategory')),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("code", models.CharField(max_length=50, unique=True)),
+                ("name", models.CharField(max_length=150, unique=True)),
+                ("description", models.TextField(blank=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="children",
+                        to="medicines.therapeuticcategory",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Therapeutic categories',
-                'ordering': ['name'],
+                "verbose_name_plural": "Therapeutic categories",
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='Medicine',
+            name="Medicine",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('code', models.CharField(max_length=80, unique=True)),
-                ('generic_name', models.CharField(db_index=True, max_length=255)),
-                ('brand_name', models.CharField(blank=True, db_index=True, max_length=255)),
-                ('description', models.TextField(blank=True)),
-                ('strength_value', models.DecimalField(blank=True, decimal_places=4, max_digits=12, null=True)),
-                ('strength_display', models.CharField(blank=True, help_text='Human-readable strength, e.g. 500 mg or 250 mg/5 mL.', max_length=100)),
-                ('pack_size', models.PositiveIntegerField(blank=True, help_text='Number of dispensing units per pack, if applicable.', null=True)),
-                ('atc_code', models.CharField(blank=True, db_index=True, help_text='Anatomical Therapeutic Chemical classification code.', max_length=20)),
-                ('national_code', models.CharField(blank=True, db_index=True, max_length=100)),
-                ('is_essential', models.BooleanField(default=False)),
-                ('is_controlled', models.BooleanField(default=False)),
-                ('is_active', models.BooleanField(default=True)),
-                ('notes', models.TextField(blank=True)),
-                ('administration_route', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='medicines', to='medicines.administrationroute')),
-                ('dispensing_unit', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='dispensed_medicines', to='medicines.measurementunit')),
-                ('dosage_form', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='medicines', to='medicines.dosageform')),
-                ('strength_unit', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='strength_medicines', to='medicines.measurementunit')),
-                ('therapeutic_category', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='medicines', to='medicines.therapeuticcategory')),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("code", models.CharField(max_length=80, unique=True)),
+                ("generic_name", models.CharField(db_index=True, max_length=255)),
+                (
+                    "brand_name",
+                    models.CharField(blank=True, db_index=True, max_length=255),
+                ),
+                ("description", models.TextField(blank=True)),
+                (
+                    "strength_value",
+                    models.DecimalField(
+                        blank=True, decimal_places=4, max_digits=12, null=True
+                    ),
+                ),
+                (
+                    "strength_display",
+                    models.CharField(
+                        blank=True,
+                        help_text="Human-readable strength, e.g. 500 mg or 250 mg/5 mL.",
+                        max_length=100,
+                    ),
+                ),
+                (
+                    "pack_size",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Number of dispensing units per pack, if applicable.",
+                        null=True,
+                    ),
+                ),
+                (
+                    "atc_code",
+                    models.CharField(
+                        blank=True,
+                        db_index=True,
+                        help_text="Anatomical Therapeutic Chemical classification code.",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "national_code",
+                    models.CharField(blank=True, db_index=True, max_length=100),
+                ),
+                ("is_essential", models.BooleanField(default=False)),
+                ("is_controlled", models.BooleanField(default=False)),
+                ("is_active", models.BooleanField(default=True)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "administration_route",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="medicines",
+                        to="medicines.administrationroute",
+                    ),
+                ),
+                (
+                    "dispensing_unit",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="dispensed_medicines",
+                        to="medicines.measurementunit",
+                    ),
+                ),
+                (
+                    "dosage_form",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="medicines",
+                        to="medicines.dosageform",
+                    ),
+                ),
+                (
+                    "strength_unit",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="strength_medicines",
+                        to="medicines.measurementunit",
+                    ),
+                ),
+                (
+                    "therapeutic_category",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="medicines",
+                        to="medicines.therapeuticcategory",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['generic_name', 'strength_display'],
-                'indexes': [models.Index(fields=['generic_name', 'is_active'], name='med_generic_active_idx'), models.Index(fields=['atc_code'], name='med_atc_code_idx')],
-                'constraints': [models.CheckConstraint(condition=models.Q(('strength_value__isnull', True), ('strength_value__gt', 0), _connector='OR'), name='medicine_strength_positive'), models.CheckConstraint(condition=models.Q(('pack_size__isnull', True), ('pack_size__gt', 0), _connector='OR'), name='medicine_pack_size_positive')],
+                "ordering": ["generic_name", "strength_display"],
+                "indexes": [
+                    models.Index(
+                        fields=["generic_name", "is_active"],
+                        name="med_generic_active_idx",
+                    ),
+                    models.Index(fields=["atc_code"], name="med_atc_code_idx"),
+                ],
+                "constraints": [
+                    models.CheckConstraint(
+                        condition=models.Q(
+                            ("strength_value__isnull", True),
+                            ("strength_value__gt", 0),
+                            _connector="OR",
+                        ),
+                        name="medicine_strength_positive",
+                    ),
+                    models.CheckConstraint(
+                        condition=models.Q(
+                            ("pack_size__isnull", True),
+                            ("pack_size__gt", 0),
+                            _connector="OR",
+                        ),
+                        name="medicine_pack_size_positive",
+                    ),
+                ],
             },
         ),
     ]

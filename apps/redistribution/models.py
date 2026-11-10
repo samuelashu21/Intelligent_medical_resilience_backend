@@ -4,3 +4,9 @@ from apps.redistribution.recommendation_models import (
     RecommendationPriority,
 )
 
+
+from apps.redistribution.optimization_models import (
+    RedistributionTransportProfile,
+    RedistributionOptimizationRun,
+    RedistributionOptimizationAllocation,
+)

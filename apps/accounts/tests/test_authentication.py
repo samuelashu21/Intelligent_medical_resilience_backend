@@ -1,4 +1,3 @@
-
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.urls import reverse
@@ -8,7 +7,6 @@ from rest_framework.test import APITestCase
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-
 
 User = get_user_model()
 
@@ -97,9 +95,7 @@ class AuthenticationAPITests(APITestCase):
 
         access = response.data["access"]
 
-        self.client.credentials(
-            HTTP_AUTHORIZATION=f"Bearer {access}"
-        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
         return response
 
@@ -170,9 +166,7 @@ class AuthenticationAPITests(APITestCase):
     def test_inactive_user_cannot_login(self):
         self.user.is_active = False
 
-        self.user.save(
-            update_fields=["is_active"]
-        )
+        self.user.save(update_fields=["is_active"])
 
         response = self.client.post(
             self.login_url,
@@ -265,9 +259,7 @@ class AuthenticationAPITests(APITestCase):
         )
 
         # The old refresh token must be blacklisted.
-        self.assert_refresh_token_blacklisted(
-            old_refresh
-        )
+        self.assert_refresh_token_blacklisted(old_refresh)
 
         # The newly issued refresh token must remain valid.
         new_token = RefreshToken(new_refresh)
@@ -331,9 +323,7 @@ class AuthenticationAPITests(APITestCase):
         )
 
         # Verify that the refresh token cannot be reconstructed.
-        self.assert_refresh_token_blacklisted(
-            refresh
-        )
+        self.assert_refresh_token_blacklisted(refresh)
 
     def test_logout_requires_authentication(self):
         login_response = self.login()
@@ -392,17 +382,9 @@ class AuthenticationAPITests(APITestCase):
 
         self.user.refresh_from_db()
 
-        self.assertTrue(
-            self.user.check_password(
-                "AnotherSecurePassword456!"
-            )
-        )
+        self.assertTrue(self.user.check_password("AnotherSecurePassword456!"))
 
-        self.assertFalse(
-            self.user.check_password(
-                "SecurePassword123!"
-            )
-        )
+        self.assertFalse(self.user.check_password("SecurePassword123!"))
 
     def test_password_change_rejects_wrong_current_password(self):
         self.authenticate_client()
@@ -425,11 +407,7 @@ class AuthenticationAPITests(APITestCase):
         self.user.refresh_from_db()
 
         # Original password must remain unchanged.
-        self.assertTrue(
-            self.user.check_password(
-                "SecurePassword123!"
-            )
-        )
+        self.assertTrue(self.user.check_password("SecurePassword123!"))
 
     def test_password_change_rejects_password_mismatch(self):
         self.authenticate_client()

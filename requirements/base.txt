@@ -19,6 +19,8 @@ django-environ>=0.12,<1.0
 # CORS
 django-cors-headers>=4.7,<5.0
 
+ortools>=9.10,<10
+
 # Filtering and pagination
 django-filter>=25.1,<26.0
 

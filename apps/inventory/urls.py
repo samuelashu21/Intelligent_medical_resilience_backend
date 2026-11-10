@@ -1,4 +1,3 @@
-
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
@@ -22,7 +21,6 @@ from apps.inventory.reconciliation_views import (
     StockCountViewSet,
     StockReconciliationViewSet,
 )
-
 
 router = DefaultRouter()
 
@@ -100,17 +98,15 @@ urlpatterns = [
         name="reconciliation-summary",
     ),
     path(
-    "reports/",
-    include("apps.inventory.reporting_urls"),
-),
-
-path(
-    "visibility/",
-    include("apps.inventory.visibility_urls"),
-),
-
-path(
-    "policies/",
-    include("apps.inventory.stock_policy_urls"),
-),
+        "reports/",
+        include("apps.inventory.reporting_urls"),
+    ),
+    path(
+        "visibility/",
+        include("apps.inventory.visibility_urls"),
+    ),
+    path(
+        "policies/",
+        include("apps.inventory.stock_policy_urls"),
+    ),
 ] + router.urls

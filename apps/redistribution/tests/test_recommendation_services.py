@@ -115,9 +115,7 @@ class RedistributionCalculationTests(SimpleTestCase):
             "policy": None,
         }
 
-        result = calculate_donor_transferable_quantity(
-            profile
-        )
+        result = calculate_donor_transferable_quantity(profile)
 
         self.assertEqual(
             result,
@@ -135,9 +133,7 @@ class RedistributionCalculationTests(SimpleTestCase):
             "policy": None,
         }
 
-        result = calculate_recipient_shortage(
-            profile
-        )
+        result = calculate_recipient_shortage(profile)
 
         self.assertEqual(
             result,

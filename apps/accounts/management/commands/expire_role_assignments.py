@@ -1,4 +1,3 @@
-
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
@@ -15,8 +14,7 @@ class Command(BaseCommand):
         now = timezone.now()
 
         expired_assignments = (
-            UserRole.objects
-            .select_for_update(of=("self",))
+            UserRole.objects.select_for_update(of=("self",))
             .filter(
                 is_active=True,
                 valid_until__isnull=False,
@@ -43,8 +41,7 @@ class Command(BaseCommand):
                 target_type="UserRole",
                 target_id=assignment.pk,
                 description=(
-                    f"Expired {assignment.role.code} for "
-                    f"{assignment.user.email}."
+                    f"Expired {assignment.role.code} for " f"{assignment.user.email}."
                 ),
                 organization=assignment.organization,
                 facility=assignment.facility,
@@ -62,7 +59,5 @@ class Command(BaseCommand):
             count += 1
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Deactivated {count} expired role assignment(s)."
-            )
+            self.style.SUCCESS(f"Deactivated {count} expired role assignment(s).")
         )

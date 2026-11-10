@@ -12,7 +12,6 @@ from apps.inventory.models import (
 
 from apps.consumption.models import DailyConsumption
 
-
 ZERO = Decimal("0")
 
 
@@ -31,9 +30,7 @@ def calculate_amc(
     considered before activating a policy.
     """
     if not 1 <= months <= 24:
-        raise ValidationError(
-            "AMC period must be between 1 and 24 months."
-        )
+        raise ValidationError("AMC period must be between 1 and 24 months.")
 
     as_of = as_of or timezone.localdate()
 
@@ -86,10 +83,7 @@ def calculate_reorder_point(
     lead_time_days,
     safety_stock,
 ):
-    return (
-        Decimal(daily_demand) * Decimal(lead_time_days)
-        + Decimal(safety_stock)
-    )
+    return Decimal(daily_demand) * Decimal(lead_time_days) + Decimal(safety_stock)
 
 
 def calculate_target_stock(
@@ -98,11 +92,9 @@ def calculate_target_stock(
     review_period_days,
     safety_stock,
 ):
-    return (
-        Decimal(daily_demand)
-        * Decimal(lead_time_days + review_period_days)
-        + Decimal(safety_stock)
-    )
+    return Decimal(daily_demand) * Decimal(
+        lead_time_days + review_period_days
+    ) + Decimal(safety_stock)
 
 
 def get_usable_stock(facility_id, medicine_id):
@@ -127,10 +119,7 @@ def get_usable_stock(facility_id, medicine_id):
         if expiry_date and expiry_date < today:
             continue
 
-        available = (
-            balance.quantity_on_hand
-            - balance.quantity_reserved
-        )
+        available = balance.quantity_on_hand - balance.quantity_reserved
 
         total += max(ZERO, available)
 
@@ -147,42 +136,41 @@ def get_active_stock_policy(
     """
     as_of = as_of or timezone.localdate()
 
-    facility_policy = StockPolicy.objects.filter(
-        facility_id=facility_id,
-        medicine_id=medicine_id,
-        status=StockPolicy.PolicyStatus.ACTIVE,
-        effective_from__lte=as_of,
-    ).filter(
-        models_q_effective_until(as_of)
-    ).first()
+    facility_policy = (
+        StockPolicy.objects.filter(
+            facility_id=facility_id,
+            medicine_id=medicine_id,
+            status=StockPolicy.PolicyStatus.ACTIVE,
+            effective_from__lte=as_of,
+        )
+        .filter(models_q_effective_until(as_of))
+        .first()
+    )
 
     if facility_policy:
         return facility_policy
 
     from apps.facilities.models import Facility
 
-    facility = Facility.objects.select_related(
-        "organization"
-    ).get(pk=facility_id)
+    facility = Facility.objects.select_related("organization").get(pk=facility_id)
 
-    return StockPolicy.objects.filter(
-        facility__isnull=True,
-        organization_id=facility.organization_id,
-        medicine_id=medicine_id,
-        status=StockPolicy.PolicyStatus.ACTIVE,
-        effective_from__lte=as_of,
-    ).filter(
-        models_q_effective_until(as_of)
-    ).first()
+    return (
+        StockPolicy.objects.filter(
+            facility__isnull=True,
+            organization_id=facility.organization_id,
+            medicine_id=medicine_id,
+            status=StockPolicy.PolicyStatus.ACTIVE,
+            effective_from__lte=as_of,
+        )
+        .filter(models_q_effective_until(as_of))
+        .first()
+    )
 
 
 def models_q_effective_until(as_of):
     from django.db.models import Q
 
-    return (
-        Q(effective_until__isnull=True)
-        | Q(effective_until__gte=as_of)
-    )
+    return Q(effective_until__isnull=True) | Q(effective_until__gte=as_of)
 
 
 def evaluate_stock_policy(
@@ -282,10 +270,7 @@ def evaluate_stock_policy(
         "calculated_target_stock": str(calculated_target),
         "target_stock": str(target_stock),
         "recommended_quantity": str(recommended_quantity),
-        "months_of_stock": (
-            str(usable_stock / amc)
-            if amc > ZERO else None
-        ),
+        "months_of_stock": (str(usable_stock / amc) if amc > ZERO else None),
         "amc_months_included": consumption["months_included"],
         "message": (
             "Policy evaluation completed. "
@@ -296,16 +281,10 @@ def evaluate_stock_policy(
 
 @transaction.atomic
 def activate_stock_policy(policy_id, user):
-    policy = StockPolicy.objects.select_for_update().get(
-        pk=policy_id
-    )
+    policy = StockPolicy.objects.select_for_update().get(pk=policy_id)
 
-    if policy.effective_until and (
-        policy.effective_until < timezone.localdate()
-    ):
-        raise ValidationError(
-            "An expired policy cannot be activated."
-        )
+    if policy.effective_until and (policy.effective_until < timezone.localdate()):
+        raise ValidationError("An expired policy cannot be activated.")
 
     policy.status = StockPolicy.PolicyStatus.ACTIVE
     policy.updated_by = user
@@ -316,9 +295,7 @@ def activate_stock_policy(policy_id, user):
 
 @transaction.atomic
 def deactivate_stock_policy(policy_id, user):
-    policy = StockPolicy.objects.select_for_update().get(
-        pk=policy_id
-    )
+    policy = StockPolicy.objects.select_for_update().get(pk=policy_id)
 
     policy.status = StockPolicy.PolicyStatus.INACTIVE
     policy.updated_by = user

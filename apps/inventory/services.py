@@ -20,7 +20,6 @@ from apps.inventory.models import (
     StockStatus,
 )
 
-
 INCREASE_TYPES = {
     MovementType.RECEIPT,
     MovementType.ADJUSTMENT_IN,
@@ -95,26 +94,24 @@ def receive_stock(
     if quantity <= 0:
         raise ValidationError("Receipt quantity must be positive.")
 
-    batch = StockBatch.objects.select_for_update().select_related(
-        "warehouse",
-        "warehouse__organization",
-    ).get(pk=batch_id)
+    batch = (
+        StockBatch.objects.select_for_update()
+        .select_related(
+            "warehouse",
+            "warehouse__organization",
+        )
+        .get(pk=batch_id)
+    )
 
     if batch.status != StockStatus.AVAILABLE:
-        raise ValidationError(
-            "Stock can only be received into an available batch."
-        )
+        raise ValidationError("Stock can only be received into an available batch.")
 
     if batch.is_expired:
-        raise ValidationError(
-            "Cannot receive an expired batch."
-        )
+        raise ValidationError("Cannot receive an expired batch.")
 
     balance = _get_or_create_balance(batch)
 
-    balance = InventoryBalance.objects.select_for_update().get(
-        pk=balance.pk
-    )
+    balance = InventoryBalance.objects.select_for_update().get(pk=balance.pk)
 
     movement = StockMovement.objects.create(
         batch=batch,
@@ -127,9 +124,7 @@ def receive_stock(
         performed_by=performed_by,
     )
 
-    balance.quantity_on_hand = (
-        balance.quantity_on_hand + quantity
-    )
+    balance.quantity_on_hand = balance.quantity_on_hand + quantity
 
     balance.last_movement_at = timezone.now()
 
@@ -161,23 +156,24 @@ def issue_stock(
     if quantity <= 0:
         raise ValidationError("Issue quantity must be positive.")
 
-    batch = StockBatch.objects.select_for_update().select_related(
-        "warehouse",
-        "warehouse__organization",
-    ).get(pk=batch_id)
+    batch = (
+        StockBatch.objects.select_for_update()
+        .select_related(
+            "warehouse",
+            "warehouse__organization",
+        )
+        .get(pk=batch_id)
+    )
 
     validate_batch_for_issue(batch)
 
     balance = _get_or_create_balance(batch)
 
-    balance = InventoryBalance.objects.select_for_update().get(
-        pk=balance.pk
-    )
+    balance = InventoryBalance.objects.select_for_update().get(pk=balance.pk)
 
     if balance.quantity_available < quantity:
         raise ValidationError(
-            f"Insufficient available stock. "
-            f"Available: {balance.quantity_available}"
+            f"Insufficient available stock. " f"Available: {balance.quantity_available}"
         )
 
     movement = StockMovement.objects.create(
@@ -228,16 +224,18 @@ def adjust_stock(
     if not reason.strip():
         raise ValidationError("An adjustment reason is required.")
 
-    batch = StockBatch.objects.select_for_update().select_related(
-        "warehouse",
-        "warehouse__organization",
-    ).get(pk=batch_id)
+    batch = (
+        StockBatch.objects.select_for_update()
+        .select_related(
+            "warehouse",
+            "warehouse__organization",
+        )
+        .get(pk=batch_id)
+    )
 
     balance = _get_or_create_balance(batch)
 
-    balance = InventoryBalance.objects.select_for_update().get(
-        pk=balance.pk
-    )
+    balance = InventoryBalance.objects.select_for_update().get(pk=balance.pk)
 
     if direction == "IN":
         movement_type = MovementType.ADJUSTMENT_IN
@@ -248,9 +246,7 @@ def adjust_stock(
         movement_type = MovementType.ADJUSTMENT_OUT
 
         if balance.quantity_available < quantity:
-            raise ValidationError(
-                "Adjustment would reduce available stock below zero."
-            )
+            raise ValidationError("Adjustment would reduce available stock below zero.")
 
         balance.quantity_on_hand -= quantity
 
@@ -300,25 +296,18 @@ def reserve_stock(
     if not reference_number.strip():
         raise ValidationError("Reference number is required.")
 
-    batch = StockBatch.objects.select_for_update().get(
-        pk=batch_id
-    )
+    batch = StockBatch.objects.select_for_update().get(pk=batch_id)
 
     if batch.status != StockStatus.AVAILABLE or batch.is_expired:
-        raise ValidationError(
-            "This batch cannot be reserved."
-        )
+        raise ValidationError("This batch cannot be reserved.")
 
     balance = _get_or_create_balance(batch)
 
-    balance = InventoryBalance.objects.select_for_update().get(
-        pk=balance.pk
-    )
+    balance = InventoryBalance.objects.select_for_update().get(pk=balance.pk)
 
     if balance.quantity_available < quantity:
         raise ValidationError(
-            f"Insufficient available stock. "
-            f"Available: {balance.quantity_available}"
+            f"Insufficient available stock. " f"Available: {balance.quantity_available}"
         )
 
     reservation = StockReservation.objects.create(
@@ -338,18 +327,12 @@ def reserve_stock(
 
 @transaction.atomic
 def release_reservation(*, reservation_id):
-    reservation = StockReservation.objects.select_for_update().get(
-        pk=reservation_id
-    )
+    reservation = StockReservation.objects.select_for_update().get(pk=reservation_id)
 
     if reservation.status != ReservationStatus.ACTIVE:
-        raise ValidationError(
-            "Only active reservations can be released."
-        )
+        raise ValidationError("Only active reservations can be released.")
 
-    balance = InventoryBalance.objects.select_for_update().get(
-        batch=reservation.batch
-    )
+    balance = InventoryBalance.objects.select_for_update().get(batch=reservation.batch)
 
     balance.quantity_reserved -= reservation.quantity
     balance.save()
@@ -367,37 +350,22 @@ def fulfill_reservation(
     performed_by,
     request=None,
 ):
-    reservation = StockReservation.objects.select_for_update().get(
-        pk=reservation_id
-    )
+    reservation = StockReservation.objects.select_for_update().get(pk=reservation_id)
 
     if reservation.status != ReservationStatus.ACTIVE:
-        raise ValidationError(
-            "Only active reservations can be fulfilled."
-        )
+        raise ValidationError("Only active reservations can be fulfilled.")
 
-    if (
-        reservation.expires_at
-        and reservation.expires_at <= timezone.now()
-    ):
-        raise ValidationError(
-            "This reservation has expired."
-        )
+    if reservation.expires_at and reservation.expires_at <= timezone.now():
+        raise ValidationError("This reservation has expired.")
 
-    batch = StockBatch.objects.select_for_update().get(
-        pk=reservation.batch_id
-    )
+    batch = StockBatch.objects.select_for_update().get(pk=reservation.batch_id)
 
     validate_batch_for_issue(batch)
 
-    balance = InventoryBalance.objects.select_for_update().get(
-        batch=batch
-    )
+    balance = InventoryBalance.objects.select_for_update().get(batch=batch)
 
     if balance.quantity_on_hand < reservation.quantity:
-        raise ValidationError(
-            "Insufficient physical stock to fulfill reservation."
-        )
+        raise ValidationError("Insufficient physical stock to fulfill reservation.")
 
     movement = StockMovement.objects.create(
         batch=batch,
@@ -422,9 +390,7 @@ def fulfill_reservation(
         request=request,
         action="STOCK_RESERVATION_FULFILLED",
         batch=batch,
-        description=(
-            f"Reservation {reservation.reference_number} fulfilled."
-        ),
+        description=(f"Reservation {reservation.reference_number} fulfilled."),
         changes={"quantity": str(reservation.quantity)},
     )
 
@@ -455,29 +421,28 @@ def get_fefo_batches(
 ):
     today = timezone.localdate()
 
-    queryset = StockBatch.objects.filter(
-        medicine_id=medicine_id,
-        warehouse_id=warehouse_id,
-        status=BatchStatus.AVAILABLE,
-        expiry_date__gte=today,
-        balance__quantity_on_hand__gt=0,
-    ).annotate(
-        available_quantity=ExpressionWrapper(
-            F("balance__quantity_on_hand")
-            - F("balance__quantity_reserved"),
-            output_field=DecimalField(
-                max_digits=16,
-                decimal_places=3,
-            ),
+    queryset = (
+        StockBatch.objects.filter(
+            medicine_id=medicine_id,
+            warehouse_id=warehouse_id,
+            status=BatchStatus.AVAILABLE,
+            expiry_date__gte=today,
+            balance__quantity_on_hand__gt=0,
         )
-    ).filter(
-        available_quantity__gt=0
+        .annotate(
+            available_quantity=ExpressionWrapper(
+                F("balance__quantity_on_hand") - F("balance__quantity_reserved"),
+                output_field=DecimalField(
+                    max_digits=16,
+                    decimal_places=3,
+                ),
+            )
+        )
+        .filter(available_quantity__gt=0)
     )
 
     if presentation_id:
-        queryset = queryset.filter(
-            presentation_id=presentation_id
-        )
+        queryset = queryset.filter(presentation_id=presentation_id)
 
     return queryset.order_by(
         "expiry_date",
@@ -489,7 +454,7 @@ def get_fefo_batches(
 def get_expiring_batches(*, warehouse_id=None, days=90):
     today = timezone.localdate()
     cutoff = today + timedelta(days=days)
-    
+
     queryset = StockBatch.objects.filter(
         expiry_date__gte=today,
         expiry_date__lte=cutoff,
@@ -497,8 +462,6 @@ def get_expiring_batches(*, warehouse_id=None, days=90):
     ).select_related("medicine", "warehouse", "balance")
 
     if warehouse_id:
-        queryset = queryset.filter(
-            warehouse_id=warehouse_id
-        )
+        queryset = queryset.filter(warehouse_id=warehouse_id)
 
     return queryset.order_by("expiry_date")

@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 
 from django.db.models import (
@@ -22,7 +21,6 @@ from apps.facilities.models import Facility
 from apps.accounts.scope_services import (
     get_user_accessible_facility_ids,
 )
-
 
 ZERO = Decimal("0")
 
@@ -56,14 +54,10 @@ def get_facility_stock_queryset(
     )
 
     if medicine_id:
-        queryset = queryset.filter(
-            batch__medicine_id=medicine_id
-        )
+        queryset = queryset.filter(batch__medicine_id=medicine_id)
 
     if facility_ids is not None:
-        queryset = queryset.filter(
-            batch__warehouse__facility_id__in=facility_ids
-        )
+        queryset = queryset.filter(batch__warehouse__facility_id__in=facility_ids)
 
     if organization_ids is not None:
         queryset = queryset.filter(
@@ -71,9 +65,7 @@ def get_facility_stock_queryset(
         )
 
     if not include_zero:
-        queryset = queryset.filter(
-            quantity_on_hand__gt=ZERO
-        )
+        queryset = queryset.filter(quantity_on_hand__gt=ZERO)
 
     return queryset
 
@@ -105,20 +97,15 @@ def get_facility_medicine_stock(
     )
 
     return (
-        queryset
-        .values(
+        queryset.values(
             medicine_id=F("batch__medicine_id"),
             medicine_code=F("batch__medicine__code"),
             medicine_name=F("batch__medicine__generic_name"),
             facility_id=F("batch__warehouse__facility_id"),
             facility_code=F("batch__warehouse__facility__code"),
             facility_name=F("batch__warehouse__facility__name"),
-            organization_id=F(
-                "batch__warehouse__facility__organization_id"
-            ),
-            organization_name=F(
-                "batch__warehouse__facility__organization__name"
-            ),
+            organization_id=F("batch__warehouse__facility__organization_id"),
+            organization_name=F("batch__warehouse__facility__organization__name"),
         )
         .annotate(
             on_hand=Coalesce(
@@ -224,8 +211,7 @@ def get_facility_stock_by_medicine(
     )
 
     return (
-        queryset
-        .values(
+        queryset.values(
             "batch__medicine_id",
             "batch__medicine__code",
             "batch__medicine__generic_name",
@@ -240,9 +226,7 @@ def get_facility_stock_by_medicine(
                 Value(ZERO),
             ),
         )
-        .order_by(
-            "batch__medicine__generic_name"
-        )
+        .order_by("batch__medicine__generic_name")
     )
 
 
@@ -255,9 +239,7 @@ def get_visible_facility_ids(user):
     """
 
     if user.is_superuser:
-        return Facility.objects.filter(
-            is_active=True
-        ).values_list("id", flat=True)
+        return Facility.objects.filter(is_active=True).values_list("id", flat=True)
 
     return get_user_accessible_facility_ids(
         user,

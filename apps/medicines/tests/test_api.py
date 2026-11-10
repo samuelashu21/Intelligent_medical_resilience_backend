@@ -54,9 +54,7 @@ class MedicineAPITests(APITestCase):
         )
 
         self.client.credentials(
-            HTTP_AUTHORIZATION=(
-                f"Bearer {AccessToken.for_user(self.user)}"
-            )
+            HTTP_AUTHORIZATION=(f"Bearer {AccessToken.for_user(self.user)}")
         )
 
     def test_list_medicines(self):
@@ -66,9 +64,7 @@ class MedicineAPITests(APITestCase):
             dosage_form=self.tablet,
         )
 
-        response = self.client.get(
-            "/api/v1/medicines/catalog/"
-        )
+        response = self.client.get("/api/v1/medicines/catalog/")
 
         self.assertEqual(
             response.status_code,
@@ -99,20 +95,14 @@ class MedicineAPITests(APITestCase):
             status.HTTP_201_CREATED,
         )
 
-        self.assertTrue(
-            Medicine.objects.filter(
-                code="API-AMX-500"
-            ).exists()
-        )
+        self.assertTrue(Medicine.objects.filter(code="API-AMX-500").exists())
 
     def test_unauthenticated_user_cannot_list_medicines(self):
         self.client.credentials()
 
-        response = self.client.get(
-            "/api/v1/medicines/catalog/"
-        )
+        response = self.client.get("/api/v1/medicines/catalog/")
 
         self.assertEqual(
             response.status_code,
             status.HTTP_401_UNAUTHORIZED,
-        ) 
+        )

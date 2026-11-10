@@ -1,4 +1,3 @@
-
 from datetime import timedelta
 from decimal import Decimal
 
@@ -275,9 +274,7 @@ class StockReconciliationTests(TestCase):
             physical_quantity=110,
             counted_by=self.counter,
             reason="UNRECORDED_RECEIPT",
-            explanation=(
-                "Ten units were found without a receipt record."
-            ),
+            explanation=("Ten units were found without a receipt record."),
         )
 
         submit_stock_count(
@@ -351,7 +348,8 @@ class StockReconciliationTests(TestCase):
     # ======================================================
     # TEST 8: Count line cannot reference another warehouse
     # ======================================================
-    
+
+
 def test_count_line_cannot_reference_other_warehouse_batch(self):
     other_warehouse = Warehouse.objects.create(
         code="RECON-WH-OTHER",

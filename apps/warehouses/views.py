@@ -83,25 +83,17 @@ class WarehouseViewSet(viewsets.ModelViewSet):
                 permission_code="warehouses.view",
             )
 
-            queryset = queryset.filter(
-                organization_id__in=organization_ids
-            )
+            queryset = queryset.filter(organization_id__in=organization_ids)
 
         status_filter = self.request.query_params.get("status")
 
         if status_filter:
-            queryset = queryset.filter(
-                status=status_filter.upper()
-            )
+            queryset = queryset.filter(status=status_filter.upper())
 
-        warehouse_type = self.request.query_params.get(
-            "warehouse_type"
-        )
+        warehouse_type = self.request.query_params.get("warehouse_type")
 
         if warehouse_type:
-            queryset = queryset.filter(
-                warehouse_type=warehouse_type.upper()
-            )
+            queryset = queryset.filter(warehouse_type=warehouse_type.upper())
 
         search = self.request.query_params.get("search")
 
@@ -116,16 +108,12 @@ class WarehouseViewSet(viewsets.ModelViewSet):
         organization = self.request.query_params.get("organization")
 
         if organization:
-            queryset = queryset.filter(
-                organization_id=organization
-            )
+            queryset = queryset.filter(organization_id=organization)
 
         facility = self.request.query_params.get("facility")
 
         if facility:
-            queryset = queryset.filter(
-                facility_id=facility
-            )
+            queryset = queryset.filter(facility_id=facility)
 
         return queryset.distinct()
 
@@ -134,9 +122,7 @@ class WarehouseViewSet(viewsets.ModelViewSet):
 
         if not self.request.user.is_superuser:
             if not organization:
-                raise ValidationError({
-                    "organization": "Organization is required."
-                })
+                raise ValidationError({"organization": "Organization is required."})
 
             from apps.accounts.services import user_has_permission
 
@@ -203,9 +189,7 @@ class WarehouseViewSet(viewsets.ModelViewSet):
         )
 
     def destroy(self, request, *args, **kwargs):
-        raise ValidationError(
-            "Warehouses cannot be deleted. Use the close workflow."
-        )
+        raise ValidationError("Warehouses cannot be deleted. Use the close workflow.")
 
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
@@ -228,9 +212,7 @@ class WarehouseViewSet(viewsets.ModelViewSet):
         reason = request.data.get("reason", "").strip()
 
         if not reason:
-            raise ValidationError({
-                "reason": "Suspension reason is required."
-            })
+            raise ValidationError({"reason": "Suspension reason is required."})
 
         try:
             warehouse = suspend_warehouse(
@@ -250,9 +232,7 @@ class WarehouseViewSet(viewsets.ModelViewSet):
         reason = request.data.get("reason", "").strip()
 
         if not reason:
-            raise ValidationError({
-                "reason": "Maintenance reason is required."
-            })
+            raise ValidationError({"reason": "Maintenance reason is required."})
 
         try:
             warehouse = set_warehouse_maintenance(
@@ -272,9 +252,7 @@ class WarehouseViewSet(viewsets.ModelViewSet):
         reason = request.data.get("reason", "").strip()
 
         if not reason:
-            raise ValidationError({
-                "reason": "Closure reason is required."
-            })
+            raise ValidationError({"reason": "Closure reason is required."})
 
         try:
             warehouse = close_warehouse(
@@ -291,17 +269,13 @@ class WarehouseViewSet(viewsets.ModelViewSet):
     def temperature_summary(self, request, pk=None):
         warehouse = self.get_object()
 
-        return Response(
-            get_warehouse_temperature_summary(warehouse)
-        )
+        return Response(get_warehouse_temperature_summary(warehouse))
 
     @action(detail=True, methods=["get"])
     def capacity_summary(self, request, pk=None):
         warehouse = self.get_object()
 
-        return Response(
-            get_warehouse_capacity_summary(warehouse)
-        )
+        return Response(get_warehouse_capacity_summary(warehouse))
 
 
 class WarehouseRelatedViewSet(viewsets.ModelViewSet):
@@ -343,9 +317,7 @@ class WarehouseRelatedViewSet(viewsets.ModelViewSet):
         warehouse = serializer.validated_data.get("warehouse")
 
         if not warehouse:
-            raise ValidationError({
-                "warehouse": "Warehouse is required."
-            })
+            raise ValidationError({"warehouse": "Warehouse is required."})
 
         if not self.request.user.is_superuser:
             from apps.accounts.services import user_has_permission
@@ -355,16 +327,12 @@ class WarehouseRelatedViewSet(viewsets.ModelViewSet):
                 "warehouses.create",
                 organization=warehouse.organization,
             ):
-                raise ValidationError(
-                    "You cannot manage this warehouse."
-                )
+                raise ValidationError("You cannot manage this warehouse.")
 
         serializer.save()
 
     def destroy(self, request, *args, **kwargs):
-        raise ValidationError(
-            "Warehouse history cannot be deleted through this API."
-        )
+        raise ValidationError("Warehouse history cannot be deleted through this API.")
 
 
 class StorageZoneViewSet(WarehouseRelatedViewSet):
@@ -430,15 +398,11 @@ class WarehouseManagerViewSet(WarehouseRelatedViewSet):
         assignment = self.get_object()
 
         try:
-            assignment = revoke_warehouse_manager(
-                assignment_id=assignment.pk
-            )
+            assignment = revoke_warehouse_manager(assignment_id=assignment.pk)
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            self.get_serializer(assignment).data
-        )
+        return Response(self.get_serializer(assignment).data)
 
 
 class WarehouseTemperatureViewSet(WarehouseRelatedViewSet):
@@ -453,9 +417,7 @@ class WarehouseTemperatureViewSet(WarehouseRelatedViewSet):
         warehouse = serializer.validated_data["warehouse"]
 
         if warehouse.status == WarehouseStatus.CLOSED:
-            raise ValidationError(
-                "Cannot record readings for a closed warehouse."
-            )
+            raise ValidationError("Cannot record readings for a closed warehouse.")
 
         serializer.save(recorded_by=self.request.user)
 
@@ -486,8 +448,6 @@ class WarehouseCapacityViewSet(WarehouseRelatedViewSet):
         warehouse = serializer.validated_data["warehouse"]
 
         if warehouse.status == WarehouseStatus.CLOSED:
-            raise ValidationError(
-                "Cannot record capacity for a closed warehouse."
-            )
+            raise ValidationError("Cannot record capacity for a closed warehouse.")
 
         serializer.save(recorded_by=self.request.user)

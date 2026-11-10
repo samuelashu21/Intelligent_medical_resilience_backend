@@ -12,211 +12,578 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('medicines', '0002_country_atcclassification_and_more'),
-        ('organizations', '0001_initial'),
+        ("medicines", "0002_country_atcclassification_and_more"),
+        ("organizations", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Supplier',
+            name="Supplier",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('code', models.CharField(max_length=50, unique=True)),
-                ('name', models.CharField(max_length=255)),
-                ('supplier_type', models.CharField(choices=[('MANUFACTURER', 'Manufacturer'), ('WHOLESALER', 'Wholesaler'), ('DISTRIBUTOR', 'Distributor'), ('IMPORTER', 'Importer'), ('PUBLIC_AGENCY', 'Public procurement agency'), ('NGO', 'Non-governmental organization'), ('OTHER', 'Other')], max_length=30)),
-                ('registration_number', models.CharField(blank=True, max_length=100)),
-                ('tax_identification_number', models.CharField(blank=True, max_length=100)),
-                ('website', models.URLField(blank=True)),
-                ('email', models.EmailField(blank=True, max_length=254)),
-                ('phone', models.CharField(blank=True, max_length=30)),
-                ('address', models.TextField(blank=True)),
-                ('status', models.CharField(choices=[('DRAFT', 'Draft'), ('PENDING', 'Pending approval'), ('APPROVED', 'Approved'), ('REJECTED', 'Rejected'), ('SUSPENDED', 'Suspended'), ('INACTIVE', 'Inactive')], default='DRAFT', max_length=20)),
-                ('notes', models.TextField(blank=True)),
-                ('approved_at', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('approved_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='approved_suppliers', to=settings.AUTH_USER_MODEL)),
-                ('country', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='suppliers', to='medicines.country')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='created_suppliers', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='suppliers', to='organizations.organization')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("code", models.CharField(max_length=50, unique=True)),
+                ("name", models.CharField(max_length=255)),
+                (
+                    "supplier_type",
+                    models.CharField(
+                        choices=[
+                            ("MANUFACTURER", "Manufacturer"),
+                            ("WHOLESALER", "Wholesaler"),
+                            ("DISTRIBUTOR", "Distributor"),
+                            ("IMPORTER", "Importer"),
+                            ("PUBLIC_AGENCY", "Public procurement agency"),
+                            ("NGO", "Non-governmental organization"),
+                            ("OTHER", "Other"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("registration_number", models.CharField(blank=True, max_length=100)),
+                (
+                    "tax_identification_number",
+                    models.CharField(blank=True, max_length=100),
+                ),
+                ("website", models.URLField(blank=True)),
+                ("email", models.EmailField(blank=True, max_length=254)),
+                ("phone", models.CharField(blank=True, max_length=30)),
+                ("address", models.TextField(blank=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("DRAFT", "Draft"),
+                            ("PENDING", "Pending approval"),
+                            ("APPROVED", "Approved"),
+                            ("REJECTED", "Rejected"),
+                            ("SUSPENDED", "Suspended"),
+                            ("INACTIVE", "Inactive"),
+                        ],
+                        default="DRAFT",
+                        max_length=20,
+                    ),
+                ),
+                ("notes", models.TextField(blank=True)),
+                ("approved_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "approved_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="approved_suppliers",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "country",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="suppliers",
+                        to="medicines.country",
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="created_suppliers",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "organization",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="suppliers",
+                        to="organizations.organization",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['name'],
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='SupplierAddress',
+            name="SupplierAddress",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('address_type', models.CharField(choices=[('HEAD_OFFICE', 'Head office'), ('WAREHOUSE', 'Warehouse'), ('BRANCH', 'Branch'), ('BILLING', 'Billing'), ('OTHER', 'Other')], default='HEAD_OFFICE', max_length=20)),
-                ('label', models.CharField(blank=True, max_length=150)),
-                ('address_line', models.TextField()),
-                ('city', models.CharField(blank=True, max_length=150)),
-                ('administrative_area', models.CharField(blank=True, max_length=150)),
-                ('postal_code', models.CharField(blank=True, max_length=30)),
-                ('latitude', models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True)),
-                ('longitude', models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True)),
-                ('is_primary', models.BooleanField(default=False)),
-                ('is_active', models.BooleanField(default=True)),
-                ('country', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='supplier_addresses', to='medicines.country')),
-                ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='addresses', to='suppliers.supplier')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "address_type",
+                    models.CharField(
+                        choices=[
+                            ("HEAD_OFFICE", "Head office"),
+                            ("WAREHOUSE", "Warehouse"),
+                            ("BRANCH", "Branch"),
+                            ("BILLING", "Billing"),
+                            ("OTHER", "Other"),
+                        ],
+                        default="HEAD_OFFICE",
+                        max_length=20,
+                    ),
+                ),
+                ("label", models.CharField(blank=True, max_length=150)),
+                ("address_line", models.TextField()),
+                ("city", models.CharField(blank=True, max_length=150)),
+                ("administrative_area", models.CharField(blank=True, max_length=150)),
+                ("postal_code", models.CharField(blank=True, max_length=30)),
+                (
+                    "latitude",
+                    models.DecimalField(
+                        blank=True, decimal_places=6, max_digits=9, null=True
+                    ),
+                ),
+                (
+                    "longitude",
+                    models.DecimalField(
+                        blank=True, decimal_places=6, max_digits=9, null=True
+                    ),
+                ),
+                ("is_primary", models.BooleanField(default=False)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "country",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="supplier_addresses",
+                        to="medicines.country",
+                    ),
+                ),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="addresses",
+                        to="suppliers.supplier",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='SupplierContact',
+            name="SupplierContact",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('full_name', models.CharField(max_length=255)),
-                ('job_title', models.CharField(blank=True, max_length=150)),
-                ('email', models.EmailField(blank=True, max_length=254)),
-                ('phone', models.CharField(blank=True, max_length=30)),
-                ('is_primary', models.BooleanField(default=False)),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='contacts', to='suppliers.supplier')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("full_name", models.CharField(max_length=255)),
+                ("job_title", models.CharField(blank=True, max_length=150)),
+                ("email", models.EmailField(blank=True, max_length=254)),
+                ("phone", models.CharField(blank=True, max_length=30)),
+                ("is_primary", models.BooleanField(default=False)),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="contacts",
+                        to="suppliers.supplier",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-is_primary', 'full_name'],
+                "ordering": ["-is_primary", "full_name"],
             },
         ),
         migrations.CreateModel(
-            name='SupplierContract',
+            name="SupplierContract",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('contract_number', models.CharField(max_length=100)),
-                ('title', models.CharField(max_length=255)),
-                ('description', models.TextField(blank=True)),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
-                ('currency', models.CharField(default='USD', max_length=3)),
-                ('contract_value', models.DecimalField(blank=True, decimal_places=2, max_digits=16, null=True)),
-                ('status', models.CharField(choices=[('DRAFT', 'Draft'), ('ACTIVE', 'Active'), ('EXPIRED', 'Expired'), ('TERMINATED', 'Terminated'), ('SUSPENDED', 'Suspended')], default='DRAFT', max_length=20)),
-                ('document', models.FileField(blank=True, upload_to=apps.suppliers.models.supplier_document_upload_path)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='created_supplier_contracts', to=settings.AUTH_USER_MODEL)),
-                ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='contracts', to='suppliers.supplier')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("contract_number", models.CharField(max_length=100)),
+                ("title", models.CharField(max_length=255)),
+                ("description", models.TextField(blank=True)),
+                ("start_date", models.DateField()),
+                ("end_date", models.DateField()),
+                ("currency", models.CharField(default="USD", max_length=3)),
+                (
+                    "contract_value",
+                    models.DecimalField(
+                        blank=True, decimal_places=2, max_digits=16, null=True
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("DRAFT", "Draft"),
+                            ("ACTIVE", "Active"),
+                            ("EXPIRED", "Expired"),
+                            ("TERMINATED", "Terminated"),
+                            ("SUSPENDED", "Suspended"),
+                        ],
+                        default="DRAFT",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "document",
+                    models.FileField(
+                        blank=True,
+                        upload_to=apps.suppliers.models.supplier_document_upload_path,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="created_supplier_contracts",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="contracts",
+                        to="suppliers.supplier",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='SupplierLicense',
+            name="SupplierLicense",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('license_type', models.CharField(choices=[('BUSINESS', 'Business license'), ('PHARMACEUTICAL', 'Pharmaceutical license'), ('WHOLESALE', 'Wholesale license'), ('IMPORT', 'Import license'), ('DISTRIBUTION', 'Distribution license'), ('OTHER', 'Other')], max_length=30)),
-                ('license_number', models.CharField(max_length=150)),
-                ('issuing_authority', models.CharField(max_length=255)),
-                ('issue_date', models.DateField(blank=True, null=True)),
-                ('expiry_date', models.DateField(blank=True, null=True)),
-                ('document', models.FileField(blank=True, upload_to=apps.suppliers.models.supplier_document_upload_path)),
-                ('verification_status', models.CharField(choices=[('PENDING', 'Pending'), ('VERIFIED', 'Verified'), ('REJECTED', 'Rejected')], default='PENDING', max_length=20)),
-                ('verified_at', models.DateTimeField(blank=True, null=True)),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='licenses', to='suppliers.supplier')),
-                ('verified_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='verified_supplier_licenses', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "license_type",
+                    models.CharField(
+                        choices=[
+                            ("BUSINESS", "Business license"),
+                            ("PHARMACEUTICAL", "Pharmaceutical license"),
+                            ("WHOLESALE", "Wholesale license"),
+                            ("IMPORT", "Import license"),
+                            ("DISTRIBUTION", "Distribution license"),
+                            ("OTHER", "Other"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("license_number", models.CharField(max_length=150)),
+                ("issuing_authority", models.CharField(max_length=255)),
+                ("issue_date", models.DateField(blank=True, null=True)),
+                ("expiry_date", models.DateField(blank=True, null=True)),
+                (
+                    "document",
+                    models.FileField(
+                        blank=True,
+                        upload_to=apps.suppliers.models.supplier_document_upload_path,
+                    ),
+                ),
+                (
+                    "verification_status",
+                    models.CharField(
+                        choices=[
+                            ("PENDING", "Pending"),
+                            ("VERIFIED", "Verified"),
+                            ("REJECTED", "Rejected"),
+                        ],
+                        default="PENDING",
+                        max_length=20,
+                    ),
+                ),
+                ("verified_at", models.DateTimeField(blank=True, null=True)),
+                ("notes", models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="licenses",
+                        to="suppliers.supplier",
+                    ),
+                ),
+                (
+                    "verified_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="verified_supplier_licenses",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='SupplierMedicine',
+            name="SupplierMedicine",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('supplier_product_code', models.CharField(blank=True, max_length=100)),
-                ('currency', models.CharField(default='USD', max_length=3)),
-                ('unit_price', models.DecimalField(blank=True, decimal_places=2, max_digits=14, null=True)),
-                ('lead_time_days', models.PositiveIntegerField(blank=True, null=True)),
-                ('minimum_order_quantity', models.PositiveIntegerField(default=1)),
-                ('is_preferred', models.BooleanField(default=False)),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('medicine', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='supplier_offerings', to='medicines.medicine')),
-                ('presentation', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='supplier_offerings', to='medicines.medicinepresentation')),
-                ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='medicine_offerings', to='suppliers.supplier')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("supplier_product_code", models.CharField(blank=True, max_length=100)),
+                ("currency", models.CharField(default="USD", max_length=3)),
+                (
+                    "unit_price",
+                    models.DecimalField(
+                        blank=True, decimal_places=2, max_digits=14, null=True
+                    ),
+                ),
+                ("lead_time_days", models.PositiveIntegerField(blank=True, null=True)),
+                ("minimum_order_quantity", models.PositiveIntegerField(default=1)),
+                ("is_preferred", models.BooleanField(default=False)),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "medicine",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="supplier_offerings",
+                        to="medicines.medicine",
+                    ),
+                ),
+                (
+                    "presentation",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="supplier_offerings",
+                        to="medicines.medicinepresentation",
+                    ),
+                ),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="medicine_offerings",
+                        to="suppliers.supplier",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='SupplierPerformanceRecord',
+            name="SupplierPerformanceRecord",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('reference_number', models.CharField(max_length=100)),
-                ('expected_delivery_date', models.DateField()),
-                ('actual_delivery_date', models.DateField(blank=True, null=True)),
-                ('ordered_quantity', models.PositiveIntegerField()),
-                ('received_quantity', models.PositiveIntegerField(default=0)),
-                ('quality_accepted_quantity', models.PositiveIntegerField(default=0)),
-                ('quality_issue_count', models.PositiveIntegerField(default=0)),
-                ('notes', models.TextField(blank=True)),
-                ('recorded_at', models.DateTimeField(auto_now_add=True)),
-                ('contract', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='performance_records', to='suppliers.suppliercontract')),
-                ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='performance_records', to='suppliers.supplier')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("reference_number", models.CharField(max_length=100)),
+                ("expected_delivery_date", models.DateField()),
+                ("actual_delivery_date", models.DateField(blank=True, null=True)),
+                ("ordered_quantity", models.PositiveIntegerField()),
+                ("received_quantity", models.PositiveIntegerField(default=0)),
+                ("quality_accepted_quantity", models.PositiveIntegerField(default=0)),
+                ("quality_issue_count", models.PositiveIntegerField(default=0)),
+                ("notes", models.TextField(blank=True)),
+                ("recorded_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "contract",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="performance_records",
+                        to="suppliers.suppliercontract",
+                    ),
+                ),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="performance_records",
+                        to="suppliers.supplier",
+                    ),
+                ),
             ],
         ),
         migrations.AddIndex(
-            model_name='supplier',
-            index=models.Index(fields=['status', 'supplier_type'], name='supplier_status_type_idx'),
+            model_name="supplier",
+            index=models.Index(
+                fields=["status", "supplier_type"], name="supplier_status_type_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='supplier',
-            index=models.Index(fields=['organization', 'status'], name='supplier_org_status_idx'),
+            model_name="supplier",
+            index=models.Index(
+                fields=["organization", "status"], name="supplier_org_status_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplieraddress',
-            constraint=models.UniqueConstraint(condition=models.Q(('is_active', True), ('is_primary', True)), fields=('supplier',), name='one_primary_supplier_address'),
+            model_name="supplieraddress",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("is_active", True), ("is_primary", True)),
+                fields=("supplier",),
+                name="one_primary_supplier_address",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='suppliercontact',
-            constraint=models.UniqueConstraint(condition=models.Q(('is_active', True), ('is_primary', True)), fields=('supplier',), name='one_primary_supplier_contact'),
+            model_name="suppliercontact",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("is_active", True), ("is_primary", True)),
+                fields=("supplier",),
+                name="one_primary_supplier_contact",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='suppliercontract',
-            constraint=models.UniqueConstraint(fields=('supplier', 'contract_number'), name='unique_supplier_contract_number'),
+            model_name="suppliercontract",
+            constraint=models.UniqueConstraint(
+                fields=("supplier", "contract_number"),
+                name="unique_supplier_contract_number",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='suppliercontract',
-            constraint=models.CheckConstraint(condition=models.Q(('end_date__gte', models.F('start_date'))), name='supplier_contract_valid_dates'),
+            model_name="suppliercontract",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("end_date__gte", models.F("start_date"))),
+                name="supplier_contract_valid_dates",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='suppliercontract',
-            constraint=models.CheckConstraint(condition=models.Q(('contract_value__isnull', True), ('contract_value__gte', 0), _connector='OR'), name='supplier_contract_value_nonnegative'),
+            model_name="suppliercontract",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("contract_value__isnull", True),
+                    ("contract_value__gte", 0),
+                    _connector="OR",
+                ),
+                name="supplier_contract_value_nonnegative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierlicense',
-            constraint=models.UniqueConstraint(fields=('supplier', 'license_type', 'license_number'), name='unique_supplier_license'),
+            model_name="supplierlicense",
+            constraint=models.UniqueConstraint(
+                fields=("supplier", "license_type", "license_number"),
+                name="unique_supplier_license",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierlicense',
-            constraint=models.CheckConstraint(condition=models.Q(('expiry_date__isnull', True), ('issue_date__isnull', True), ('expiry_date__gte', models.F('issue_date')), _connector='OR'), name='supplier_license_valid_dates'),
+            model_name="supplierlicense",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("expiry_date__isnull", True),
+                    ("issue_date__isnull", True),
+                    ("expiry_date__gte", models.F("issue_date")),
+                    _connector="OR",
+                ),
+                name="supplier_license_valid_dates",
+            ),
         ),
         migrations.AddIndex(
-            model_name='suppliermedicine',
-            index=models.Index(fields=['medicine', 'is_active'], name='supplier_med_active_idx'),
+            model_name="suppliermedicine",
+            index=models.Index(
+                fields=["medicine", "is_active"], name="supplier_med_active_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='suppliermedicine',
-            constraint=models.UniqueConstraint(fields=('supplier', 'medicine', 'presentation'), name='unique_supplier_medicine_presentation', nulls_distinct=False),
+            model_name="suppliermedicine",
+            constraint=models.UniqueConstraint(
+                fields=("supplier", "medicine", "presentation"),
+                name="unique_supplier_medicine_presentation",
+                nulls_distinct=False,
+            ),
         ),
         migrations.AddConstraint(
-            model_name='suppliermedicine',
-            constraint=models.CheckConstraint(condition=models.Q(('unit_price__isnull', True), ('unit_price__gte', 0), _connector='OR'), name='supplier_unit_price_nonnegative'),
+            model_name="suppliermedicine",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("unit_price__isnull", True),
+                    ("unit_price__gte", 0),
+                    _connector="OR",
+                ),
+                name="supplier_unit_price_nonnegative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='suppliermedicine',
-            constraint=models.CheckConstraint(condition=models.Q(('minimum_order_quantity__gt', 0)), name='supplier_min_order_positive'),
+            model_name="suppliermedicine",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("minimum_order_quantity__gt", 0)),
+                name="supplier_min_order_positive",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierperformancerecord',
-            constraint=models.UniqueConstraint(fields=('supplier', 'reference_number'), name='unique_supplier_performance_reference'),
+            model_name="supplierperformancerecord",
+            constraint=models.UniqueConstraint(
+                fields=("supplier", "reference_number"),
+                name="unique_supplier_performance_reference",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierperformancerecord',
-            constraint=models.CheckConstraint(condition=models.Q(('ordered_quantity__gt', 0)), name='performance_order_quantity_positive'),
+            model_name="supplierperformancerecord",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("ordered_quantity__gt", 0)),
+                name="performance_order_quantity_positive",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierperformancerecord',
-            constraint=models.CheckConstraint(condition=models.Q(('received_quantity__lte', models.F('ordered_quantity'))), name='performance_received_lte_ordered'),
+            model_name="supplierperformancerecord",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("received_quantity__lte", models.F("ordered_quantity"))
+                ),
+                name="performance_received_lte_ordered",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierperformancerecord',
-            constraint=models.CheckConstraint(condition=models.Q(('quality_accepted_quantity__lte', models.F('received_quantity'))), name='performance_accepted_lte_received'),
+            model_name="supplierperformancerecord",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("quality_accepted_quantity__lte", models.F("received_quantity"))
+                ),
+                name="performance_accepted_lte_received",
+            ),
         ),
     ]

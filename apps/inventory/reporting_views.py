@@ -1,4 +1,3 @@
- 
 import csv
 
 from django.http import HttpResponse
@@ -63,14 +62,10 @@ class BaseStockReportView(APIView):
         if not facility_id:
             return None
 
-        facility = Facility.objects.filter(
-            pk=facility_id
-        ).first()
+        facility = Facility.objects.filter(pk=facility_id).first()
 
         if not facility:
-            raise ValidationError({
-                "facility": "Facility not found."
-            })
+            raise ValidationError({"facility": "Facility not found."})
 
         if not request.user.is_superuser:
             allowed = user_has_permission(
@@ -80,9 +75,7 @@ class BaseStockReportView(APIView):
             )
 
             if not allowed:
-                raise PermissionDenied(
-                    "You cannot access reports for this facility."
-                )
+                raise PermissionDenied("You cannot access reports for this facility.")
 
         return str(facility.pk)
 
@@ -102,9 +95,7 @@ class StockDashboardView(BaseStockReportView):
             facility_id=facility_id,
         )
 
-        return Response(
-            StockDashboardSummarySerializer(result).data
-        )
+        return Response(StockDashboardSummarySerializer(result).data)
 
 
 class StockStatusReportView(BaseStockReportView):
@@ -138,18 +129,11 @@ class StockStatusReportView(BaseStockReportView):
             }
 
             if status_filter not in valid_statuses:
-                raise ValidationError({
-                    "status": "Unsupported stock status."
-                })
+                raise ValidationError({"status": "Unsupported stock status."})
 
-            rows = [
-                row for row in rows
-                if row["status"] == status_filter
-            ]
+            rows = [row for row in rows if row["status"] == status_filter]
 
-        return Response(
-            StockStatusSerializer(rows, many=True).data
-        )
+        return Response(StockStatusSerializer(rows, many=True).data)
 
 
 class StockoutReportView(BaseStockReportView):
@@ -167,9 +151,7 @@ class StockoutReportView(BaseStockReportView):
             facility_id=facility_id,
         )
 
-        return Response(
-            StockStatusSerializer(rows, many=True).data
-        )
+        return Response(StockStatusSerializer(rows, many=True).data)
 
 
 class LowStockReportView(BaseStockReportView):
@@ -187,9 +169,7 @@ class LowStockReportView(BaseStockReportView):
             facility_id=facility_id,
         )
 
-        return Response(
-            StockStatusSerializer(rows, many=True).data
-        )
+        return Response(StockStatusSerializer(rows, many=True).data)
 
 
 class HighCoverageReportView(BaseStockReportView):
@@ -207,9 +187,7 @@ class HighCoverageReportView(BaseStockReportView):
             facility_id=facility_id,
         )
 
-        return Response(
-            StockStatusSerializer(rows, many=True).data
-        )
+        return Response(StockStatusSerializer(rows, many=True).data)
 
 
 class ExpiryReportView(BaseStockReportView):
@@ -223,13 +201,9 @@ class ExpiryReportView(BaseStockReportView):
         )
 
         try:
-            days = int(
-                request.query_params.get("days", 90)
-            )
+            days = int(request.query_params.get("days", 90))
         except (TypeError, ValueError):
-            raise ValidationError({
-                "days": "Days must be an integer."
-            })
+            raise ValidationError({"days": "Days must be an integer."})
 
         rows = get_expiry_report(
             organization_ids=organization_ids,
@@ -237,9 +211,7 @@ class ExpiryReportView(BaseStockReportView):
             days=days,
         )
 
-        return Response(
-            ExpiryReportSerializer(rows, many=True).data
-        )
+        return Response(ExpiryReportSerializer(rows, many=True).data)
 
 
 class FacilityStockSummaryView(BaseStockReportView):
@@ -250,9 +222,7 @@ class FacilityStockSummaryView(BaseStockReportView):
         facility_id = request.query_params.get("facility")
 
         if not facility_id:
-            raise ValidationError({
-                "facility": "Facility ID is required."
-            })
+            raise ValidationError({"facility": "Facility ID is required."})
 
         self.get_facility_filter(
             request,
@@ -282,9 +252,7 @@ class StockStatusCSVExportView(BaseStockReportView):
             facility_id=facility_id,
         )
 
-        response = HttpResponse(
-            content_type="text/csv"
-        )
+        response = HttpResponse(content_type="text/csv")
 
         response["Content-Disposition"] = (
             'attachment; filename="stock-status-report.csv"'
@@ -311,10 +279,6 @@ class StockStatusCSVExportView(BaseStockReportView):
         writer.writeheader()
 
         for row in rows:
-            writer.writerow({
-                field: row.get(field, "")
-                for field in fieldnames
-            })
+            writer.writerow({field: row.get(field, "") for field in fieldnames})
 
         return response
- 

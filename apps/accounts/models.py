@@ -1,4 +1,3 @@
-
 import uuid
 
 from django.contrib.auth.models import AbstractUser
@@ -355,54 +354,42 @@ class UserRole(models.Model):
         super().clean()
 
         # Validate role assignment validity period.
-        if (
-            self.valid_from
-            and self.valid_until
-            and self.valid_until <= self.valid_from
-        ):
-            raise ValidationError({
-                "valid_until": (
-                    "The expiry must be later than the start date."
-                )
-            })  
+        if self.valid_from and self.valid_until and self.valid_until <= self.valid_from:
+            raise ValidationError(
+                {"valid_until": ("The expiry must be later than the start date.")}
+            )
 
         # Prevent assigning roles to inactive users.
         if self.user_id and not self.user.is_active:
-            raise ValidationError({
-                "user": "Cannot assign a role to an inactive user."
-            })
+            raise ValidationError({"user": "Cannot assign a role to an inactive user."})
 
         # Validate facility belongs to the selected organization.
         if self.organization_id and self.facility_id:
             if self.facility.organization_id != self.organization_id:
-                raise ValidationError({
-                    "facility": (
-                        "The facility must belong directly to the "
-                        "selected organization."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "facility": (
+                            "The facility must belong directly to the "
+                            "selected organization."
+                        )
+                    }
+                )
 
         # Prevent role assignment to inactive facilities.
         if self.facility_id and not self.facility.is_active:
-            raise ValidationError({
-                "facility": (
-                    "Cannot assign a role to an inactive facility."
-                )
-            })
+            raise ValidationError(
+                {"facility": ("Cannot assign a role to an inactive facility.")}
+            )
 
         # Prevent role assignment to inactive organizations.
         if self.organization_id and not self.organization.is_active:
-            raise ValidationError({
-                "organization": (
-                    "Cannot assign a role to an inactive organization."
-                )
-            })
+            raise ValidationError(
+                {"organization": ("Cannot assign a role to an inactive organization.")}
+            )
 
         # Prevent assignment of inactive roles.
         if self.role_id and not self.role.is_active:
-            raise ValidationError({
-                "role": "Cannot assign an inactive role."
-            })
+            raise ValidationError({"role": "Cannot assign an inactive role."})
 
     def save(self, *args, **kwargs):
         self.full_clean()

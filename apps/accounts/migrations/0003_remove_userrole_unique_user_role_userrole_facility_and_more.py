@@ -7,44 +7,76 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0002_role_accesspermission_rolepermission_and_more'),
-        ('facilities', '0001_initial'),
-        ('organizations', '0001_initial'),
+        ("accounts", "0002_role_accesspermission_rolepermission_and_more"),
+        ("facilities", "0001_initial"),
+        ("organizations", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='userrole',
-            name='unique_user_role',
+            model_name="userrole",
+            name="unique_user_role",
         ),
         migrations.AddField(
-            model_name='userrole',
-            name='facility',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='user_role_assignments', to='facilities.facility'),
+            model_name="userrole",
+            name="facility",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="user_role_assignments",
+                to="facilities.facility",
+            ),
         ),
         migrations.AddField(
-            model_name='userrole',
-            name='organization',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='user_role_assignments', to='organizations.organization'),
+            model_name="userrole",
+            name="organization",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="user_role_assignments",
+                to="organizations.organization",
+            ),
         ),
         migrations.AddIndex(
-            model_name='userrole',
-            index=models.Index(fields=['organization', 'is_active'], name='userrole_org_active_idx'),
+            model_name="userrole",
+            index=models.Index(
+                fields=["organization", "is_active"], name="userrole_org_active_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='userrole',
-            index=models.Index(fields=['facility', 'is_active'], name='userrole_fac_active_idx'),
+            model_name="userrole",
+            index=models.Index(
+                fields=["facility", "is_active"], name="userrole_fac_active_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='userrole',
-            constraint=models.UniqueConstraint(condition=models.Q(('facility__isnull', True), ('organization__isnull', True)), fields=('user', 'role'), name='unique_global_user_role'),
+            model_name="userrole",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(
+                    ("facility__isnull", True), ("organization__isnull", True)
+                ),
+                fields=("user", "role"),
+                name="unique_global_user_role",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='userrole',
-            constraint=models.UniqueConstraint(condition=models.Q(('facility__isnull', True), ('organization__isnull', False)), fields=('user', 'role', 'organization'), name='unique_org_user_role'),
+            model_name="userrole",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(
+                    ("facility__isnull", True), ("organization__isnull", False)
+                ),
+                fields=("user", "role", "organization"),
+                name="unique_org_user_role",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='userrole',
-            constraint=models.UniqueConstraint(condition=models.Q(('facility__isnull', False)), fields=('user', 'role', 'facility'), name='unique_facility_user_role'),
+            model_name="userrole",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("facility__isnull", False)),
+                fields=("user", "role", "facility"),
+                name="unique_facility_user_role",
+            ),
         ),
     ]

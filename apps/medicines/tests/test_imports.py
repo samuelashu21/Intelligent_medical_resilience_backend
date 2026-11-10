@@ -54,16 +54,18 @@ class MedicineImportTests(TestCase):
         return Path(temporary.name)
 
     def test_successful_import(self):
-        file_path = self.create_csv([
-            {
-                "code": "IMPORT-PAR",
-                "generic_name": "Paracetamol",
-                "dosage_form_code": "IMPORT_TABLET",
-                "route_code": "",
-                "strength_display": "500 mg",
-                "is_essential": "true",
-            }
-        ])
+        file_path = self.create_csv(
+            [
+                {
+                    "code": "IMPORT-PAR",
+                    "generic_name": "Paracetamol",
+                    "dosage_form_code": "IMPORT_TABLET",
+                    "route_code": "",
+                    "strength_display": "500 mg",
+                    "is_essential": "true",
+                }
+            ]
+        )
 
         try:
             batch = import_medicine_file(file_path)
@@ -72,26 +74,24 @@ class MedicineImportTests(TestCase):
             self.assertEqual(batch.successful_rows, 1)
             self.assertEqual(batch.failed_rows, 0)
 
-            self.assertTrue(
-                Medicine.objects.filter(
-                    code="IMPORT-PAR"
-                ).exists()
-            )
+            self.assertTrue(Medicine.objects.filter(code="IMPORT-PAR").exists())
 
         finally:
             file_path.unlink(missing_ok=True)
 
     def test_invalid_row_is_recorded(self):
-        file_path = self.create_csv([
-            {
-                "code": "IMPORT-INVALID",
-                "generic_name": "Invalid Medicine",
-                "dosage_form_code": "UNKNOWN_FORM",
-                "route_code": "",
-                "strength_display": "",
-                "is_essential": "true",
-            }
-        ])
+        file_path = self.create_csv(
+            [
+                {
+                    "code": "IMPORT-INVALID",
+                    "generic_name": "Invalid Medicine",
+                    "dosage_form_code": "UNKNOWN_FORM",
+                    "route_code": "",
+                    "strength_display": "",
+                    "is_essential": "true",
+                }
+            ]
+        )
 
         try:
             batch = import_medicine_file(file_path)
@@ -140,9 +140,7 @@ class MedicineImportTests(TestCase):
 
             second = import_medicine_file(file_path)
 
-            medicine = Medicine.objects.get(
-                code="IMPORT-UPDATE"
-            )
+            medicine = Medicine.objects.get(code="IMPORT-UPDATE")
 
             self.assertEqual(
                 medicine.generic_name,

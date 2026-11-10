@@ -12,141 +12,369 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('medicines', '0002_country_atcclassification_and_more'),
-        ('suppliers', '0001_initial'),
-        ('warehouses', '0001_initial'),
+        ("medicines", "0002_country_atcclassification_and_more"),
+        ("suppliers", "0001_initial"),
+        ("warehouses", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='StockBatch',
+            name="StockBatch",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('batch_number', models.CharField(max_length=100)),
-                ('manufacture_date', models.DateField(blank=True, null=True)),
-                ('expiry_date', models.DateField()),
-                ('supplier_reference', models.CharField(blank=True, max_length=100)),
-                ('received_date', models.DateField(default=django.utils.timezone.localdate)),
-                ('unit_cost', models.DecimalField(blank=True, decimal_places=4, max_digits=14, null=True)),
-                ('currency', models.CharField(default='USD', max_length=3)),
-                ('status', models.CharField(choices=[('AVAILABLE', 'Available'), ('QUARANTINED', 'Quarantined'), ('DAMAGED', 'Damaged'), ('EXPIRED', 'Expired'), ('BLOCKED', 'Blocked')], default='AVAILABLE', max_length=20)),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('location', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='stock_batches', to='warehouses.storagelocation')),
-                ('medicine', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='stock_batches', to='medicines.medicine')),
-                ('presentation', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='stock_batches', to='medicines.medicinepresentation')),
-                ('supplier', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='stock_batches', to='suppliers.supplier')),
-                ('warehouse', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='stock_batches', to='warehouses.warehouse')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("batch_number", models.CharField(max_length=100)),
+                ("manufacture_date", models.DateField(blank=True, null=True)),
+                ("expiry_date", models.DateField()),
+                ("supplier_reference", models.CharField(blank=True, max_length=100)),
+                (
+                    "received_date",
+                    models.DateField(default=django.utils.timezone.localdate),
+                ),
+                (
+                    "unit_cost",
+                    models.DecimalField(
+                        blank=True, decimal_places=4, max_digits=14, null=True
+                    ),
+                ),
+                ("currency", models.CharField(default="USD", max_length=3)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("AVAILABLE", "Available"),
+                            ("QUARANTINED", "Quarantined"),
+                            ("DAMAGED", "Damaged"),
+                            ("EXPIRED", "Expired"),
+                            ("BLOCKED", "Blocked"),
+                        ],
+                        default="AVAILABLE",
+                        max_length=20,
+                    ),
+                ),
+                ("notes", models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "location",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stock_batches",
+                        to="warehouses.storagelocation",
+                    ),
+                ),
+                (
+                    "medicine",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stock_batches",
+                        to="medicines.medicine",
+                    ),
+                ),
+                (
+                    "presentation",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stock_batches",
+                        to="medicines.medicinepresentation",
+                    ),
+                ),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stock_batches",
+                        to="suppliers.supplier",
+                    ),
+                ),
+                (
+                    "warehouse",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stock_batches",
+                        to="warehouses.warehouse",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['expiry_date', 'batch_number'],
+                "ordering": ["expiry_date", "batch_number"],
             },
         ),
         migrations.CreateModel(
-            name='InventoryBalance',
+            name="InventoryBalance",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('quantity_on_hand', models.DecimalField(decimal_places=3, default=0, max_digits=16)),
-                ('quantity_reserved', models.DecimalField(decimal_places=3, default=0, max_digits=16)),
-                ('last_movement_at', models.DateTimeField(blank=True, null=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('batch', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, related_name='balance', to='inventory.stockbatch')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "quantity_on_hand",
+                    models.DecimalField(decimal_places=3, default=0, max_digits=16),
+                ),
+                (
+                    "quantity_reserved",
+                    models.DecimalField(decimal_places=3, default=0, max_digits=16),
+                ),
+                ("last_movement_at", models.DateTimeField(blank=True, null=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "batch",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="balance",
+                        to="inventory.stockbatch",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='StockMovement',
+            name="StockMovement",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('movement_type', models.CharField(choices=[('RECEIPT', 'Receipt'), ('ISSUE', 'Issue'), ('ADJUSTMENT_IN', 'Adjustment in'), ('ADJUSTMENT_OUT', 'Adjustment out'), ('TRANSFER_IN', 'Transfer in'), ('TRANSFER_OUT', 'Transfer out'), ('DAMAGE', 'Damage'), ('EXPIRY', 'Expiry')], max_length=25)),
-                ('quantity', models.DecimalField(decimal_places=3, max_digits=16)),
-                ('reference_number', models.CharField(blank=True, max_length=100)),
-                ('reference_type', models.CharField(blank=True, max_length=50)),
-                ('notes', models.TextField(blank=True)),
-                ('occurred_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('batch', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='movements', to='inventory.stockbatch')),
-                ('destination_warehouse', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='incoming_stock_movements', to='warehouses.warehouse')),
-                ('performed_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='stock_movements', to=settings.AUTH_USER_MODEL)),
-                ('source_warehouse', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='outgoing_stock_movements', to='warehouses.warehouse')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "movement_type",
+                    models.CharField(
+                        choices=[
+                            ("RECEIPT", "Receipt"),
+                            ("ISSUE", "Issue"),
+                            ("ADJUSTMENT_IN", "Adjustment in"),
+                            ("ADJUSTMENT_OUT", "Adjustment out"),
+                            ("TRANSFER_IN", "Transfer in"),
+                            ("TRANSFER_OUT", "Transfer out"),
+                            ("DAMAGE", "Damage"),
+                            ("EXPIRY", "Expiry"),
+                        ],
+                        max_length=25,
+                    ),
+                ),
+                ("quantity", models.DecimalField(decimal_places=3, max_digits=16)),
+                ("reference_number", models.CharField(blank=True, max_length=100)),
+                ("reference_type", models.CharField(blank=True, max_length=50)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "occurred_at",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "batch",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="movements",
+                        to="inventory.stockbatch",
+                    ),
+                ),
+                (
+                    "destination_warehouse",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="incoming_stock_movements",
+                        to="warehouses.warehouse",
+                    ),
+                ),
+                (
+                    "performed_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stock_movements",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "source_warehouse",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="outgoing_stock_movements",
+                        to="warehouses.warehouse",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-occurred_at', '-created_at'],
+                "ordering": ["-occurred_at", "-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='StockReservation',
+            name="StockReservation",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('quantity', models.DecimalField(decimal_places=3, max_digits=16)),
-                ('reference_number', models.CharField(max_length=100)),
-                ('purpose', models.CharField(blank=True, max_length=255)),
-                ('status', models.CharField(choices=[('ACTIVE', 'Active'), ('RELEASED', 'Released'), ('FULFILLED', 'Fulfilled'), ('EXPIRED', 'Expired')], default='ACTIVE', max_length=20)),
-                ('expires_at', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('batch', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='reservations', to='inventory.stockbatch')),
-                ('reserved_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='stock_reservations', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("quantity", models.DecimalField(decimal_places=3, max_digits=16)),
+                ("reference_number", models.CharField(max_length=100)),
+                ("purpose", models.CharField(blank=True, max_length=255)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("ACTIVE", "Active"),
+                            ("RELEASED", "Released"),
+                            ("FULFILLED", "Fulfilled"),
+                            ("EXPIRED", "Expired"),
+                        ],
+                        default="ACTIVE",
+                        max_length=20,
+                    ),
+                ),
+                ("expires_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "batch",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="reservations",
+                        to="inventory.stockbatch",
+                    ),
+                ),
+                (
+                    "reserved_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stock_reservations",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.AddIndex(
-            model_name='stockbatch',
-            index=models.Index(fields=['medicine', 'warehouse'], name='batch_med_wh_idx'),
+            model_name="stockbatch",
+            index=models.Index(
+                fields=["medicine", "warehouse"], name="batch_med_wh_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='stockbatch',
-            index=models.Index(fields=['expiry_date', 'status'], name='batch_expiry_status_idx'),
+            model_name="stockbatch",
+            index=models.Index(
+                fields=["expiry_date", "status"], name="batch_expiry_status_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='stockbatch',
-            index=models.Index(fields=['warehouse', 'location'], name='batch_wh_location_idx'),
+            model_name="stockbatch",
+            index=models.Index(
+                fields=["warehouse", "location"], name="batch_wh_location_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='stockbatch',
-            constraint=models.UniqueConstraint(fields=('medicine', 'presentation', 'warehouse', 'location', 'batch_number'), name='unique_stock_batch_location', nulls_distinct=False),
+            model_name="stockbatch",
+            constraint=models.UniqueConstraint(
+                fields=(
+                    "medicine",
+                    "presentation",
+                    "warehouse",
+                    "location",
+                    "batch_number",
+                ),
+                name="unique_stock_batch_location",
+                nulls_distinct=False,
+            ),
         ),
         migrations.AddConstraint(
-            model_name='stockbatch',
-            constraint=models.CheckConstraint(condition=models.Q(('unit_cost__isnull', True), ('unit_cost__gte', 0), _connector='OR'), name='stock_batch_cost_nonnegative'),
+            model_name="stockbatch",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("unit_cost__isnull", True), ("unit_cost__gte", 0), _connector="OR"
+                ),
+                name="stock_batch_cost_nonnegative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='inventorybalance',
-            constraint=models.CheckConstraint(condition=models.Q(('quantity_on_hand__gte', 0)), name='inventory_on_hand_nonnegative'),
+            model_name="inventorybalance",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("quantity_on_hand__gte", 0)),
+                name="inventory_on_hand_nonnegative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='inventorybalance',
-            constraint=models.CheckConstraint(condition=models.Q(('quantity_reserved__gte', 0)), name='inventory_reserved_nonnegative'),
+            model_name="inventorybalance",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("quantity_reserved__gte", 0)),
+                name="inventory_reserved_nonnegative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='inventorybalance',
-            constraint=models.CheckConstraint(condition=models.Q(('quantity_reserved__lte', models.F('quantity_on_hand'))), name='inventory_reserved_lte_on_hand'),
+            model_name="inventorybalance",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("quantity_reserved__lte", models.F("quantity_on_hand"))
+                ),
+                name="inventory_reserved_lte_on_hand",
+            ),
         ),
         migrations.AddIndex(
-            model_name='stockmovement',
-            index=models.Index(fields=['batch', 'occurred_at'], name='movement_batch_time_idx'),
+            model_name="stockmovement",
+            index=models.Index(
+                fields=["batch", "occurred_at"], name="movement_batch_time_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='stockmovement',
-            index=models.Index(fields=['movement_type', 'occurred_at'], name='movement_type_time_idx'),
+            model_name="stockmovement",
+            index=models.Index(
+                fields=["movement_type", "occurred_at"], name="movement_type_time_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='stockmovement',
-            index=models.Index(fields=['reference_type', 'reference_number'], name='movement_reference_idx'),
+            model_name="stockmovement",
+            index=models.Index(
+                fields=["reference_type", "reference_number"],
+                name="movement_reference_idx",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='stockmovement',
-            constraint=models.CheckConstraint(condition=models.Q(('quantity__gt', 0)), name='stock_movement_quantity_positive'),
+            model_name="stockmovement",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("quantity__gt", 0)),
+                name="stock_movement_quantity_positive",
+            ),
         ),
         migrations.AddIndex(
-            model_name='stockreservation',
-            index=models.Index(fields=['batch', 'status'], name='reservation_batch_status_idx'),
+            model_name="stockreservation",
+            index=models.Index(
+                fields=["batch", "status"], name="reservation_batch_status_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='stockreservation',
-            constraint=models.CheckConstraint(condition=models.Q(('quantity__gt', 0)), name='reservation_quantity_positive'),
+            model_name="stockreservation",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("quantity__gt", 0)),
+                name="reservation_quantity_positive",
+            ),
         ),
     ]

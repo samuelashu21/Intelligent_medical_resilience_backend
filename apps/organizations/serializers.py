@@ -5,14 +5,14 @@ from apps.organizations.models import (
     OrganizationUnitType,
 )
 
- 
+
 class OrganizationUnitTypeSerializer(serializers.ModelSerializer):
 
     parent_type_name = serializers.CharField(
         source="parent_type.name",
         read_only=True,
     )
- 
+
     class Meta:
         model = OrganizationUnitType
         fields = [
@@ -77,9 +77,9 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
         if parent and organization_type:
             if parent.organization_type.level >= organization_type.level:
-                raise serializers.ValidationError({
-                    "parent": "Parent must have a higher hierarchy level."
-                })
+                raise serializers.ValidationError(
+                    {"parent": "Parent must have a higher hierarchy level."}
+                )
 
             expected_parent_type = organization_type.parent_type
 
@@ -87,21 +87,21 @@ class OrganizationSerializer(serializers.ModelSerializer):
                 expected_parent_type
                 and parent.organization_type_id != expected_parent_type.id
             ):
-                raise serializers.ValidationError({
-                    "parent": "Parent organization has an incompatible type."
-                })
+                raise serializers.ValidationError(
+                    {"parent": "Parent organization has an incompatible type."}
+                )
 
         if instance and parent:
             if parent.pk == instance.pk:
-                raise serializers.ValidationError({
-                    "parent": "An organization cannot be its own parent."
-                })
+                raise serializers.ValidationError(
+                    {"parent": "An organization cannot be its own parent."}
+                )
 
             descendants = instance.get_descendants()
 
             if any(item.pk == parent.pk for item in descendants):
-                raise serializers.ValidationError({
-                    "parent": "Circular organization relationships are not allowed."
-                })
+                raise serializers.ValidationError(
+                    {"parent": "Circular organization relationships are not allowed."}
+                )
 
         return attrs

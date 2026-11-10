@@ -76,9 +76,7 @@ class DailyConsumptionViewSet(viewsets.ModelViewSet):
             permission_code="consumption.view",
         )
 
-        return queryset.filter(
-            facility__organization_id__in=organization_ids
-        )
+        return queryset.filter(facility__organization_id__in=organization_ids)
 
     def perform_create(self, serializer):
         facility = serializer.validated_data["facility"]
@@ -88,9 +86,7 @@ class DailyConsumptionViewSet(viewsets.ModelViewSet):
             "consumption.create",
             facility,
         ):
-            raise ValidationError(
-                "You cannot record consumption for this facility."
-            )
+            raise ValidationError("You cannot record consumption for this facility.")
 
         data = serializer.validated_data
 
@@ -113,18 +109,14 @@ class DailyConsumptionViewSet(viewsets.ModelViewSet):
         record = self.get_object()
 
         if record.recorded_by_id != self.request.user.pk:
-            raise ValidationError(
-                "Only the original recorder can edit this record."
-            )
+            raise ValidationError("Only the original recorder can edit this record.")
 
         if not check_facility_permission(
             self.request.user,
             "consumption.create",
             record.facility,
         ):
-            raise ValidationError(
-                "You cannot edit consumption for this facility."
-            )
+            raise ValidationError("You cannot edit consumption for this facility.")
 
         serializer.save()
 
@@ -168,36 +160,26 @@ class MonthlyConsumptionReportViewSet(viewsets.ReadOnlyModelViewSet):
             permission_code="consumption.view",
         )
 
-        return queryset.filter(
-            facility__organization_id__in=organization_ids
-        )
+        return queryset.filter(facility__organization_id__in=organization_ids)
 
     @action(detail=False, methods=["post"])
     def generate(self, request):
         from apps.facilities.models import Facility
         from apps.medicines.models import Medicine
 
-        facility = Facility.objects.filter(
-            pk=request.data.get("facility")
-        ).first()
+        facility = Facility.objects.filter(pk=request.data.get("facility")).first()
 
-        medicine = Medicine.objects.filter(
-            pk=request.data.get("medicine")
-        ).first()
+        medicine = Medicine.objects.filter(pk=request.data.get("medicine")).first()
 
         if not facility or not medicine:
-            raise ValidationError(
-                "A valid facility and medicine are required."
-            )
+            raise ValidationError("A valid facility and medicine are required.")
 
         if not check_facility_permission(
             request.user,
             "consumption.create",
             facility,
         ):
-            raise ValidationError(
-                "You cannot generate reports for this facility."
-            )
+            raise ValidationError("You cannot generate reports for this facility.")
 
         required_fields = [
             "year",
@@ -209,15 +191,14 @@ class MonthlyConsumptionReportViewSet(viewsets.ReadOnlyModelViewSet):
             "reporting_unit",
         ]
 
-        missing = [
-            field for field in required_fields
-            if field not in request.data
-        ]
+        missing = [field for field in required_fields if field not in request.data]
 
         if missing:
-            raise ValidationError({
-                "missing_fields": missing,
-            })
+            raise ValidationError(
+                {
+                    "missing_fields": missing,
+                }
+            )
 
         try:
             report = generate_monthly_report(
@@ -234,9 +215,7 @@ class MonthlyConsumptionReportViewSet(viewsets.ReadOnlyModelViewSet):
                 notes=request.data.get("notes", ""),
             )
         except (DjangoValidationError, ValueError) as exc:
-            raise ValidationError(
-                getattr(exc, "messages", [str(exc)])
-            )
+            raise ValidationError(getattr(exc, "messages", [str(exc)]))
 
         return Response(
             self.get_serializer(report).data,
@@ -252,9 +231,7 @@ class MonthlyConsumptionReportViewSet(viewsets.ReadOnlyModelViewSet):
             "consumption.submit",
             report.facility,
         ):
-            raise ValidationError(
-                "You cannot submit this report."
-            )
+            raise ValidationError("You cannot submit this report.")
 
         try:
             report = submit_monthly_report(
@@ -275,9 +252,7 @@ class MonthlyConsumptionReportViewSet(viewsets.ReadOnlyModelViewSet):
             "consumption.approve",
             report.facility,
         ):
-            raise ValidationError(
-                "You cannot approve this report."
-            )
+            raise ValidationError("You cannot approve this report.")
 
         try:
             report = approve_monthly_report(
@@ -298,9 +273,7 @@ class MonthlyConsumptionReportViewSet(viewsets.ReadOnlyModelViewSet):
             "consumption.approve",
             report.facility,
         ):
-            raise ValidationError(
-                "You cannot reject this report."
-            )
+            raise ValidationError("You cannot reject this report.")
 
         try:
             report = reject_monthly_report(
@@ -338,6 +311,4 @@ class ConsumptionAnomalyViewSet(viewsets.ReadOnlyModelViewSet):
             permission_code="consumption.view",
         )
 
-        return queryset.filter(
-            facility__organization_id__in=organization_ids
-        )
+        return queryset.filter(facility__organization_id__in=organization_ids)

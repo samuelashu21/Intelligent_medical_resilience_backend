@@ -92,9 +92,7 @@ class ClassificationTests(TestCase):
     def test_atc_hierarchy_medicine_search(self):
         results = get_medicines_by_atc(self.level1)
 
-        self.assertTrue(
-            results.filter(pk=self.medicine.pk).exists()
-        )
+        self.assertTrue(results.filter(pk=self.medicine.pk).exists())
 
     def test_country_code_normalization(self):
         country = Country(
@@ -122,9 +120,7 @@ class ClassificationTests(TestCase):
 
         results = get_current_essential_medicines(self.country)
 
-        self.assertTrue(
-            results.filter(pk=self.medicine.pk).exists()
-        )
+        self.assertTrue(results.filter(pk=self.medicine.pk).exists())
 
     def test_expired_essential_list_is_not_current(self):
         essential_list = EssentialMedicineList.objects.create(
@@ -142,9 +138,7 @@ class ClassificationTests(TestCase):
 
         results = get_current_essential_medicines(self.country)
 
-        self.assertFalse(
-            results.filter(pk=self.medicine.pk).exists()
-        )
+        self.assertFalse(results.filter(pk=self.medicine.pk).exists())
 
     def test_global_restriction(self):
         MedicineEligibilityRule.objects.create(

@@ -6,9 +6,7 @@ from apps.replenishment.models import (
 )
 
 
-class ReplenishmentRequestLineSerializer(
-    serializers.ModelSerializer
-):
+class ReplenishmentRequestLineSerializer(serializers.ModelSerializer):
 
     medicine_name = serializers.CharField(
         source="medicine.generic_name",
@@ -54,9 +52,7 @@ class ReplenishmentRequestLineSerializer(
         ]
 
 
-class ReplenishmentRequestSerializer(
-    serializers.ModelSerializer
-):
+class ReplenishmentRequestSerializer(serializers.ModelSerializer):
 
     items = ReplenishmentRequestLineSerializer(
         many=True,
@@ -113,9 +109,7 @@ class ReplenishmentRequestSerializer(
         read_only_fields = fields
 
 
-class ReplenishmentRequestCreateSerializer(
-    serializers.Serializer
-):
+class ReplenishmentRequestCreateSerializer(serializers.Serializer):
 
     facility = serializers.UUIDField()
 
@@ -140,10 +134,7 @@ class ReplenishmentRequestCreateSerializer(
     )
 
     def validate_items(self, items):
-        medicine_ids = [
-            str(item["medicine"].pk)
-            for item in items
-        ]
+        medicine_ids = [str(item["medicine"].pk) for item in items]
 
         if len(medicine_ids) != len(set(medicine_ids)):
             raise serializers.ValidationError(
@@ -179,9 +170,7 @@ class PolicyRequestCreateSerializer(serializers.Serializer):
 
     def validate_medicines(self, value):
         if len(value) != len(set(value)):
-            raise serializers.ValidationError(
-                "Duplicate medicines are not allowed."
-            )
+            raise serializers.ValidationError("Duplicate medicines are not allowed.")
 
         return value
 

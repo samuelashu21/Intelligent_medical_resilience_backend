@@ -27,7 +27,4 @@ class HasProcurementPermission(BasePermission):
         if not required:
             return False
 
-        return all(
-            user_has_permission(user, permission)
-            for permission in required
-        )
+        return all(user_has_permission(user, permission) for permission in required)

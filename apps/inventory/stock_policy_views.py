@@ -52,9 +52,7 @@ class StockPolicyViewSet(viewsets.ModelViewSet):
         return "inventory.policy.view"
 
     def get_permissions(self):
-        self.required_permissions = [
-            self.get_required_permission()
-        ]
+        self.required_permissions = [self.get_required_permission()]
 
         return super().get_permissions()
 
@@ -80,9 +78,7 @@ class StockPolicyViewSet(viewsets.ModelViewSet):
             permission_code="inventory.policy.view",
         )
 
-        return queryset.filter(
-            organization_id__in=organization_ids
-        ).order_by(
+        return queryset.filter(organization_id__in=organization_ids).order_by(
             "organization__name",
             "medicine__generic_name",
         )
@@ -107,9 +103,7 @@ class StockPolicyViewSet(viewsets.ModelViewSet):
                 "inventory.policy.create",
                 facility=facility,
             ):
-                raise PermissionDenied(
-                    "You cannot create policies for this facility."
-                )
+                raise PermissionDenied("You cannot create policies for this facility.")
 
         serializer.save(
             created_by=user,
@@ -126,9 +120,7 @@ class StockPolicyViewSet(viewsets.ModelViewSet):
             "inventory.policy.update",
             organization=organization,
         ):
-            raise PermissionDenied(
-                "You cannot update policies for this organization."
-            )
+            raise PermissionDenied("You cannot update policies for this organization.")
 
         serializer.save(updated_by=user)
 
@@ -141,9 +133,7 @@ class StockPolicyViewSet(viewsets.ModelViewSet):
             "inventory.policy.manage",
             organization=policy.organization,
         ):
-            raise PermissionDenied(
-                "You cannot activate this stock policy."
-            )
+            raise PermissionDenied("You cannot activate this stock policy.")
 
         policy = activate_stock_policy(
             policy_id=policy.pk,
@@ -164,9 +154,7 @@ class StockPolicyViewSet(viewsets.ModelViewSet):
             "inventory.policy.manage",
             organization=policy.organization,
         ):
-            raise PermissionDenied(
-                "You cannot deactivate this stock policy."
-            )
+            raise PermissionDenied("You cannot deactivate this stock policy.")
 
         policy = deactivate_stock_policy(
             policy_id=policy.pk,
@@ -192,31 +180,31 @@ class StockPolicyEvaluationView(APIView):
         if not facility_id or not medicine_id:
             from rest_framework.exceptions import ValidationError
 
-            raise ValidationError({
-                "facility": "Facility ID is required.",
-                "medicine": "Medicine ID is required.",
-            })
+            raise ValidationError(
+                {
+                    "facility": "Facility ID is required.",
+                    "medicine": "Medicine ID is required.",
+                }
+            )
 
         from apps.facilities.models import Facility
         from apps.medicines.models import Medicine
 
-        facility = Facility.objects.filter(
-            pk=facility_id
-        ).select_related("organization").first()
+        facility = (
+            Facility.objects.filter(pk=facility_id)
+            .select_related("organization")
+            .first()
+        )
 
         if not facility:
             from rest_framework.exceptions import ValidationError
 
-            raise ValidationError({
-                "facility": "Facility not found."
-            })
+            raise ValidationError({"facility": "Facility not found."})
 
         if not Medicine.objects.filter(pk=medicine_id).exists():
             from rest_framework.exceptions import ValidationError
 
-            raise ValidationError({
-                "medicine": "Medicine not found."
-            })
+            raise ValidationError({"medicine": "Medicine not found."})
 
         if not request.user.is_superuser:
             if not user_has_permission(

@@ -15,12 +15,10 @@ class Command(BaseCommand):
 
         now = timezone.now()
 
-        expired = (
-            RedistributionRecommendation.objects.filter(
-                status=RecommendationStatus.PENDING,
-                expires_at__isnull=False,
-                expires_at__lte=now,
-            )
+        expired = RedistributionRecommendation.objects.filter(
+            status=RecommendationStatus.PENDING,
+            expires_at__isnull=False,
+            expires_at__lte=now,
         )
 
         count = expired.update(
@@ -29,7 +27,5 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Expired {count} redistribution recommendations."
-            )
+            self.style.SUCCESS(f"Expired {count} redistribution recommendations.")
         )

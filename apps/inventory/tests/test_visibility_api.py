@@ -18,9 +18,7 @@ class StockVisibilityAPITests(TestCase):
 
     def test_anonymous_visibility_request_is_rejected(self):
 
-        response = self.client.get(
-            "/api/v1/inventory/visibility/facility-stock/"
-        )
+        response = self.client.get("/api/v1/inventory/visibility/facility-stock/")
 
         self.assertEqual(
             response.status_code,
@@ -29,13 +27,9 @@ class StockVisibilityAPITests(TestCase):
 
     def test_user_without_visibility_permission_is_denied(self):
 
-        self.client.force_authenticate(
-            user=self.user
-        )
+        self.client.force_authenticate(user=self.user)
 
-        response = self.client.get(
-            "/api/v1/inventory/visibility/facility-stock/"
-        )
+        response = self.client.get("/api/v1/inventory/visibility/facility-stock/")
 
         self.assertEqual(
             response.status_code,

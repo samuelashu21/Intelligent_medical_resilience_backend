@@ -2,7 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
- 
+
 
 class AuditEvent(models.Model):
     EVENT_CATEGORIES = [
@@ -117,6 +117,6 @@ class AuditEvent(models.Model):
                 name="audit_fac_time_idx",
             ),
         ]
- 
+
     def __str__(self):
         return f"{self.category}: {self.action} ({self.created_at})"

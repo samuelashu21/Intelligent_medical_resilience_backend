@@ -1,4 +1,3 @@
-
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -20,14 +19,10 @@ def assign_role(
     valid_until=None,
 ):
     if not user.is_active:
-        raise ValidationError(
-            "Cannot assign a role to an inactive user."
-        )
+        raise ValidationError("Cannot assign a role to an inactive user.")
 
     if not role.is_active:
-        raise ValidationError(
-            "Cannot assign an inactive role."
-        )
+        raise ValidationError("Cannot assign an inactive role.")
 
     if organization and facility:
         if facility.organization_id != organization.id:
@@ -36,14 +31,10 @@ def assign_role(
             )
 
     if organization and not organization.is_active:
-        raise ValidationError(
-            "Cannot assign a role to an inactive organization."
-        )
+        raise ValidationError("Cannot assign a role to an inactive organization.")
 
     if facility and not facility.is_active:
-        raise ValidationError(
-            "Cannot assign a role to an inactive facility."
-        )
+        raise ValidationError("Cannot assign a role to an inactive facility.")
 
     assignment, created = UserRole.objects.get_or_create(
         user=user,
@@ -89,18 +80,13 @@ def revoke_role_assignment(assignment):
     else:
         assignment_id = assignment
 
-    assignment_obj = (
-        UserRole.objects.select_for_update()
-        .get(pk=assignment_id)
-    )
+    assignment_obj = UserRole.objects.select_for_update().get(pk=assignment_id)
 
     if not assignment_obj.is_active:
         return assignment_obj
 
     assignment_obj.is_active = False
-    assignment_obj.save(
-        update_fields=["is_active"]
-    )
+    assignment_obj.save(update_fields=["is_active"])
 
     return assignment_obj
 
@@ -131,11 +117,7 @@ def revoke_role(
     target_id = (
         assignment_id
         if assignment_id is not None
-        else (
-            assignment.pk
-            if isinstance(assignment, UserRole)
-            else assignment
-        )
+        else (assignment.pk if isinstance(assignment, UserRole) else assignment)
     )
 
     if target_id is not None:
@@ -163,9 +145,7 @@ def revoke_role(
         return False
 
     assignment_obj.is_active = False
-    assignment_obj.save(
-        update_fields=["is_active"]
-    )
+    assignment_obj.save(update_fields=["is_active"])
 
     return assignment_obj
 
@@ -183,14 +163,14 @@ def get_user_permissions(user):
 
     now = timezone.now()
 
-    assignments = UserRole.objects.filter(
-        user=user,
-        is_active=True,
-        role__is_active=True,
-    ).filter(
-        models_q_valid_from(now)
-    ).filter(
-        models_q_valid_until(now)
+    assignments = (
+        UserRole.objects.filter(
+            user=user,
+            is_active=True,
+            role__is_active=True,
+        )
+        .filter(models_q_valid_from(now))
+        .filter(models_q_valid_until(now))
     )
 
     permission_codes = assignments.values_list(
@@ -198,29 +178,19 @@ def get_user_permissions(user):
         flat=True,
     ).distinct()
 
-    return {
-        code
-        for code in permission_codes
-        if code is not None
-    }
+    return {code for code in permission_codes if code is not None}
 
 
 def models_q_valid_from(now):
     from django.db.models import Q
 
-    return (
-        Q(valid_from__isnull=True)
-        | Q(valid_from__lte=now)
-    )
+    return Q(valid_from__isnull=True) | Q(valid_from__lte=now)
 
 
 def models_q_valid_until(now):
     from django.db.models import Q
 
-    return (
-        Q(valid_until__isnull=True)
-        | Q(valid_until__gt=now)
-    )
+    return Q(valid_until__isnull=True) | Q(valid_until__gt=now)
 
 
 def user_has_permission(
@@ -251,10 +221,7 @@ def user_has_permission(
             continue
 
         # Globally scoped assignment can access all scopes.
-        if (
-            assignment.organization_id is None
-            and assignment.facility_id is None
-        ):
+        if assignment.organization_id is None and assignment.facility_id is None:
             return True
 
         # No resource supplied: permission exists at this scope.
@@ -269,9 +236,7 @@ def user_has_permission(
             # Organization-level assignment can access
             # facilities belonging to its organization descendants.
             if assignment.organization_id:
-                allowed_ids = get_organization_descendant_ids(
-                    assignment.organization
-                )
+                allowed_ids = get_organization_descendant_ids(assignment.organization)
 
                 if facility.organization_id in allowed_ids:
                     return True
@@ -279,9 +244,7 @@ def user_has_permission(
         # Organization-level resource access.
         elif organization is not None:
             if assignment.organization_id:
-                allowed_ids = get_organization_descendant_ids(
-                    assignment.organization
-                )
+                allowed_ids = get_organization_descendant_ids(assignment.organization)
 
                 if organization.id in allowed_ids:
                     return True

@@ -101,9 +101,7 @@ class StorageLocationSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
 
-class WarehouseManagerAssignmentSerializer(
-    serializers.ModelSerializer
-):
+class WarehouseManagerAssignmentSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(
         source="user.email",
         read_only=True,
@@ -141,16 +139,14 @@ class WarehouseManagerAssignmentSerializer(
         )
 
         if valid_from and valid_until and valid_until <= valid_from:
-            raise serializers.ValidationError({
-                "valid_until": "Must be after valid_from."
-            })
+            raise serializers.ValidationError(
+                {"valid_until": "Must be after valid_from."}
+            )
 
         return attrs
 
 
-class WarehouseTemperatureReadingSerializer(
-    serializers.ModelSerializer
-):
+class WarehouseTemperatureReadingSerializer(serializers.ModelSerializer):
     classification = serializers.SerializerMethodField()
 
     class Meta:
@@ -181,9 +177,7 @@ class WarehouseTemperatureReadingSerializer(
         return classify_temperature_reading(obj)
 
 
-class WarehouseCapacitySnapshotSerializer(
-    serializers.ModelSerializer
-):
+class WarehouseCapacitySnapshotSerializer(serializers.ModelSerializer):
     class Meta:
         model = WarehouseCapacitySnapshot
         fields = [

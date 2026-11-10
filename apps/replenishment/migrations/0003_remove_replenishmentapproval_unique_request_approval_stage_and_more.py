@@ -6,17 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('replenishment', '0002_alter_replenishmentrequest_status_approvalworkflow_and_more'),
+        (
+            "replenishment",
+            "0002_alter_replenishmentrequest_status_approvalworkflow_and_more",
+        ),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='replenishmentapproval',
-            name='unique_request_approval_stage',
+            model_name="replenishmentapproval",
+            name="unique_request_approval_stage",
         ),
         migrations.AddField(
-            model_name='replenishmentapproval',
-            name='cycle_number',
+            model_name="replenishmentapproval",
+            name="cycle_number",
             field=models.PositiveSmallIntegerField(default=1),
         ),
     ]

@@ -49,14 +49,14 @@ class ATCClassificationSerializer(serializers.ModelSerializer):
         )
 
         if parent and level != parent.level + 1:
-            raise serializers.ValidationError({
-                "level": "Classification level must be one greater than its parent."
-            })
+            raise serializers.ValidationError(
+                {"level": "Classification level must be one greater than its parent."}
+            )
 
         if level == 1 and parent:
-            raise serializers.ValidationError({
-                "parent": "Level 1 cannot have a parent."
-            })
+            raise serializers.ValidationError(
+                {"parent": "Level 1 cannot have a parent."}
+            )
 
         return attrs
 
@@ -206,15 +206,15 @@ class MedicineEligibilityRuleSerializer(serializers.ModelSerializer):
         )
 
         if facility and not organization:
-            raise serializers.ValidationError({
-                "organization": "Organization is required for facility-level rules."
-            })
+            raise serializers.ValidationError(
+                {"organization": "Organization is required for facility-level rules."}
+            )
 
         if facility and organization:
             if facility.organization_id != organization.id:
-                raise serializers.ValidationError({
-                    "facility": "Facility does not belong to this organization."
-                })
+                raise serializers.ValidationError(
+                    {"facility": "Facility does not belong to this organization."}
+                )
 
         start = attrs.get(
             "effective_from",
@@ -227,8 +227,8 @@ class MedicineEligibilityRuleSerializer(serializers.ModelSerializer):
         )
 
         if start and end and end < start:
-            raise serializers.ValidationError({
-                "effective_until": "End date cannot be earlier than start date."
-            })
+            raise serializers.ValidationError(
+                {"effective_until": "End date cannot be earlier than start date."}
+            )
 
         return attrs

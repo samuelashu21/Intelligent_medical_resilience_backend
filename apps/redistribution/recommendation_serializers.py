@@ -5,9 +5,7 @@ from apps.redistribution.recommendation_models import (
 )
 
 
-class RedistributionRecommendationSerializer(
-    serializers.ModelSerializer
-):
+class RedistributionRecommendationSerializer(serializers.ModelSerializer):
 
     medicine_name = serializers.CharField(
         source="medicine.generic_name",
@@ -72,9 +70,7 @@ class RedistributionRecommendationSerializer(
         read_only_fields = fields
 
 
-class RecommendationReviewSerializer(
-    serializers.Serializer
-):
+class RecommendationReviewSerializer(serializers.Serializer):
 
     reason = serializers.CharField(
         required=True,
@@ -83,9 +79,7 @@ class RecommendationReviewSerializer(
     )
 
 
-class GenerateRecommendationSerializer(
-    serializers.Serializer
-):
+class GenerateRecommendationSerializer(serializers.Serializer):
 
     medicine = serializers.UUIDField()
 

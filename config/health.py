@@ -1,4 +1,3 @@
-
 from django.db import connection
 from django.http import JsonResponse
 from django.utils import timezone
@@ -34,10 +33,7 @@ def readiness_check(request):
     except Exception:
         checks["database"] = "disconnected"
 
-    healthy = all(
-        value == "connected"
-        for value in checks.values()
-    )
+    healthy = all(value == "connected" for value in checks.values())
 
     return JsonResponse(
         {

@@ -47,23 +47,20 @@ class Command(BaseCommand):
         medicine_identifier = options["medicine"]
         location_identifier = options["location"]
 
-        warehouse = Warehouse.objects.filter(
-            pk=warehouse_identifier
-        ).first() or Warehouse.objects.filter(
-            code=warehouse_identifier
-        ).first()
+        warehouse = (
+            Warehouse.objects.filter(pk=warehouse_identifier).first()
+            or Warehouse.objects.filter(code=warehouse_identifier).first()
+        )
 
-        medicine = Medicine.objects.filter(
-            pk=medicine_identifier
-        ).first() or Medicine.objects.filter(
-            code=medicine_identifier
-        ).first()
+        medicine = (
+            Medicine.objects.filter(pk=medicine_identifier).first()
+            or Medicine.objects.filter(code=medicine_identifier).first()
+        )
 
-        location = StorageLocation.objects.filter(
-            pk=location_identifier
-        ).first() or StorageLocation.objects.filter(
-            code=location_identifier
-        ).first()
+        location = (
+            StorageLocation.objects.filter(pk=location_identifier).first()
+            or StorageLocation.objects.filter(code=location_identifier).first()
+        )
 
         if not warehouse:
             raise CommandError("Warehouse not found.")

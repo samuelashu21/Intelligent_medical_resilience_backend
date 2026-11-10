@@ -9,28 +9,31 @@ def get_active_role_assignments(user):
     """
     now = timezone.now()
 
-    return UserRole.objects.filter(
-        user=user,
-        is_active=True,
-        role__is_active=True,
-    ).filter(
-        models_q_valid_from(now)
-    ).filter(
-        models_q_valid_until(now)
-    ).select_related(
-        "role",
-        "organization",
-        "facility",
+    return (
+        UserRole.objects.filter(
+            user=user,
+            is_active=True,
+            role__is_active=True,
+        )
+        .filter(models_q_valid_from(now))
+        .filter(models_q_valid_until(now))
+        .select_related(
+            "role",
+            "organization",
+            "facility",
+        )
     )
 
 
 def models_q_valid_from(now):
     from django.db.models import Q
+
     return Q(valid_from__isnull=True) | Q(valid_from__lte=now)
 
 
 def models_q_valid_until(now):
     from django.db.models import Q
+
     return Q(valid_until__isnull=True) | Q(valid_until__gt=now)
 
 
@@ -52,37 +55,29 @@ def get_user_accessible_organization_ids(
 
     if user.is_superuser:
         return set(
-            Organization.objects.filter(
-                is_active=True
-            ).values_list("id", flat=True)
+            Organization.objects.filter(is_active=True).values_list("id", flat=True)
         )
 
     assignments = get_active_role_assignments(user)
     accessible = set()
 
     for assignment in assignments:
-        if permission_code and not assignment.role.permissions.filter(
-            code=permission_code,
-            is_active=True,
-        ).exists():
+        if (
+            permission_code
+            and not assignment.role.permissions.filter(
+                code=permission_code,
+                is_active=True,
+            ).exists()
+        ):
             continue
 
-        if (
-            assignment.organization_id is None
-            and assignment.facility_id is None
-        ):
+        if assignment.organization_id is None and assignment.facility_id is None:
             return set(
-                Organization.objects.filter(
-                    is_active=True
-                ).values_list("id", flat=True)
+                Organization.objects.filter(is_active=True).values_list("id", flat=True)
             )
 
         if assignment.organization_id:
-            accessible.update(
-                get_organization_descendant_ids(
-                    assignment.organization
-                )
-            )
+            accessible.update(get_organization_descendant_ids(assignment.organization))
 
     return accessible
 
@@ -100,39 +95,31 @@ def get_user_accessible_facility_ids(
         return set()
 
     if user.is_superuser:
-        return set(
-            Facility.objects.filter(
-                is_active=True
-            ).values_list("id", flat=True)
-        )
+        return set(Facility.objects.filter(is_active=True).values_list("id", flat=True))
 
     assignments = get_active_role_assignments(user)
     accessible = set()
 
     for assignment in assignments:
-        if permission_code and not assignment.role.permissions.filter(
-            code=permission_code,
-            is_active=True,
-        ).exists():
+        if (
+            permission_code
+            and not assignment.role.permissions.filter(
+                code=permission_code,
+                is_active=True,
+            ).exists()
+        ):
             continue
 
-        if (
-            assignment.organization_id is None
-            and assignment.facility_id is None
-        ):
+        if assignment.organization_id is None and assignment.facility_id is None:
             return set(
-                Facility.objects.filter(
-                    is_active=True
-                ).values_list("id", flat=True)
+                Facility.objects.filter(is_active=True).values_list("id", flat=True)
             )
 
         if assignment.facility_id:
             accessible.add(assignment.facility_id)
 
         if assignment.organization_id:
-            organization_ids = get_organization_descendant_ids(
-                assignment.organization
-            )
+            organization_ids = get_organization_descendant_ids(assignment.organization)
 
             accessible.update(
                 Facility.objects.filter(
@@ -160,22 +147,20 @@ def user_can_access_organization(user, organization, permission_code=None):
     assignments = get_active_role_assignments(user)
 
     for assignment in assignments:
-        if permission_code and not assignment.role.permissions.filter(
-            code=permission_code,
-            is_active=True,
-        ).exists():
+        if (
+            permission_code
+            and not assignment.role.permissions.filter(
+                code=permission_code,
+                is_active=True,
+            ).exists()
+        ):
             continue
 
-        if (
-            assignment.organization_id is None
-            and assignment.facility_id is None
-        ):
+        if assignment.organization_id is None and assignment.facility_id is None:
             return True
 
         if assignment.organization_id:
-            allowed_ids = get_organization_descendant_ids(
-                assignment.organization
-            )
+            allowed_ids = get_organization_descendant_ids(assignment.organization)
 
             if organization.id in allowed_ids:
                 return True
@@ -199,25 +184,23 @@ def user_can_access_facility(user, facility, permission_code=None):
     assignments = get_active_role_assignments(user)
 
     for assignment in assignments:
-        if permission_code and not assignment.role.permissions.filter(
-            code=permission_code,
-            is_active=True,
-        ).exists():
+        if (
+            permission_code
+            and not assignment.role.permissions.filter(
+                code=permission_code,
+                is_active=True,
+            ).exists()
+        ):
             continue
 
-        if (
-            assignment.organization_id is None
-            and assignment.facility_id is None
-        ):
+        if assignment.organization_id is None and assignment.facility_id is None:
             return True
 
         if assignment.facility_id == facility.id:
             return True
 
         if assignment.organization_id:
-            allowed_ids = get_organization_descendant_ids(
-                assignment.organization
-            )
+            allowed_ids = get_organization_descendant_ids(assignment.organization)
 
             if facility.organization_id in allowed_ids:
                 return True

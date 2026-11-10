@@ -7,14 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('procurement', '0001_initial'),
-        ('suppliers', '0001_initial'),
+        ("procurement", "0001_initial"),
+        ("suppliers", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='supplierquotation',
-            constraint=models.UniqueConstraint(condition=models.Q(('status', 'SELECTED')), fields=('requisition',), name='one_selected_quotation_per_requisition'),
+            model_name="supplierquotation",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("status", "SELECTED")),
+                fields=("requisition",),
+                name="one_selected_quotation_per_requisition",
+            ),
         ),
     ]

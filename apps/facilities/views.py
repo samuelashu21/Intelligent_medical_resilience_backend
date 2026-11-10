@@ -13,7 +13,7 @@ from apps.facilities.models import Facility, FacilityType
 from apps.facilities.serializers import (
     FacilitySerializer,
     FacilityTypeSerializer,
-) 
+)
 
 
 class FacilityTypeViewSet(viewsets.ModelViewSet):
@@ -69,21 +69,15 @@ class FacilityViewSet(viewsets.ModelViewSet):
             id__in=accessible_ids,
         )
 
-        organization_id = self.request.query_params.get(
-            "organization"
-        )
+        organization_id = self.request.query_params.get("organization")
 
         if organization_id:
-            queryset = queryset.filter(
-                organization_id=organization_id
-            )
+            queryset = queryset.filter(organization_id=organization_id)
 
         facility_type = self.request.query_params.get("facility_type")
 
         if facility_type:
-            queryset = queryset.filter(
-                facility_type__code=facility_type
-            )
+            queryset = queryset.filter(facility_type__code=facility_type)
 
         return queryset
 

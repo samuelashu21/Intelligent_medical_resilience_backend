@@ -20,6 +20,7 @@ from apps.medicines.models import (
     MedicinePresentation,
 )
 
+
 @admin.register(Medicine)
 class MedicineAdmin(admin.ModelAdmin):
     list_display = [
@@ -271,4 +272,4 @@ class MedicineImportBatchAdmin(admin.ModelAdmin):
         "created_at",
     ]
 
-    inlines = [MedicineImportRowInline]    
+    inlines = [MedicineImportRowInline]

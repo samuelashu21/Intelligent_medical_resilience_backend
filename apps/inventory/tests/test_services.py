@@ -191,7 +191,7 @@ class InventoryServiceTests(TestCase):
             Decimal("100"),
         )
 
-    
+
 def test_expired_batch_cannot_be_issued(self):
     # First receive stock while the batch is still valid.
     receive_stock(
@@ -203,11 +203,7 @@ def test_expired_batch_cannot_be_issued(self):
     # Simulate the batch expiring after stock has been received.
     past_date = timezone.localdate() - timedelta(days=1)
 
-    StockBatch.objects.filter(
-        pk=self.batch.pk
-    ).update(
-        expiry_date=past_date
-    )
+    StockBatch.objects.filter(pk=self.batch.pk).update(expiry_date=past_date)
 
     self.batch.refresh_from_db()
 
@@ -320,9 +316,7 @@ def test_expired_batch_cannot_be_issued(self):
             reserved_by=self.user,
         )
 
-        release_reservation(
-            reservation_id=reservation.pk
-        )
+        release_reservation(reservation_id=reservation.pk)
 
         self.batch.balance.refresh_from_db()
         reservation.refresh_from_db()

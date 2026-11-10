@@ -1,4 +1,3 @@
-
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 
@@ -8,13 +7,13 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from apps.accounts.models import User, UserProfile, UserRole
 from apps.audit.models import AuditEvent
 
-
 User = get_user_model()
 
 
 # ============================================================
 # AUTHENTICATION SERIALIZERS
 # ============================================================
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
@@ -35,9 +34,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         password = attrs.get("password", "")
 
         if not email or not password:
-            raise serializers.ValidationError({
-                "detail": "Email and password are required."
-            })
+            raise serializers.ValidationError(
+                {"detail": "Email and password are required."}
+            )
 
         user = authenticate(
             request=self.context.get("request"),
@@ -46,14 +45,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         )
 
         if user is None:
-            raise serializers.ValidationError({
-                "detail": "Invalid email or password."
-            })
+            raise serializers.ValidationError({"detail": "Invalid email or password."})
 
         if not user.is_active:
-            raise serializers.ValidationError({
-                "detail": "This account is inactive."
-            })
+            raise serializers.ValidationError({"detail": "This account is inactive."})
 
         # Generate JWT tokens using SimpleJWT.
         data = super().validate(attrs)
@@ -73,6 +68,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 # ============================================================
 # USER PROFILE SERIALIZERS
 # ============================================================
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """
@@ -109,6 +105,7 @@ class UserProfileAdministrativeSerializer(serializers.ModelSerializer):
 # ============================================================
 # CURRENT USER SERIALIZER
 # ============================================================
+
 
 class CurrentUserSerializer(serializers.ModelSerializer):
     """
@@ -175,6 +172,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 # ADMINISTRATIVE USER SERIALIZERS
 # ============================================================
 
+
 class AdministrativeUserSerializer(serializers.ModelSerializer):
     """
     Safe user representation for administrative endpoints.
@@ -228,9 +226,7 @@ class AdministrativeUserCreateSerializer(serializers.ModelSerializer):
         value = value.strip().lower()
 
         if User.objects.filter(email__iexact=value).exists():
-            raise serializers.ValidationError(
-                "A user with this email already exists."
-            )
+            raise serializers.ValidationError("A user with this email already exists.")
 
         return value
 
@@ -246,6 +242,7 @@ class AdministrativeUserCreateSerializer(serializers.ModelSerializer):
 # ============================================================
 # USER ROLE ASSIGNMENT SERIALIZER
 # ============================================================
+
 
 class UserRoleAssignmentSerializer(serializers.ModelSerializer):
     """
@@ -332,19 +329,19 @@ class UserRoleAssignmentSerializer(serializers.ModelSerializer):
 
         if organization and facility:
             if facility.organization_id != organization.id:
-                raise serializers.ValidationError({
-                    "facility": (
-                        "The facility must belong directly to the "
-                        "selected organization."
-                    )
-                })
+                raise serializers.ValidationError(
+                    {
+                        "facility": (
+                            "The facility must belong directly to the "
+                            "selected organization."
+                        )
+                    }
+                )
 
         if valid_from and valid_until and valid_until <= valid_from:
-            raise serializers.ValidationError({
-                "valid_until": (
-                    "The expiry must be later than the start date."
-                )
-            })
+            raise serializers.ValidationError(
+                {"valid_until": ("The expiry must be later than the start date.")}
+            )
 
         return attrs
 
@@ -352,6 +349,7 @@ class UserRoleAssignmentSerializer(serializers.ModelSerializer):
 # ============================================================
 # AUDIT EVENT SERIALIZER
 # ============================================================
+
 
 class AuditEventSerializer(serializers.ModelSerializer):
     """
@@ -404,6 +402,7 @@ class AuditEventSerializer(serializers.ModelSerializer):
 # PASSWORD CHANGE SERIALIZER
 # ============================================================
 
+
 class PasswordChangeSerializer(serializers.Serializer):
     """
     Secure password change serializer.
@@ -442,9 +441,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         user = self.context["request"].user
 
         if not user.check_password(value):
-            raise serializers.ValidationError(
-                "Your current password is incorrect."
-            )
+            raise serializers.ValidationError("Your current password is incorrect.")
 
         return value
 
@@ -457,19 +454,19 @@ class PasswordChangeSerializer(serializers.Serializer):
 
         # Check password confirmation.
         if attrs["new_password"] != attrs["confirm_new_password"]:
-            raise serializers.ValidationError({
-                "confirm_new_password": (
-                    "The new passwords do not match."
-                )
-            })
+            raise serializers.ValidationError(
+                {"confirm_new_password": ("The new passwords do not match.")}
+            )
 
         # Prevent using the existing password again.
         if attrs["current_password"] == attrs["new_password"]:
-            raise serializers.ValidationError({
-                "new_password": (
-                    "Choose a password different from your current password."
-                )
-            })
+            raise serializers.ValidationError(
+                {
+                    "new_password": (
+                        "Choose a password different from your current password."
+                    )
+                }
+            )
 
         # Apply configured Django password validators.
         validate_password(
@@ -488,9 +485,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         """
 
         if not hasattr(self, "validated_data"):
-            raise AssertionError(
-                "Call is_valid() before calling save()."
-            )
+            raise AssertionError("Call is_valid() before calling save().")
 
         user = self.context["request"].user
 
@@ -498,11 +493,6 @@ class PasswordChangeSerializer(serializers.Serializer):
 
         user.set_password(new_password)
 
-        user.save(
-            update_fields=["password"]
-        )
+        user.save(update_fields=["password"])
 
         return user
-
-
- 

@@ -30,7 +30,4 @@ class MedicineCatalogPermission(BasePermission):
 
         from apps.accounts.services import user_has_permission
 
-        return all(
-            user_has_permission(user, code)
-            for code in required_permission
-        )
+        return all(user_has_permission(user, code) for code in required_permission)

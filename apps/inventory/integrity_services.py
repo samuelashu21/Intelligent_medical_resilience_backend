@@ -8,7 +8,6 @@ from apps.inventory.models import (
     StockMovement,
 )
 
-
 MOVEMENT_SIGN = {
     MovementType.RECEIPT: Decimal("1"),
     MovementType.ISSUE: Decimal("-1"),
@@ -18,9 +17,7 @@ MOVEMENT_SIGN = {
 
 
 def calculate_ledger_balance(batch_id):
-    movements = StockMovement.objects.filter(
-        batch_id=batch_id
-    )
+    movements = StockMovement.objects.filter(batch_id=batch_id)
 
     total = Decimal("0")
 
@@ -45,25 +42,21 @@ def check_inventory_balance_integrity():
     )
 
     for balance in balances.iterator():
-        ledger_quantity = calculate_ledger_balance(
-            balance.batch_id
-        )
+        ledger_quantity = calculate_ledger_balance(balance.batch_id)
 
-        discrepancy = (
-            balance.quantity_on_hand - ledger_quantity
-        )
+        discrepancy = balance.quantity_on_hand - ledger_quantity
 
         if discrepancy != 0:
-            results.append({
-                "batch_id": str(balance.batch_id),
-                "batch_number": balance.batch.batch_number,
-                "medicine": balance.batch.medicine.generic_name,
-                "warehouse": balance.batch.warehouse.name,
-                "balance_quantity": str(
-                    balance.quantity_on_hand
-                ),
-                "ledger_quantity": str(ledger_quantity),
-                "discrepancy": str(discrepancy),
-            })
+            results.append(
+                {
+                    "batch_id": str(balance.batch_id),
+                    "batch_number": balance.batch.batch_number,
+                    "medicine": balance.batch.medicine.generic_name,
+                    "warehouse": balance.batch.warehouse.name,
+                    "balance_quantity": str(balance.quantity_on_hand),
+                    "ledger_quantity": str(ledger_quantity),
+                    "discrepancy": str(discrepancy),
+                }
+            )
 
     return results

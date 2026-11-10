@@ -1,4 +1,3 @@
-
 from rest_framework import serializers
 
 from apps.audit.models import AuditEvent

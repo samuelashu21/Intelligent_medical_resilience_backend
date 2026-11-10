@@ -10,9 +10,7 @@ from apps.procurement.models import (
 )
 
 
-class PurchaseRequisitionLineInline(
-    admin.TabularInline
-):
+class PurchaseRequisitionLineInline(admin.TabularInline):
     model = PurchaseRequisitionLine
     extra = 0
     can_delete = False
@@ -67,9 +65,7 @@ class PurchaseRequisitionAdmin(admin.ModelAdmin):
         return False
 
 
-class SupplierQuotationLineInline(
-    admin.TabularInline
-):
+class SupplierQuotationLineInline(admin.TabularInline):
     model = SupplierQuotationLine
     extra = 0
     can_delete = False
@@ -121,9 +117,7 @@ class SupplierQuotationAdmin(admin.ModelAdmin):
         return False
 
 
-class PurchaseOrderLineInline(
-    admin.TabularInline
-):
+class PurchaseOrderLineInline(admin.TabularInline):
     model = PurchaseOrderLine
     extra = 0
     can_delete = False

@@ -11,15 +11,15 @@ from django.utils import timezone
 class ReplenishmentRequest(models.Model):
 
     class Status(models.TextChoices):
-     DRAFT = "DRAFT", "Draft"
-     SUBMITTED = "SUBMITTED", "Submitted"
-     APPROVED = "APPROVED", "Approved"
-     REJECTED = "REJECTED", "Rejected"
-     CANCELLED = "CANCELLED", "Cancelled"
-     REVISION_REQUESTED = (
-        "REVISION_REQUESTED",
-        "Revision Requested",
-    )
+        DRAFT = "DRAFT", "Draft"
+        SUBMITTED = "SUBMITTED", "Submitted"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+        CANCELLED = "CANCELLED", "Cancelled"
+        REVISION_REQUESTED = (
+            "REVISION_REQUESTED",
+            "Revision Requested",
+        )
 
     class Priority(models.TextChoices):
         LOW = "LOW", "Low"
@@ -170,19 +170,19 @@ class ReplenishmentRequest(models.Model):
 
         constraints = [
             models.CheckConstraint(
-                condition=Q(priority__in=[
-                    "LOW", "NORMAL", "HIGH", "CRITICAL"
-                ]),
+                condition=Q(priority__in=["LOW", "NORMAL", "HIGH", "CRITICAL"]),
                 name="replen_req_valid_priority",
             ),
             models.CheckConstraint(
-                condition=Q(status__in=[
-                    "DRAFT",
-                    "SUBMITTED",
-                    "APPROVED",
-                    "REJECTED",
-                    "CANCELLED",
-                ]),
+                condition=Q(
+                    status__in=[
+                        "DRAFT",
+                        "SUBMITTED",
+                        "APPROVED",
+                        "REJECTED",
+                        "CANCELLED",
+                    ]
+                ),
                 name="replen_req_valid_status",
             ),
         ]
@@ -201,20 +201,14 @@ class ReplenishmentRequest(models.Model):
 
         if self.status == self.Status.APPROVED:
             if not self.approved_by_id or not self.approved_at:
-                errors["approved_by"] = (
-                    "Approved requests require approval metadata."
-                )
+                errors["approved_by"] = "Approved requests require approval metadata."
 
         if self.status == self.Status.REJECTED:
             if not self.rejected_by_id or not self.rejected_at:
-                errors["rejected_by"] = (
-                    "Rejected requests require rejection metadata."
-                )
+                errors["rejected_by"] = "Rejected requests require rejection metadata."
 
             if not self.rejection_reason.strip():
-                errors["rejection_reason"] = (
-                    "A rejection reason is required."
-                )
+                errors["rejection_reason"] = "A rejection reason is required."
 
         if self.status == self.Status.CANCELLED:
             if not self.cancelled_by_id or not self.cancelled_at:
@@ -228,8 +222,7 @@ class ReplenishmentRequest(models.Model):
     def save(self, *args, **kwargs):
         if not self.request_number:
             self.request_number = (
-                f"MR-{timezone.now():%Y%m%d}-"
-                f"{uuid.uuid4().hex[:10].upper()}"
+                f"MR-{timezone.now():%Y%m%d}-" f"{uuid.uuid4().hex[:10].upper()}"
             )
 
         self.full_clean()
@@ -319,8 +312,7 @@ class ReplenishmentRequestLine(models.Model):
             ),
             models.CheckConstraint(
                 condition=(
-                    Q(approved_quantity__isnull=True)
-                    | Q(approved_quantity__gte=0)
+                    Q(approved_quantity__isnull=True) | Q(approved_quantity__gte=0)
                 ),
                 name="replen_line_approved_nonnegative",
             ),
@@ -335,26 +327,14 @@ class ReplenishmentRequestLine(models.Model):
             )
 
         if self.recommended_quantity < 0:
-            errors["recommended_quantity"] = (
-                "Recommended quantity cannot be negative."
-            )
+            errors["recommended_quantity"] = "Recommended quantity cannot be negative."
 
-        if (
-            self.approved_quantity is not None
-            and self.approved_quantity < 0
-        ):
-            errors["approved_quantity"] = (
-                "Approved quantity cannot be negative."
-            )
+        if self.approved_quantity is not None and self.approved_quantity < 0:
+            errors["approved_quantity"] = "Approved quantity cannot be negative."
 
-        if (
-            self.request_id
-            and self.request.status != ReplenishmentRequest.Status.DRAFT
-        ):
+        if self.request_id and self.request.status != ReplenishmentRequest.Status.DRAFT:
             if self.pk is None:
-                errors["request"] = (
-                    "Items can only be added to draft requests."
-                )
+                errors["request"] = "Items can only be added to draft requests."
 
         if errors:
             raise ValidationError(errors)
@@ -364,10 +344,7 @@ class ReplenishmentRequestLine(models.Model):
         return super().save(*args, **kwargs)
 
     def __str__(self):
-        return (
-            f"{self.request.request_number} - "
-            f"{self.medicine.generic_name}"
-        )
+        return f"{self.request.request_number} - " f"{self.medicine.generic_name}"
 
 
 class ApprovalWorkflow(models.Model):
@@ -431,9 +408,7 @@ class ApprovalWorkflowStage(models.Model):
 
     organization_type_code = models.CharField(
         max_length=50,
-        help_text=(
-            "Organization unit type code required for this stage."
-        ),
+        help_text=("Organization unit type code required for this stage."),
     )
 
     required_role_code = models.CharField(
@@ -471,10 +446,7 @@ class ApprovalWorkflowStage(models.Model):
         ]
 
     def __str__(self):
-        return (
-            f"{self.workflow.name} - "
-            f"{self.sequence} - {self.name}"
-        )
+        return f"{self.workflow.name} - " f"{self.sequence} - {self.name}"
 
 
 class ReplenishmentApproval(models.Model):
@@ -541,9 +513,9 @@ class ReplenishmentApproval(models.Model):
     )
 
     cycle_number = models.PositiveSmallIntegerField(
-    default=1,
-     )
-    
+        default=1,
+    )
+
     escalation_level = models.PositiveSmallIntegerField(
         default=0,
     )
@@ -556,13 +528,13 @@ class ReplenishmentApproval(models.Model):
         ]
 
         models.UniqueConstraint(
-         fields=[
-          "request",
-          "workflow_stage",
-          "cycle_number",
-         ],
-         name="unique_request_approval_cycle_stage",
-         )
+            fields=[
+                "request",
+                "workflow_stage",
+                "cycle_number",
+            ],
+            name="unique_request_approval_cycle_stage",
+        )
 
         indexes = [
             models.Index(
@@ -576,10 +548,7 @@ class ReplenishmentApproval(models.Model):
         ]
 
     def __str__(self):
-        return (
-            f"{self.request.request_number} - "
-            f"{self.workflow_stage.name}"
-        )
+        return f"{self.request.request_number} - " f"{self.workflow_stage.name}"
 
 
 class ApprovalDecision(models.Model):
@@ -634,23 +603,14 @@ class ApprovalDecision(models.Model):
         ]
 
     def __str__(self):
-        return (
-            f"{self.approval} - "
-            f"{self.decision}"
-        )
+        return f"{self.approval} - " f"{self.decision}"
 
     def save(self, *args, **kwargs):
-        if self.pk and ApprovalDecision.objects.filter(
-            pk=self.pk
-        ).exists():
-            raise ValidationError(
-                "Approval decisions cannot be modified."
-            )
+        if self.pk and ApprovalDecision.objects.filter(pk=self.pk).exists():
+            raise ValidationError("Approval decisions cannot be modified.")
 
         self.full_clean()
         return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        raise ValidationError(
-            "Approval decisions cannot be deleted."
-        )                
+        raise ValidationError("Approval decisions cannot be deleted.")

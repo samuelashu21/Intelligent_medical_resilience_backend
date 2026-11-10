@@ -231,8 +231,7 @@ class ProcurementServiceTests(TestCase):
             quotation_id=quotation.pk,
             user=self.approver,
             justification=(
-                "Supplier has acceptable price, delivery, "
-                "and quality performance."
+                "Supplier has acceptable price, delivery, " "and quality performance."
             ),
         )
 

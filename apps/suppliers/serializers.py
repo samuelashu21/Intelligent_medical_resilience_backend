@@ -217,16 +217,14 @@ class SupplierContractSerializer(serializers.ModelSerializer):
         )
 
         if start and end and end < start:
-            raise serializers.ValidationError({
-                "end_date": "Contract end date must follow start date."
-            })
+            raise serializers.ValidationError(
+                {"end_date": "Contract end date must follow start date."}
+            )
 
         return attrs
 
 
-class SupplierPerformanceRecordSerializer(
-    serializers.ModelSerializer
-):
+class SupplierPerformanceRecordSerializer(serializers.ModelSerializer):
     on_time = serializers.ReadOnlyField()
     fulfillment_rate = serializers.ReadOnlyField()
     quality_acceptance_rate = serializers.ReadOnlyField()

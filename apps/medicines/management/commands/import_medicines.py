@@ -20,32 +20,16 @@ class Command(BaseCommand):
             batch = import_medicine_file(file_path)
 
         except Exception as exc:
-            raise CommandError(
-                f"Medicine import failed: {exc}"
-            )
+            raise CommandError(f"Medicine import failed: {exc}")
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"Import batch: {batch.id}"
-            )
-        )
+        self.stdout.write(self.style.SUCCESS(f"Import batch: {batch.id}"))
 
-        self.stdout.write(
-            f"Filename: {batch.filename}"
-        )
+        self.stdout.write(f"Filename: {batch.filename}")
 
-        self.stdout.write(
-            f"Status: {batch.status}"
-        )
+        self.stdout.write(f"Status: {batch.status}")
 
-        self.stdout.write(
-            f"Total rows: {batch.total_rows}"
-        )
+        self.stdout.write(f"Total rows: {batch.total_rows}")
 
-        self.stdout.write(
-            f"Successful: {batch.successful_rows}"
-        )
+        self.stdout.write(f"Successful: {batch.successful_rows}")
 
-        self.stdout.write(
-            f"Failed: {batch.failed_rows}"
-        )
+        self.stdout.write(f"Failed: {batch.failed_rows}")

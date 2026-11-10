@@ -4,7 +4,7 @@ from apps.accounts.services import (
     get_user_permissions,
     user_has_permission,
 )
- 
+
 
 class HasSystemPermission(BasePermission):
     """
@@ -37,9 +37,7 @@ class HasSystemPermission(BasePermission):
         granted_permissions = get_user_permissions(user)
 
         # All declared permissions must be granted.
-        return set(required_permissions).issubset(
-            granted_permissions
-        )
+        return set(required_permissions).issubset(granted_permissions)
 
 
 class HasScopedPermission(BasePermission):

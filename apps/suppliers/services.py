@@ -38,17 +38,13 @@ def record_supplier_audit(
 
 @transaction.atomic
 def approve_supplier(*, supplier_id, approved_by, request=None):
-    supplier = Supplier.objects.select_for_update().get(
-        pk=supplier_id
-    )
+    supplier = Supplier.objects.select_for_update().get(pk=supplier_id)
 
     if supplier.status not in [
         SupplierStatus.PENDING,
         SupplierStatus.DRAFT,
     ]:
-        raise ValidationError(
-            "Only draft or pending suppliers can be approved."
-        )
+        raise ValidationError("Only draft or pending suppliers can be approved.")
 
     supplier.status = SupplierStatus.APPROVED
     supplier.approved_by = approved_by
@@ -75,22 +71,16 @@ def reject_supplier(
     reason,
     request=None,
 ):
-    supplier = Supplier.objects.select_for_update().get(
-        pk=supplier_id
-    )
+    supplier = Supplier.objects.select_for_update().get(pk=supplier_id)
 
     if supplier.status not in [
         SupplierStatus.DRAFT,
         SupplierStatus.PENDING,
     ]:
-        raise ValidationError(
-            "Only draft or pending suppliers can be rejected."
-        )
+        raise ValidationError("Only draft or pending suppliers can be rejected.")
 
     supplier.status = SupplierStatus.REJECTED
-    supplier.notes = (
-        f"{supplier.notes}\nRejection reason: {reason}".strip()
-    )
+    supplier.notes = f"{supplier.notes}\nRejection reason: {reason}".strip()
 
     supplier.save()
 
@@ -112,19 +102,13 @@ def suspend_supplier(
     reason,
     request=None,
 ):
-    supplier = Supplier.objects.select_for_update().get(
-        pk=supplier_id
-    )
+    supplier = Supplier.objects.select_for_update().get(pk=supplier_id)
 
     if supplier.status != SupplierStatus.APPROVED:
-        raise ValidationError(
-            "Only approved suppliers can be suspended."
-        )
+        raise ValidationError("Only approved suppliers can be suspended.")
 
     supplier.status = SupplierStatus.SUSPENDED
-    supplier.notes = (
-        f"{supplier.notes}\nSuspension reason: {reason}".strip()
-    )
+    supplier.notes = f"{supplier.notes}\nSuspension reason: {reason}".strip()
 
     supplier.save()
 
@@ -146,17 +130,13 @@ def deactivate_supplier(
     reason,
     request=None,
 ):
-    supplier = Supplier.objects.select_for_update().get(
-        pk=supplier_id
-    )
+    supplier = Supplier.objects.select_for_update().get(pk=supplier_id)
 
     if supplier.status == SupplierStatus.INACTIVE:
         return supplier
 
     supplier.status = SupplierStatus.INACTIVE
-    supplier.notes = (
-        f"{supplier.notes}\nDeactivation reason: {reason}".strip()
-    )
+    supplier.notes = f"{supplier.notes}\nDeactivation reason: {reason}".strip()
 
     supplier.save()
 
@@ -178,14 +158,9 @@ def verify_supplier_license(
     verified_by,
     request=None,
 ):
-    license_record = SupplierLicense.objects.select_for_update().get(
-        pk=license_id
-    )
+    license_record = SupplierLicense.objects.select_for_update().get(pk=license_id)
 
-    if (
-        license_record.expiry_date
-        and license_record.expiry_date < timezone.localdate()
-    ):
+    if license_record.expiry_date and license_record.expiry_date < timezone.localdate():
         raise ValidationError(
             "An expired license cannot be verified as currently valid."
         )
@@ -201,56 +176,39 @@ def verify_supplier_license(
             request=request,
             action="SUPPLIER_LICENSE_VERIFIED",
             supplier=license_record.supplier,
-            description=(
-                f"License {license_record.license_number} verified."
-            ),
+            description=(f"License {license_record.license_number} verified."),
         )
 
     return license_record
 
 
 def get_supplier_performance(supplier):
-    records = SupplierPerformanceRecord.objects.filter(
-        supplier=supplier
-    )
+    records = SupplierPerformanceRecord.objects.filter(supplier=supplier)
 
-    completed = records.filter(
-        actual_delivery_date__isnull=False
-    )
+    completed = records.filter(actual_delivery_date__isnull=False)
 
     total_completed = completed.count()
 
-    on_time_count = sum(
-        1 for record in completed if record.on_time
-    )
+    on_time_count = sum(1 for record in completed if record.on_time)
 
-    ordered_total = sum(
-        record.ordered_quantity for record in records
-    )
+    ordered_total = sum(record.ordered_quantity for record in records)
 
-    received_total = sum(
-        record.received_quantity for record in records
-    )
+    received_total = sum(record.received_quantity for record in records)
 
-    accepted_total = sum(
-        record.quality_accepted_quantity for record in records
-    )
+    accepted_total = sum(record.quality_accepted_quantity for record in records)
 
     return {
         "delivery_records": records.count(),
         "completed_deliveries": total_completed,
         "on_time_deliveries": on_time_count,
         "on_time_rate": (
-            round(on_time_count / total_completed * 100, 2)
-            if total_completed else None
+            round(on_time_count / total_completed * 100, 2) if total_completed else None
         ),
         "fulfillment_rate": (
-            round(received_total / ordered_total * 100, 2)
-            if ordered_total else None
+            round(received_total / ordered_total * 100, 2) if ordered_total else None
         ),
         "quality_acceptance_rate": (
-            round(accepted_total / received_total * 100, 2)
-            if received_total else None
+            round(accepted_total / received_total * 100, 2) if received_total else None
         ),
         "ordered_quantity": ordered_total,
         "received_quantity": received_total,

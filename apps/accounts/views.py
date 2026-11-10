@@ -58,9 +58,7 @@ class LogoutView(APIView):
 
         if not refresh_token:
             return Response(
-                {
-                    "detail": "Refresh token is required."
-                },
+                {"detail": "Refresh token is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -68,16 +66,11 @@ class LogoutView(APIView):
             token = RefreshToken(refresh_token)
 
             # Verify token ownership.
-            user_id = (
-                token.payload.get("user_id")
-                or token.payload.get("sub")
-            )
+            user_id = token.payload.get("user_id") or token.payload.get("sub")
 
             if user_id and str(user_id) != str(request.user.id):
                 return Response(
-                    {
-                        "detail": "Invalid refresh token."
-                    },
+                    {"detail": "Invalid refresh token."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -85,20 +78,13 @@ class LogoutView(APIView):
             token.blacklist()
 
             return Response(
-                {
-                    "detail": "Successfully logged out."
-                },
+                {"detail": "Successfully logged out."},
                 status=status.HTTP_205_RESET_CONTENT,
             )
 
         except TokenError as exc:
             return Response(
-                {
-                    "detail": (
-                        str(exc)
-                        or "Invalid or expired refresh token."
-                    )
-                },
+                {"detail": (str(exc) or "Invalid or expired refresh token.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -107,12 +93,10 @@ class LogoutView(APIView):
             logger.exception("Unexpected error during logout.")
 
             return Response(
-                {
-                    "detail": "An error occurred during logout."
-                },
+                {"detail": "An error occurred during logout."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
- 
+
 
 class CurrentUserView(generics.RetrieveAPIView):
     """
@@ -140,7 +124,7 @@ class PasswordChangeView(generics.GenericAPIView):
             context={"request": request},
         )
         serializer.is_valid(raise_exception=True)
-        
+
         # If the serializer defines a save method, use it; otherwise update user directly.
         if hasattr(serializer, "save") and callable(getattr(serializer, "save")):
             serializer.save()
@@ -152,12 +136,7 @@ class PasswordChangeView(generics.GenericAPIView):
             update_session_auth_hash(request, user)
 
         return Response(
-            {
-                "detail": (
-                    "Password changed successfully. "
-                    "Please log in again."
-                )
-            },
+            {"detail": ("Password changed successfully. " "Please log in again.")},
             status=status.HTTP_200_OK,
         )
 
@@ -172,9 +151,7 @@ class RBACTestView(APIView):
         HasSystemPermission,
     ]
 
-    required_permissions = (
-        "inventory.view",
-    )
+    required_permissions = ("inventory.view",)
 
     def get(self, request):
         return Response(
@@ -184,12 +161,10 @@ class RBACTestView(APIView):
                 "user": request.user.email,
                 "permissions": list(
                     sorted(
-                        request.user.role_assignments
-                        .filter(
+                        request.user.role_assignments.filter(
                             is_active=True,
                             role__is_active=True,
-                        )
-                        .values_list(
+                        ).values_list(
                             "role__code",
                             flat=True,
                         )

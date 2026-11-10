@@ -68,7 +68,5 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Seeded {len(suppliers)} demonstration suppliers."
-            )
+            self.style.SUCCESS(f"Seeded {len(suppliers)} demonstration suppliers.")
         )

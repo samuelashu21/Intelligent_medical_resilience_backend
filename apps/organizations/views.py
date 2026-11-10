@@ -78,14 +78,10 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             id__in=accessible_ids,
         )
 
-        organization_type = self.request.query_params.get(
-            "organization_type"
-        )
+        organization_type = self.request.query_params.get("organization_type")
 
         if organization_type:
-            queryset = queryset.filter(
-                organization_type__code=organization_type
-            )
+            queryset = queryset.filter(organization_type__code=organization_type)
 
         parent_id = self.request.query_params.get("parent")
 
@@ -122,12 +118,14 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             # Creating a root organization is a global administrative action.
             from apps.accounts.scope_services import get_active_role_assignments
 
-            has_global_assignment = get_active_role_assignments(
-                self.request.user
-            ).filter(
-                organization__isnull=True,
-                facility__isnull=True,
-            ).exists()
+            has_global_assignment = (
+                get_active_role_assignments(self.request.user)
+                .filter(
+                    organization__isnull=True,
+                    facility__isnull=True,
+                )
+                .exists()
+            )
 
             if not has_global_assignment:
                 raise PermissionDenied(

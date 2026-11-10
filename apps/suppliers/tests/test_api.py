@@ -71,17 +71,13 @@ class SupplierAPITests(APITestCase):
         )
 
         self.client.credentials(
-            HTTP_AUTHORIZATION=(
-                f"Bearer {AccessToken.for_user(self.user)}"
-            )
+            HTTP_AUTHORIZATION=(f"Bearer {AccessToken.for_user(self.user)}")
         )
 
     def test_unauthenticated_supplier_list(self):
         self.client.credentials()
 
-        response = self.client.get(
-            "/api/v1/suppliers/suppliers/"
-        )
+        response = self.client.get("/api/v1/suppliers/suppliers/")
 
         self.assertEqual(
             response.status_code,
@@ -132,15 +128,11 @@ class SupplierAPITests(APITestCase):
         self.user.is_staff = True
         self.user.save()
 
-        response = self.client.delete(
-            f"/api/v1/suppliers/suppliers/{supplier.pk}/"
-        )
+        response = self.client.delete(f"/api/v1/suppliers/suppliers/{supplier.pk}/")
 
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST,
         )
 
-        self.assertTrue(
-            Supplier.objects.filter(pk=supplier.pk).exists()
-        )
+        self.assertTrue(Supplier.objects.filter(pk=supplier.pk).exists())

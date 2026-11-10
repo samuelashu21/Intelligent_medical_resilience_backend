@@ -68,21 +68,21 @@ class BatchLifecycleViewSet(viewsets.GenericViewSet):
             permission_code="inventory.view",
         )
 
-        return queryset.filter(
-            warehouse__organization_id__in=organization_ids
-        )
+        return queryset.filter(warehouse__organization_id__in=organization_ids)
 
     def get_batch(self):
         return self.get_object()
 
     def lifecycle_response(self, batch):
-        return Response({
-            "id": str(batch.pk),
-            "batch_number": batch.batch_number,
-            "status": batch.status,
-            "is_usable": batch.is_usable,
-            "days_until_expiry": batch.days_until_expiry,
-        })
+        return Response(
+            {
+                "id": str(batch.pk),
+                "batch_number": batch.batch_number,
+                "status": batch.status,
+                "is_usable": batch.is_usable,
+                "days_until_expiry": batch.days_until_expiry,
+            }
+        )
 
     @action(detail=True, methods=["post"])
     def quarantine(self, request, pk=None):
@@ -99,9 +99,7 @@ class BatchLifecycleViewSet(viewsets.GenericViewSet):
                 batch_id=batch.pk,
                 performed_by=request.user,
                 reason=request.data.get("reason", ""),
-                reference_number=request.data.get(
-                    "reference_number", ""
-                ),
+                reference_number=request.data.get("reference_number", ""),
             )
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
@@ -123,9 +121,7 @@ class BatchLifecycleViewSet(viewsets.GenericViewSet):
                 batch_id=batch.pk,
                 performed_by=request.user,
                 reason=request.data.get("reason", ""),
-                reference_number=request.data.get(
-                    "reference_number", ""
-                ),
+                reference_number=request.data.get("reference_number", ""),
             )
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
@@ -147,9 +143,7 @@ class BatchLifecycleViewSet(viewsets.GenericViewSet):
                 batch_id=batch.pk,
                 performed_by=request.user,
                 reason=request.data.get("reason", ""),
-                reference_number=request.data.get(
-                    "reference_number", ""
-                ),
+                reference_number=request.data.get("reference_number", ""),
             )
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
@@ -171,9 +165,7 @@ class BatchLifecycleViewSet(viewsets.GenericViewSet):
                 batch_id=batch.pk,
                 performed_by=request.user,
                 reason=request.data.get("reason", ""),
-                reference_number=request.data.get(
-                    "reference_number", ""
-                ),
+                reference_number=request.data.get("reference_number", ""),
             )
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
@@ -195,9 +187,7 @@ class BatchLifecycleViewSet(viewsets.GenericViewSet):
                 batch_id=batch.pk,
                 performed_by=request.user,
                 reason=request.data.get("reason", ""),
-                reference_number=request.data.get(
-                    "reference_number", ""
-                ),
+                reference_number=request.data.get("reference_number", ""),
             )
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
@@ -233,16 +223,12 @@ class BatchExpiryAlertViewSet(viewsets.ReadOnlyModelViewSet):
         active = self.request.query_params.get("active")
 
         if active in ["true", "false"]:
-            queryset = queryset.filter(
-                is_active=(active == "true")
-            )
+            queryset = queryset.filter(is_active=(active == "true"))
 
         level = self.request.query_params.get("level")
 
         if level:
-            queryset = queryset.filter(
-                alert_level=level.upper()
-            )
+            queryset = queryset.filter(alert_level=level.upper())
 
         return queryset
 

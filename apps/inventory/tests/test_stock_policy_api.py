@@ -16,9 +16,7 @@ class StockPolicyAPITests(TestCase):
         )
 
     def test_policy_list_requires_authentication(self):
-        response = self.client.get(
-            "/api/v1/inventory/policies/policies/"
-        )
+        response = self.client.get("/api/v1/inventory/policies/policies/")
 
         self.assertEqual(
             response.status_code,

@@ -7,7 +7,6 @@ from apps.procurement.views import (
     PurchaseOrderViewSet,
 )
 
-
 router = DefaultRouter()
 
 router.register(

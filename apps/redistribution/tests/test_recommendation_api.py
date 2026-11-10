@@ -46,9 +46,7 @@ class RedistributionRecommendationAPITests(TestCase):
 
     def test_user_without_permission_cannot_list_recommendations(self):
 
-        self.client.force_authenticate(
-            user=self.user
-        )
+        self.client.force_authenticate(user=self.user)
 
         response = self.client.get(
             "/api/v1/redistribution/recommendations/recommendations/"

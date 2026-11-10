@@ -19,26 +19,16 @@ class Command(BaseCommand):
         thresholds = options["thresholds"]
 
         if any(value < 0 or value > 3650 for value in thresholds):
-            raise CommandError(
-                "Thresholds must be between 0 and 3650 days."
-            )
+            raise CommandError("Thresholds must be between 0 and 3650 days.")
 
         if len(set(thresholds)) != len(thresholds):
-            raise CommandError(
-                "Thresholds must not contain duplicates."
-            )
+            raise CommandError("Thresholds must not contain duplicates.")
 
         thresholds = tuple(sorted(thresholds))
 
-        result = scan_batch_expiry(
-            thresholds=thresholds
-        )
+        result = scan_batch_expiry(thresholds=thresholds)
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                "Batch expiry scan completed."
-            )
-        )
+        self.stdout.write(self.style.SUCCESS("Batch expiry scan completed."))
 
         for key, value in result.items():
             self.stdout.write(f"{key}: {value}")

@@ -35,6 +35,7 @@ class ConsumptionAnomalyType(models.TextChoices):
     SUDDEN_CHANGE = "SUDDEN_CHANGE", "Sudden consumption change"
     DUPLICATE = "DUPLICATE", "Possible duplicate record"
 
+
 class DailyConsumption(models.Model):
     id = models.UUIDField(
         primary_key=True,
@@ -132,18 +133,13 @@ class DailyConsumption(models.Model):
         if self.batch_id and self.facility_id:
             # A batch must belong to a warehouse associated with
             # the facility's organization.
-            if (
-                self.batch.warehouse.organization_id
-                != self.facility.organization_id
-            ):
+            if self.batch.warehouse.organization_id != self.facility.organization_id:
                 raise ValidationError(
                     "The batch warehouse is outside the facility organization."
                 )
 
         if self.quantity is not None and self.quantity < 0:
-            raise ValidationError(
-                "Consumption quantity cannot be negative."
-            )
+            raise ValidationError("Consumption quantity cannot be negative.")
 
         if self.unit_code:
             self.unit_code = self.unit_code.strip().upper()
@@ -294,9 +290,7 @@ class MonthlyConsumptionReport(models.Model):
             raise ValidationError("Month must be between 1 and 12.")
 
         if self.stockout_days > 31:
-            raise ValidationError(
-                "Stockout days cannot exceed 31."
-            )
+            raise ValidationError("Stockout days cannot exceed 31.")
 
         if self.year is not None and not 2000 <= self.year <= 2100:
             raise ValidationError("Year must be between 2000 and 2100.")
@@ -388,14 +382,10 @@ class ConsumptionAnomaly(models.Model):
             and self.reporting_period_end
             and self.reporting_period_end < self.reporting_period_start
         ):
-            raise ValidationError(
-                "Reporting period end cannot precede its start."
-            )
+            raise ValidationError("Reporting period end cannot precede its start.")
 
         if self.is_resolved and not self.resolved_at:
-            raise ValidationError(
-                "Resolved anomalies require a resolution date."
-            )
+            raise ValidationError("Resolved anomalies require a resolution date.")
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -406,4 +396,4 @@ class ConsumptionAnomaly(models.Model):
             f"{self.anomaly_type} - "
             f"{self.facility.name} - "
             f"{self.medicine.generic_name}"
-        )    
+        )

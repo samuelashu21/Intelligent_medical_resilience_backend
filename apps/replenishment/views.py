@@ -71,9 +71,7 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
         return "replenishment.view"
 
     def get_permissions(self):
-        self.required_permissions = [
-            self.get_required_permission()
-        ]
+        self.required_permissions = [self.get_required_permission()]
 
         return super().get_permissions()
 
@@ -101,9 +99,9 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
             permission_code="replenishment.view",
         )
 
-        return queryset.filter(
-            organization_id__in=organization_ids
-        ).order_by("-requested_at")
+        return queryset.filter(organization_id__in=organization_ids).order_by(
+            "-requested_at"
+        )
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -114,15 +112,17 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         facility_id = serializer.validated_data["facility"]
 
-        facility = Facility.objects.filter(
-            pk=facility_id,
-            is_active=True,
-        ).select_related("organization").first()
+        facility = (
+            Facility.objects.filter(
+                pk=facility_id,
+                is_active=True,
+            )
+            .select_related("organization")
+            .first()
+        )
 
         if not facility:
-            raise ValidationError({
-                "facility": "Active facility not found."
-            })
+            raise ValidationError({"facility": "Active facility not found."})
 
         if not self.request.user.is_superuser:
             if not user_has_permission(
@@ -131,24 +131,25 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
                 facility=facility,
             ):
                 raise PermissionDenied(
-                    "You cannot create replenishment requests "
-                    "for this facility."
+                    "You cannot create replenishment requests " "for this facility."
                 )
 
         items = []
 
         for item in serializer.validated_data["items"]:
-            items.append({
-                "medicine_id": item["medicine"].pk,
-                "requested_quantity": item["requested_quantity"],
-                "unit_code": item["unit_code"],
-                "preferred_supplier_id": (
-                    item["preferred_supplier"].pk
-                    if item.get("preferred_supplier")
-                    else None
-                ),
-                "reason": item.get("reason", ""),
-            })
+            items.append(
+                {
+                    "medicine_id": item["medicine"].pk,
+                    "requested_quantity": item["requested_quantity"],
+                    "unit_code": item["unit_code"],
+                    "preferred_supplier_id": (
+                        item["preferred_supplier"].pk
+                        if item.get("preferred_supplier")
+                        else None
+                    ),
+                    "reason": item.get("reason", ""),
+                }
+            )
 
         request = create_replenishment_request(
             facility_id=facility.pk,
@@ -162,16 +163,12 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
 
         self.created_request = request
 
-
     @action(detail=True, methods=["patch"])
     def revise(self, request, pk=None):
 
         replenishment_request = self.get_object()
 
-        if (
-            replenishment_request.requested_by_id
-            != request.user.pk
-        ):
+        if replenishment_request.requested_by_id != request.user.pk:
             raise PermissionDenied(
                 "Only the original requester can revise this request."
             )
@@ -180,9 +177,7 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
             replenishment_request.status
             != ReplenishmentRequest.Status.REVISION_REQUESTED
         ):
-            raise ValidationError(
-                "Only revision-requested requests can be edited."
-            )
+            raise ValidationError("Only revision-requested requests can be edited.")
 
         allowed_fields = {
             "justification",
@@ -192,18 +187,18 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
         unexpected = set(request.data.keys()) - allowed_fields
 
         if unexpected:
-            raise ValidationError({
-                "detail": (
-                    "Only justification and notes can be edited "
-                    "through this endpoint. Medicine lines require "
-                    "the dedicated line revision workflow."
-                )
-            })
+            raise ValidationError(
+                {
+                    "detail": (
+                        "Only justification and notes can be edited "
+                        "through this endpoint. Medicine lines require "
+                        "the dedicated line revision workflow."
+                    )
+                }
+            )
 
         if "justification" in request.data:
-            replenishment_request.justification = (
-                request.data["justification"]
-            )
+            replenishment_request.justification = request.data["justification"]
 
         if "notes" in request.data:
             replenishment_request.notes = request.data["notes"]
@@ -216,13 +211,8 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
             ]
         )
 
-        return Response(
-            ReplenishmentRequestSerializer(
-                replenishment_request
-            ).data
-        )
+        return Response(ReplenishmentRequestSerializer(replenishment_request).data)
 
-    
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -243,17 +233,12 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
     def submit(self, request, pk=None):
         replenishment_request = self.get_object()
 
-        if (
-            not request.user.is_superuser
-            and not user_has_permission(
-                request.user,
-                "replenishment.submit",
-                facility=replenishment_request.facility,
-            )
+        if not request.user.is_superuser and not user_has_permission(
+            request.user,
+            "replenishment.submit",
+            facility=replenishment_request.facility,
         ):
-            raise PermissionDenied(
-                "You cannot submit this request."
-            )
+            raise PermissionDenied("You cannot submit this request.")
 
         try:
             result = submit_replenishment_request(
@@ -263,9 +248,7 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            self.get_serializer(result).data
-        )
+        return Response(self.get_serializer(result).data)
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
@@ -275,9 +258,7 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
                     "Direct request approval is disabled. "
                     "Use the configured approval-stage workflow."
                 ),
-                "approval_endpoint": (
-                    "/api/v1/replenishment/approvals/stages/"
-                ),
+                "approval_endpoint": ("/api/v1/replenishment/approvals/stages/"),
             },
             status=status.HTTP_409_CONFLICT,
         )
@@ -286,21 +267,14 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
     def reject(self, request, pk=None):
         replenishment_request = self.get_object()
 
-        if (
-            not request.user.is_superuser
-            and not user_has_permission(
-                request.user,
-                "replenishment.approve",
-                facility=replenishment_request.facility,
-            )
+        if not request.user.is_superuser and not user_has_permission(
+            request.user,
+            "replenishment.approve",
+            facility=replenishment_request.facility,
         ):
-            raise PermissionDenied(
-                "You cannot reject this request."
-            )
+            raise PermissionDenied("You cannot reject this request.")
 
-        serializer = ReplenishmentRejectionSerializer(
-            data=request.data
-        )
+        serializer = ReplenishmentRejectionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
@@ -312,29 +286,20 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            self.get_serializer(result).data
-        )
+        return Response(self.get_serializer(result).data)
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
         replenishment_request = self.get_object()
 
-        if (
-            not request.user.is_superuser
-            and not user_has_permission(
-                request.user,
-                "replenishment.cancel",
-                facility=replenishment_request.facility,
-            )
+        if not request.user.is_superuser and not user_has_permission(
+            request.user,
+            "replenishment.cancel",
+            facility=replenishment_request.facility,
         ):
-            raise PermissionDenied(
-                "You cannot cancel this request."
-            )
+            raise PermissionDenied("You cannot cancel this request.")
 
-        serializer = ReplenishmentCancellationSerializer(
-            data=request.data
-        )
+        serializer = ReplenishmentCancellationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
@@ -346,9 +311,7 @@ class ReplenishmentRequestViewSet(viewsets.ModelViewSet):
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            self.get_serializer(result).data
-        )
+        return Response(self.get_serializer(result).data)
 
 
 class PolicyReplenishmentRequestView(APIView):
@@ -358,32 +321,28 @@ class PolicyReplenishmentRequestView(APIView):
     required_permissions = ["replenishment.create"]
 
     def post(self, request):
-        serializer = PolicyRequestCreateSerializer(
-            data=request.data
-        )
+        serializer = PolicyRequestCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        facility = Facility.objects.filter(
-            pk=serializer.validated_data["facility"],
-            is_active=True,
-        ).select_related("organization").first()
+        facility = (
+            Facility.objects.filter(
+                pk=serializer.validated_data["facility"],
+                is_active=True,
+            )
+            .select_related("organization")
+            .first()
+        )
 
         if not facility:
-            raise ValidationError({
-                "facility": "Active facility not found."
-            })
+            raise ValidationError({"facility": "Active facility not found."})
 
-        if (
-            not request.user.is_superuser
-            and not user_has_permission(
-                request.user,
-                "replenishment.create",
-                facility=facility,
-            )
+        if not request.user.is_superuser and not user_has_permission(
+            request.user,
+            "replenishment.create",
+            facility=facility,
         ):
             raise PermissionDenied(
-                "You cannot create replenishment requests "
-                "for this facility."
+                "You cannot create replenishment requests " "for this facility."
             )
 
         try:

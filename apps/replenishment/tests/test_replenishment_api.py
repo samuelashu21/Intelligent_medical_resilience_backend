@@ -16,9 +16,7 @@ class ReplenishmentAPITests(TestCase):
         )
 
     def test_request_list_requires_authentication(self):
-        response = self.client.get(
-            "/api/v1/replenishment/requests/"
-        )
+        response = self.client.get("/api/v1/replenishment/requests/")
 
         self.assertEqual(response.status_code, 401)
 

@@ -85,9 +85,7 @@ class SupplierViewSet(viewsets.ModelViewSet):
                 permission_code="suppliers.view",
             )
 
-            queryset = queryset.filter(
-                organization_id__in=organization_ids
-            )
+            queryset = queryset.filter(organization_id__in=organization_ids)
 
         status_filter = self.request.query_params.get("status")
         if status_filter:
@@ -95,9 +93,7 @@ class SupplierViewSet(viewsets.ModelViewSet):
 
         supplier_type = self.request.query_params.get("supplier_type")
         if supplier_type:
-            queryset = queryset.filter(
-                supplier_type=supplier_type.upper()
-            )
+            queryset = queryset.filter(supplier_type=supplier_type.upper())
 
         search = self.request.query_params.get("search")
         if search:
@@ -119,11 +115,9 @@ class SupplierViewSet(viewsets.ModelViewSet):
 
         if not self.request.user.is_superuser:
             if not organization:
-                raise ValidationError({
-                    "organization": (
-                        "An organization must be specified."
-                    )
-                })
+                raise ValidationError(
+                    {"organization": ("An organization must be specified.")}
+                )
 
             from apps.accounts.services import user_has_permission
 
@@ -187,9 +181,7 @@ class SupplierViewSet(viewsets.ModelViewSet):
         )
 
     def destroy(self, request, *args, **kwargs):
-        raise ValidationError(
-            "Suppliers cannot be deleted. Use the deactivate action."
-        )
+        raise ValidationError("Suppliers cannot be deleted. Use the deactivate action.")
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
@@ -213,9 +205,7 @@ class SupplierViewSet(viewsets.ModelViewSet):
         reason = request.data.get("reason", "").strip()
 
         if not reason:
-            raise ValidationError({
-                "reason": "A rejection reason is required."
-            })
+            raise ValidationError({"reason": "A rejection reason is required."})
 
         try:
             supplier = reject_supplier(
@@ -236,9 +226,7 @@ class SupplierViewSet(viewsets.ModelViewSet):
         reason = request.data.get("reason", "").strip()
 
         if not reason:
-            raise ValidationError({
-                "reason": "A suspension reason is required."
-            })
+            raise ValidationError({"reason": "A suspension reason is required."})
 
         try:
             supplier = suspend_supplier(
@@ -258,9 +246,7 @@ class SupplierViewSet(viewsets.ModelViewSet):
         reason = request.data.get("reason", "").strip()
 
         if not reason:
-            raise ValidationError({
-                "reason": "A deactivation reason is required."
-            })
+            raise ValidationError({"reason": "A deactivation reason is required."})
 
         try:
             supplier = deactivate_supplier(
@@ -277,9 +263,7 @@ class SupplierViewSet(viewsets.ModelViewSet):
     def performance(self, request, pk=None):
         supplier = self.get_object()
 
-        return Response(
-            get_supplier_performance(supplier)
-        )
+        return Response(get_supplier_performance(supplier))
 
 
 class SupplierRelatedViewSet(viewsets.ModelViewSet):
@@ -329,9 +313,7 @@ class SupplierRelatedViewSet(viewsets.ModelViewSet):
         supplier = serializer.validated_data.get("supplier")
 
         if not supplier:
-            raise ValidationError({
-                "supplier": "Supplier is required."
-            })
+            raise ValidationError({"supplier": "Supplier is required."})
 
         if not self.request.user.is_superuser:
             from apps.accounts.services import user_has_permission
@@ -341,9 +323,7 @@ class SupplierRelatedViewSet(viewsets.ModelViewSet):
                 "suppliers.create",
                 organization=supplier.organization,
             ):
-                raise ValidationError(
-                    "You cannot manage this supplier."
-                )
+                raise ValidationError("You cannot manage this supplier.")
 
         serializer.save()
 
@@ -381,9 +361,7 @@ class SupplierLicenseViewSet(SupplierRelatedViewSet):
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            self.get_serializer(license_record).data
-        )
+        return Response(self.get_serializer(license_record).data)
 
 
 class SupplierMedicineViewSet(SupplierRelatedViewSet):
@@ -403,9 +381,7 @@ class SupplierContractViewSet(SupplierRelatedViewSet):
     serializer_class = SupplierContractSerializer
 
 
-class SupplierPerformanceViewSet(
-    viewsets.ReadOnlyModelViewSet
-):
+class SupplierPerformanceViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [HasSupplierPermission]
     required_permissions = ["suppliers.view"]
 
@@ -429,6 +405,4 @@ class SupplierPerformanceViewSet(
             permission_code="suppliers.view",
         )
 
-        return queryset.filter(
-            supplier__organization_id__in=organization_ids
-        )
+        return queryset.filter(supplier__organization_id__in=organization_ids)

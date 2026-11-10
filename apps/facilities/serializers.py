@@ -9,12 +9,12 @@ class FacilityTypeSerializer(serializers.ModelSerializer):
         model = FacilityType
         fields = [
             "id",
-            "code", 
+            "code",
             "name",
             "description",
             "is_active",
             "created_at",
-        ]  
+        ]
         read_only_fields = ["id", "created_at"]
 
 
@@ -32,7 +32,7 @@ class FacilitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Facility
-        fields = [ 
+        fields = [
             "id",
             "name",
             "code",
@@ -59,9 +59,9 @@ class FacilitySerializer(serializers.ModelSerializer):
         )
 
         if organization and not organization.is_active:
-            raise serializers.ValidationError({
-                "organization": "Select an active organization."
-            })
+            raise serializers.ValidationError(
+                {"organization": "Select an active organization."}
+            )
 
         facility_type = attrs.get(
             "facility_type",
@@ -69,8 +69,8 @@ class FacilitySerializer(serializers.ModelSerializer):
         )
 
         if facility_type and not facility_type.is_active:
-            raise serializers.ValidationError({
-                "facility_type": "Select an active facility type."
-            })
+            raise serializers.ValidationError(
+                {"facility_type": "Select an active facility type."}
+            )
 
         return attrs

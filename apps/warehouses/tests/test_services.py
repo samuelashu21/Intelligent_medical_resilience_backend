@@ -137,9 +137,7 @@ class WarehouseServiceTests(TestCase):
         )
 
     def test_temperature_summary_without_readings(self):
-        summary = get_warehouse_temperature_summary(
-            self.warehouse
-        )
+        summary = get_warehouse_temperature_summary(self.warehouse)
 
         self.assertEqual(
             summary["latest_status"],
@@ -147,10 +145,6 @@ class WarehouseServiceTests(TestCase):
         )
 
     def test_capacity_summary_without_snapshots(self):
-        summary = get_warehouse_capacity_summary(
-            self.warehouse
-        )
+        summary = get_warehouse_capacity_summary(self.warehouse)
 
-        self.assertIsNone(
-            summary["utilization_percentage"]
-        )
+        self.assertIsNone(summary["utilization_percentage"])

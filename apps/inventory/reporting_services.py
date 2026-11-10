@@ -24,7 +24,6 @@ from apps.inventory.reporting_config import (
     MAX_REPORTING_AMC_MONTHS,
 )
 
-
 ZERO = Decimal("0")
 
 
@@ -68,9 +67,7 @@ def get_reporting_balances(
     )
 
     if medicine_id:
-        queryset = queryset.filter(
-            batch__medicine_id=medicine_id
-        )
+        queryset = queryset.filter(batch__medicine_id=medicine_id)
 
     if organization_ids is not None:
         queryset = queryset.filter(
@@ -83,9 +80,7 @@ def get_reporting_balances(
         warehouse = balance.batch.warehouse
         facility = get_facility_for_warehouse(warehouse)
 
-        if facility_id and (
-            not facility or str(facility.pk) != str(facility_id)
-        ):
+        if facility_id and (not facility or str(facility.pk) != str(facility_id)):
             continue
 
         results.append((balance, facility))
@@ -224,19 +219,14 @@ def get_medicine_stock_status(
                 consumption_date__month=month,
             ).aggregate(total=Sum("quantity"))
 
-            monthly_values.append(
-                result["total"] or ZERO
-            )
+            monthly_values.append(result["total"] or ZERO)
 
             month -= 1
             if month == 0:
                 month = 12
                 year -= 1
 
-        amc = (
-            sum(monthly_values, ZERO)
-            / Decimal(DEFAULT_AMC_MONTHS)
-        )
+        amc = sum(monthly_values, ZERO) / Decimal(DEFAULT_AMC_MONTHS)
 
         available = item["available"]
 
@@ -258,24 +248,24 @@ def get_medicine_stock_status(
         else:
             status = "ADEQUATE"
 
-        rows.append({
-            "facility_id": str(facility.pk),
-            "facility_code": facility.code,
-            "facility_name": facility.name,
-            "organization_id": str(facility.organization_id),
-            "medicine_id": str(medicine.pk),
-            "medicine_code": medicine.code,
-            "medicine_name": medicine.generic_name,
-            "on_hand": str(item["on_hand"]),
-            "reserved": str(item["reserved"]),
-            "available": str(available),
-            "amc": str(amc),
-            "months_of_stock": (
-                str(coverage) if coverage is not None else None
-            ),
-            "batch_count": item["batches"],
-            "status": status,
-        })
+        rows.append(
+            {
+                "facility_id": str(facility.pk),
+                "facility_code": facility.code,
+                "facility_name": facility.name,
+                "organization_id": str(facility.organization_id),
+                "medicine_id": str(medicine.pk),
+                "medicine_code": medicine.code,
+                "medicine_name": medicine.generic_name,
+                "on_hand": str(item["on_hand"]),
+                "reserved": str(item["reserved"]),
+                "available": str(available),
+                "amc": str(amc),
+                "months_of_stock": (str(coverage) if coverage is not None else None),
+                "batch_count": item["batches"],
+                "status": status,
+            }
+        )
 
     return rows
 
@@ -286,10 +276,7 @@ def get_stockout_report(organization_ids=None, facility_id=None):
         facility_id=facility_id,
     )
 
-    return [
-        row for row in rows
-        if row["status"] == "STOCKOUT"
-    ]
+    return [row for row in rows if row["status"] == "STOCKOUT"]
 
 
 def get_low_stock_report(organization_ids=None, facility_id=None):
@@ -298,10 +285,7 @@ def get_low_stock_report(organization_ids=None, facility_id=None):
         facility_id=facility_id,
     )
 
-    return [
-        row for row in rows
-        if row["status"] in ["CRITICAL", "LOW"]
-    ]
+    return [row for row in rows if row["status"] in ["CRITICAL", "LOW"]]
 
 
 def get_high_coverage_report(
@@ -313,10 +297,7 @@ def get_high_coverage_report(
         facility_id=facility_id,
     )
 
-    return [
-        row for row in rows
-        if row["status"] == "HIGH_COVERAGE"
-    ]
+    return [row for row in rows if row["status"] == "HIGH_COVERAGE"]
 
 
 def get_expiry_report(
@@ -325,9 +306,7 @@ def get_expiry_report(
     days=DEFAULT_NEAR_EXPIRY_DAYS,
 ):
     if not 1 <= days <= 730:
-        raise ValidationError(
-            "Expiry reporting days must be between 1 and 730."
-        )
+        raise ValidationError("Expiry reporting days must be between 1 and 730.")
 
     today = timezone.localdate()
     cutoff = today + timedelta(days=days)
@@ -358,23 +337,23 @@ def get_expiry_report(
         else:
             expiry_status = "NEAR_EXPIRY"
 
-        rows.append({
-            "facility_id": str(facility.pk),
-            "facility_name": facility.name,
-            "medicine_id": str(batch.medicine_id),
-            "medicine_code": batch.medicine.code,
-            "medicine_name": batch.medicine.generic_name,
-            "batch_id": str(batch.pk),
-            "batch_number": batch.batch_number,
-            "expiry_date": batch.expiry_date.isoformat(),
-            "days_until_expiry": (
-                batch.expiry_date - today
-            ).days,
-            "on_hand": str(balance.quantity_on_hand),
-            "reserved": str(balance.quantity_reserved),
-            "available": str(get_available_quantity(balance)),
-            "status": expiry_status,
-        })
+        rows.append(
+            {
+                "facility_id": str(facility.pk),
+                "facility_name": facility.name,
+                "medicine_id": str(batch.medicine_id),
+                "medicine_code": batch.medicine.code,
+                "medicine_name": batch.medicine.generic_name,
+                "batch_id": str(batch.pk),
+                "batch_number": batch.batch_number,
+                "expiry_date": batch.expiry_date.isoformat(),
+                "days_until_expiry": (batch.expiry_date - today).days,
+                "on_hand": str(balance.quantity_on_hand),
+                "reserved": str(balance.quantity_reserved),
+                "available": str(get_available_quantity(balance)),
+                "status": expiry_status,
+            }
+        )
 
     return sorted(
         rows,
@@ -398,10 +377,7 @@ def get_essential_medicine_availability(
         facility_id=facility_id,
     )
 
-    return [
-        row for row in rows
-        if row["medicine"].get("is_essential", False)
-    ]
+    return [row for row in rows if row["medicine"].get("is_essential", False)]
 
 
 def get_stock_dashboard_summary(
@@ -419,9 +395,7 @@ def get_stock_dashboard_summary(
     )
 
     summary = {
-        "facilities_reporting": len({
-            row["facility_id"] for row in rows
-        }),
+        "facilities_reporting": len({row["facility_id"] for row in rows}),
         "medicine_facility_records": len(rows),
         "stockout_count": 0,
         "critical_stock_count": 0,

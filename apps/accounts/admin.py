@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
@@ -73,7 +72,6 @@ class CustomUserAdmin(UserAdmin):
                 )
             },
         ),
-
         (
             "Personal Information",
             {
@@ -83,7 +81,6 @@ class CustomUserAdmin(UserAdmin):
                 )
             },
         ),
-
         (
             "Permissions",
             {
@@ -96,7 +93,6 @@ class CustomUserAdmin(UserAdmin):
                 )
             },
         ),
-
         (
             "Important Dates",
             {
@@ -113,7 +109,6 @@ class CustomUserAdmin(UserAdmin):
             "Create Account",
             {
                 "classes": ("wide",),
-
                 "fields": (
                     "email",
                     "username",
@@ -218,7 +213,7 @@ class UserRoleAdmin(admin.ModelAdmin):
         "facility",
         "valid_from",
         "valid_until",
-      )
+    )
 
     list_filter = (
         "role",
@@ -231,9 +226,7 @@ class UserRoleAdmin(admin.ModelAdmin):
         "role__code",
     )
 
-    readonly_fields = (
-        "assigned_at",
-    )
+    readonly_fields = ("assigned_at",)
 
     autocomplete_fields = [
         "user",

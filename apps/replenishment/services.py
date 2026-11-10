@@ -19,21 +19,20 @@ from apps.inventory.stock_policy_services import (
 
 
 def validate_facility(facility_id, organization_id=None):
-    facility = Facility.objects.filter(
-        pk=facility_id,
-        is_active=True,
-    ).select_related("organization").first()
+    facility = (
+        Facility.objects.filter(
+            pk=facility_id,
+            is_active=True,
+        )
+        .select_related("organization")
+        .first()
+    )
 
     if not facility:
         raise ValidationError("Active facility not found.")
 
-    if (
-        organization_id
-        and facility.organization_id != organization_id
-    ):
-        raise ValidationError(
-            "Facility does not belong to the selected organization."
-        )
+    if organization_id and facility.organization_id != organization_id:
+        raise ValidationError("Facility does not belong to the selected organization.")
 
     return facility
 
@@ -54,14 +53,10 @@ def create_replenishment_request(
     Does not reserve or modify inventory.
     """
     if not justification or not justification.strip():
-        raise ValidationError(
-            "A justification is required."
-        )
+        raise ValidationError("A justification is required.")
 
     if not items:
-        raise ValidationError(
-            "At least one medicine is required."
-        )
+        raise ValidationError("At least one medicine is required.")
 
     if priority not in ReplenishmentRequest.Priority.values:
         raise ValidationError("Invalid request priority.")
@@ -89,36 +84,24 @@ def create_replenishment_request(
             medicine_id = item["medicine_id"]
 
             if str(medicine_id) in seen_medicines:
-                raise ValidationError(
-                    "A medicine can appear only once in a request."
-                )
+                raise ValidationError("A medicine can appear only once in a request.")
 
             seen_medicines.add(str(medicine_id))
 
-            medicine = Medicine.objects.filter(
-                pk=medicine_id
-            ).first()
+            medicine = Medicine.objects.filter(pk=medicine_id).first()
 
             if not medicine:
-                raise ValidationError(
-                    f"Medicine {medicine_id} does not exist."
-                )
+                raise ValidationError(f"Medicine {medicine_id} does not exist.")
 
             quantity = Decimal(str(item["requested_quantity"]))
 
             if quantity <= 0:
-                raise ValidationError(
-                    "Requested quantity must be positive."
-                )
+                raise ValidationError("Requested quantity must be positive.")
 
-            recommended_quantity = Decimal(
-                str(item.get("recommended_quantity", "0"))
-            )
+            recommended_quantity = Decimal(str(item.get("recommended_quantity", "0")))
 
             if recommended_quantity < 0:
-                raise ValidationError(
-                    "Recommended quantity cannot be negative."
-                )
+                raise ValidationError("Recommended quantity cannot be negative.")
 
             ReplenishmentRequestLine.objects.create(
                 request=request,
@@ -149,9 +132,7 @@ def generate_policy_replenishment_request(
     recommended quantity are included.
     """
     if not medicine_ids:
-        raise ValidationError(
-            "Select at least one medicine."
-        )
+        raise ValidationError("Select at least one medicine.")
 
     items = []
 
@@ -162,45 +143,42 @@ def generate_policy_replenishment_request(
         )
 
         if not result.get("policy_configured"):
-            raise ValidationError(
-                f"No active stock policy for medicine {medicine_id}."
-            )
+            raise ValidationError(f"No active stock policy for medicine {medicine_id}.")
 
-        quantity = Decimal(
-            result["recommended_quantity"]
-        )
+        quantity = Decimal(result["recommended_quantity"])
 
         if quantity <= 0:
             continue
 
-        medicine = Medicine.objects.get(
-            pk=medicine_id
-        )
+        medicine = Medicine.objects.get(pk=medicine_id)
 
         # Unit codes should be standardized with the medicine's
         # measurement unit in your Phase 11 model.
-        unit_code = getattr(
-            medicine,
-            "unit_code",
-            None,
-        ) or "UNIT"
+        unit_code = (
+            getattr(
+                medicine,
+                "unit_code",
+                None,
+            )
+            or "UNIT"
+        )
 
-        items.append({
-            "medicine_id": medicine.pk,
-            "requested_quantity": quantity,
-            "recommended_quantity": quantity,
-            "unit_code": unit_code,
-            "reason": (
-                f"Generated from stock policy. "
-                f"Policy status: {result['status']}; "
-                f"reorder point: {result['reorder_point']}."
-            ),
-        })
+        items.append(
+            {
+                "medicine_id": medicine.pk,
+                "requested_quantity": quantity,
+                "recommended_quantity": quantity,
+                "unit_code": unit_code,
+                "reason": (
+                    f"Generated from stock policy. "
+                    f"Policy status: {result['status']}; "
+                    f"reorder point: {result['reorder_point']}."
+                ),
+            }
+        )
 
     if not items:
-        raise ValidationError(
-            "No positive replenishment recommendations were found."
-        )
+        raise ValidationError("No positive replenishment recommendations were found.")
 
     return create_replenishment_request(
         facility_id=facility_id,
@@ -218,9 +196,7 @@ def submit_replenishment_request(request_id, user):
         initialize_approval_workflow,
     )
 
-    request = ReplenishmentRequest.objects.select_for_update().get(
-        pk=request_id
-    )
+    request = ReplenishmentRequest.objects.select_for_update().get(pk=request_id)
 
     if request.status not in [
         ReplenishmentRequest.Status.DRAFT,
@@ -231,14 +207,10 @@ def submit_replenishment_request(request_id, user):
         )
 
     if request.requested_by_id != user.pk:
-        raise ValidationError(
-            "Only the requester can submit this request."
-        )
+        raise ValidationError("Only the requester can submit this request.")
 
     if not request.items.exists():
-        raise ValidationError(
-            "A request must contain at least one medicine."
-        )
+        raise ValidationError("A request must contain at least one medicine.")
 
     # Remove old unfinished stages when a revised request is resubmitted.
     if request.status == ReplenishmentRequest.Status.REVISION_REQUESTED:
@@ -278,25 +250,17 @@ def approve_replenishment_request(
     user,
     approved_quantities=None,
 ):
-    request = ReplenishmentRequest.objects.select_for_update().get(
-        pk=request_id
-    )
+    request = ReplenishmentRequest.objects.select_for_update().get(pk=request_id)
 
     if request.status != ReplenishmentRequest.Status.SUBMITTED:
-        raise ValidationError(
-            "Only submitted requests can be approved."
-        )
+        raise ValidationError("Only submitted requests can be approved.")
 
     if request.requested_by_id == user.pk:
-        raise ValidationError(
-            "The requester cannot approve their own request."
-        )
+        raise ValidationError("The requester cannot approve their own request.")
 
     approved_quantities = approved_quantities or {}
 
-    lines = list(
-        request.items.select_for_update().all()
-    )
+    lines = list(request.items.select_for_update().all())
 
     for line in lines:
         value = approved_quantities.get(
@@ -307,9 +271,7 @@ def approve_replenishment_request(
         quantity = Decimal(str(value))
 
         if quantity < 0:
-            raise ValidationError(
-                "Approved quantities cannot be negative."
-            )
+            raise ValidationError("Approved quantities cannot be negative.")
 
         line.approved_quantity = quantity
         line.save(
@@ -319,10 +281,7 @@ def approve_replenishment_request(
             ]
         )
 
-    if not any(
-        line.approved_quantity > 0
-        for line in lines
-    ):
+    if not any(line.approved_quantity > 0 for line in lines):
         raise ValidationError(
             "At least one medicine must have a positive approved quantity."
         )
@@ -349,24 +308,16 @@ def reject_replenishment_request(
     user,
     reason,
 ):
-    request = ReplenishmentRequest.objects.select_for_update().get(
-        pk=request_id
-    )
+    request = ReplenishmentRequest.objects.select_for_update().get(pk=request_id)
 
     if request.status != ReplenishmentRequest.Status.SUBMITTED:
-        raise ValidationError(
-            "Only submitted requests can be rejected."
-        )
+        raise ValidationError("Only submitted requests can be rejected.")
 
     if request.requested_by_id == user.pk:
-        raise ValidationError(
-            "The requester cannot reject their own request."
-        )
+        raise ValidationError("The requester cannot reject their own request.")
 
     if not reason or not reason.strip():
-        raise ValidationError(
-            "A rejection reason is required."
-        )
+        raise ValidationError("A rejection reason is required.")
 
     request.status = ReplenishmentRequest.Status.REJECTED
     request.rejected_by = user
@@ -392,22 +343,15 @@ def cancel_replenishment_request(
     user,
     reason="",
 ):
-    request = ReplenishmentRequest.objects.select_for_update().get(
-        pk=request_id
-    )
+    request = ReplenishmentRequest.objects.select_for_update().get(pk=request_id)
 
     if request.status not in [
         ReplenishmentRequest.Status.DRAFT,
         ReplenishmentRequest.Status.SUBMITTED,
     ]:
-        raise ValidationError(
-            "Only draft or submitted requests can be cancelled."
-        )
+        raise ValidationError("Only draft or submitted requests can be cancelled.")
 
-    if (
-        request.requested_by_id != user.pk
-        and not user.is_superuser
-    ):
+    if request.requested_by_id != user.pk and not user.is_superuser:
         raise ValidationError(
             "Only the requester or an authorized administrator "
             "can cancel this request."
@@ -418,9 +362,7 @@ def cancel_replenishment_request(
     request.cancelled_at = timezone.now()
 
     if reason:
-        request.notes = (
-            f"{request.notes}\nCancellation: {reason}".strip()
-        )
+        request.notes = f"{request.notes}\nCancellation: {reason}".strip()
 
     request.save(
         update_fields=[

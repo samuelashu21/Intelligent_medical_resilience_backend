@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -24,10 +23,10 @@ from apps.procurement.models import (
     PurchaseOrderStatus,
 )
 
-
 # ============================================================
 # PROCUREMENT AUDIT
 # ============================================================
+
 
 def record_procurement_audit(
     *,
@@ -59,6 +58,7 @@ def record_procurement_audit(
 # SUPPLIER VALIDATION
 # ============================================================
 
+
 def validate_approved_supplier(supplier_id):
     supplier = Supplier.objects.filter(
         pk=supplier_id,
@@ -76,6 +76,7 @@ def validate_approved_supplier(supplier_id):
 # ============================================================
 # PURCHASE REQUISITION
 # ============================================================
+
 
 @transaction.atomic
 def create_purchase_requisition(
@@ -100,20 +101,18 @@ def create_purchase_requisition(
         )
 
     if hasattr(request, "purchase_requisition"):
-        raise ValidationError(
-            "A purchase requisition already exists for this request."
-        )
+        raise ValidationError("A purchase requisition already exists for this request.")
 
     source_lines = list(
-        ReplenishmentRequestLine.objects.filter(
-            request=request
-        ).select_related("medicine")
+        ReplenishmentRequestLine.objects.filter(request=request).select_related(
+            "medicine"
+        )
     )
 
     approved_lines = [
-        line for line in source_lines
-        if line.approved_quantity is not None
-        and line.approved_quantity > 0
+        line
+        for line in source_lines
+        if line.approved_quantity is not None and line.approved_quantity > 0
     ]
 
     if not approved_lines:
@@ -125,9 +124,7 @@ def create_purchase_requisition(
         replenishment_request=request,
         organization=request.organization,
         requested_by=user,
-        justification=(
-            justification or request.justification
-        ),
+        justification=(justification or request.justification),
         notes=notes,
     )
 
@@ -166,19 +163,13 @@ def create_purchase_requisition(
 
 @transaction.atomic
 def submit_purchase_requisition(requisition_id, user):
-    requisition = PurchaseRequisition.objects.select_for_update().get(
-        pk=requisition_id
-    )
+    requisition = PurchaseRequisition.objects.select_for_update().get(pk=requisition_id)
 
     if requisition.status != PurchaseRequisitionStatus.DRAFT:
-        raise ValidationError(
-            "Only draft requisitions can be submitted."
-        )
+        raise ValidationError("Only draft requisitions can be submitted.")
 
     if not requisition.items.exists():
-        raise ValidationError(
-            "A requisition must contain at least one item."
-        )
+        raise ValidationError("A requisition must contain at least one item.")
 
     requisition.status = PurchaseRequisitionStatus.SUBMITTED
     requisition.submitted_by = user
@@ -198,14 +189,10 @@ def submit_purchase_requisition(requisition_id, user):
 
 @transaction.atomic
 def approve_purchase_requisition(requisition_id, user):
-    requisition = PurchaseRequisition.objects.select_for_update().get(
-        pk=requisition_id
-    )
+    requisition = PurchaseRequisition.objects.select_for_update().get(pk=requisition_id)
 
     if requisition.status != PurchaseRequisitionStatus.SUBMITTED:
-        raise ValidationError(
-            "Only submitted requisitions can be approved."
-        )
+        raise ValidationError("Only submitted requisitions can be approved.")
 
     if requisition.requested_by_id == user.pk:
         raise ValidationError(
@@ -232,6 +219,7 @@ def approve_purchase_requisition(requisition_id, user):
 # SUPPLIER QUOTATIONS
 # ============================================================
 
+
 @transaction.atomic
 def add_supplier_quotation(
     *,
@@ -248,9 +236,7 @@ def add_supplier_quotation(
     delivery_terms="",
     notes="",
 ):
-    requisition = PurchaseRequisition.objects.select_for_update().get(
-        pk=requisition_id
-    )
+    requisition = PurchaseRequisition.objects.select_for_update().get(pk=requisition_id)
 
     if requisition.status not in [
         PurchaseRequisitionStatus.SUBMITTED,
@@ -263,9 +249,7 @@ def add_supplier_quotation(
     supplier = validate_approved_supplier(supplier_id)
 
     if not items:
-        raise ValidationError(
-            "A supplier quotation must contain at least one item."
-        )
+        raise ValidationError("A supplier quotation must contain at least one item.")
 
     quotation = SupplierQuotation.objects.create(
         requisition=requisition,
@@ -293,14 +277,12 @@ def add_supplier_quotation(
 
         seen_lines.add(str(line_id))
 
-        requisition_line = requisition.items.select_for_update().filter(
-            pk=line_id
-        ).first()
+        requisition_line = (
+            requisition.items.select_for_update().filter(pk=line_id).first()
+        )
 
         if not requisition_line:
-            raise ValidationError(
-                "A quoted line does not belong to this requisition."
-            )
+            raise ValidationError("A quoted line does not belong to this requisition.")
 
         SupplierQuotationLine.objects.create(
             quotation=quotation,
@@ -317,12 +299,10 @@ def add_supplier_quotation(
 # QUOTATION EVALUATION
 # ============================================================
 
+
 def calculate_quotation_total(quotation):
     total = sum(
-        (
-            line.line_total
-            for line in quotation.items.all()
-        ),
+        (line.line_total for line in quotation.items.all()),
         Decimal("0"),
     )
 
@@ -338,18 +318,12 @@ def evaluate_quotation(quotation):
     """
 
     if quotation.valid_until < timezone.localdate():
-        raise ValidationError(
-            "This quotation has expired."
-        )
+        raise ValidationError("This quotation has expired.")
 
-    lines = list(
-        quotation.items.select_related("requisition_line")
-    )
+    lines = list(quotation.items.select_related("requisition_line"))
 
     if not lines:
-        raise ValidationError(
-            "The quotation contains no line items."
-        )
+        raise ValidationError("The quotation contains no line items.")
 
     return {
         "quotation_id": str(quotation.pk),
@@ -367,6 +341,7 @@ def evaluate_quotation(quotation):
 # SUPPLIER QUOTATION SELECTION
 # ============================================================
 
+
 @transaction.atomic
 def select_supplier_quotation(
     *,
@@ -374,10 +349,14 @@ def select_supplier_quotation(
     user,
     justification,
 ):
-    quotation = SupplierQuotation.objects.select_for_update().select_related(
-        "requisition",
-        "supplier",
-    ).get(pk=quotation_id)
+    quotation = (
+        SupplierQuotation.objects.select_for_update()
+        .select_related(
+            "requisition",
+            "supplier",
+        )
+        .get(pk=quotation_id)
+    )
 
     requisition = PurchaseRequisition.objects.select_for_update().get(
         pk=quotation.requisition_id
@@ -392,14 +371,10 @@ def select_supplier_quotation(
         QuotationStatus.RECEIVED,
         QuotationStatus.UNDER_REVIEW,
     ]:
-        raise ValidationError(
-            "This quotation is not eligible for selection."
-        )
+        raise ValidationError("This quotation is not eligible for selection.")
 
     if quotation.valid_until < timezone.localdate():
-        raise ValidationError(
-            "Expired quotations cannot be selected."
-        )
+        raise ValidationError("Expired quotations cannot be selected.")
 
     validate_approved_supplier(quotation.supplier_id)
 
@@ -410,9 +385,7 @@ def select_supplier_quotation(
         )
     )
 
-    required_line_ids = set(
-        requisition.items.values_list("id", flat=True)
-    )
+    required_line_ids = set(requisition.items.values_list("id", flat=True))
 
     if quoted_line_ids != required_line_ids:
         raise ValidationError(
@@ -424,30 +397,25 @@ def select_supplier_quotation(
     # VALIDATE COMPLETE REQUISITION QUANTITIES
     # --------------------------------------------------------
 
-    quotation_lines = quotation.items.select_related(
-        "requisition_line"
-    )
+    quotation_lines = quotation.items.select_related("requisition_line")
 
     for quotation_line in quotation_lines:
-        if (
-            quotation_line.quantity
-            != quotation_line.requisition_line.quantity
-        ):
+        if quotation_line.quantity != quotation_line.requisition_line.quantity:
             raise ValidationError(
                 "This procurement workflow requires each quotation "
                 "to cover the complete requisition quantity."
             )
 
     if not justification or len(justification.strip()) < 10:
-        raise ValidationError(
-            "Provide a meaningful supplier-selection justification."
-        )
+        raise ValidationError("Provide a meaningful supplier-selection justification.")
 
     # Only one quotation may be selected for this requisition
     # in the initial single-supplier purchasing design.
-    if requisition.quotations.filter(
-        status=QuotationStatus.SELECTED
-    ).exclude(pk=quotation.pk).exists():
+    if (
+        requisition.quotations.filter(status=QuotationStatus.SELECTED)
+        .exclude(pk=quotation.pk)
+        .exists()
+    ):
         raise ValidationError(
             "A quotation has already been selected for this requisition."
         )
@@ -456,9 +424,7 @@ def select_supplier_quotation(
     quotation.save(update_fields=["status"])
 
     requisition.notes = (
-        requisition.notes
-        + "\nSupplier selection: "
-        + justification.strip()
+        requisition.notes + "\nSupplier selection: " + justification.strip()
     ).strip()
 
     requisition.save(update_fields=["notes", "updated_at"])
@@ -470,6 +436,7 @@ def select_supplier_quotation(
 # PURCHASE ORDER CREATION
 # ============================================================
 
+
 @transaction.atomic
 def create_purchase_order(
     *,
@@ -480,10 +447,14 @@ def create_purchase_order(
     expected_delivery_date=None,
     notes="",
 ):
-    quotation = SupplierQuotation.objects.select_for_update().select_related(
-        "requisition",
-        "supplier",
-    ).get(pk=quotation_id)
+    quotation = (
+        SupplierQuotation.objects.select_for_update()
+        .select_related(
+            "requisition",
+            "supplier",
+        )
+        .get(pk=quotation_id)
+    )
 
     requisition = PurchaseRequisition.objects.select_for_update().get(
         pk=quotation.requisition_id
@@ -502,24 +473,16 @@ def create_purchase_order(
     validate_approved_supplier(quotation.supplier_id)
 
     if quotation.purchase_orders.exists():
-        raise ValidationError(
-            "A purchase order already exists for this quotation."
-        )
+        raise ValidationError("A purchase order already exists for this quotation.")
 
     tax_amount = Decimal(str(tax_amount))
     shipping_amount = Decimal(str(shipping_amount))
 
     if tax_amount < 0 or shipping_amount < 0:
-        raise ValidationError(
-            "Tax and shipping amounts cannot be negative."
-        )
+        raise ValidationError("Tax and shipping amounts cannot be negative.")
 
-    if expected_delivery_date and (
-        expected_delivery_date < timezone.localdate()
-    ):
-        raise ValidationError(
-            "Expected delivery date cannot be in the past."
-        )
+    if expected_delivery_date and (expected_delivery_date < timezone.localdate()):
+        raise ValidationError("Expected delivery date cannot be in the past.")
 
     quotation_lines = list(
         quotation.items.select_related(
@@ -533,10 +496,7 @@ def create_purchase_order(
     # --------------------------------------------------------
 
     subtotal = sum(
-        (
-            line.line_total.quantize(Decimal("0.0001"))
-            for line in quotation_lines
-        ),
+        (line.line_total.quantize(Decimal("0.0001")) for line in quotation_lines),
         Decimal("0.0000"),
     )
 
@@ -566,9 +526,7 @@ def create_purchase_order(
     # --------------------------------------------------------
 
     for quoted_line in quotation_lines:
-        line_total = quoted_line.line_total.quantize(
-            Decimal("0.0001")
-        )
+        line_total = quoted_line.line_total.quantize(Decimal("0.0001"))
 
         PurchaseOrderLine.objects.create(
             purchase_order=order,
@@ -589,9 +547,7 @@ def create_purchase_order(
         action="PURCHASE_ORDER_CREATED",
         target_type="PurchaseOrder",
         target_id=order.pk,
-        description=(
-            f"Purchase order {order.order_number} created."
-        ),
+        description=(f"Purchase order {order.order_number} created."),
         organization=order.organization,
         metadata={
             "supplier_id": str(order.supplier_id),
@@ -602,9 +558,7 @@ def create_purchase_order(
     )
 
     requisition.status = PurchaseRequisitionStatus.CONVERTED
-    requisition.save(
-        update_fields=["status", "updated_at"]
-    )
+    requisition.save(update_fields=["status", "updated_at"])
 
     return order
 
@@ -613,19 +567,16 @@ def create_purchase_order(
 # PURCHASE ORDER SUBMISSION
 # ============================================================
 
+
 @transaction.atomic
 def submit_purchase_order_for_approval(order_id, user):
     order = PurchaseOrder.objects.select_for_update().get(pk=order_id)
 
     if order.status != PurchaseOrderStatus.DRAFT:
-        raise ValidationError(
-            "Only draft purchase orders can be submitted."
-        )
+        raise ValidationError("Only draft purchase orders can be submitted.")
 
     if not order.items.exists():
-        raise ValidationError(
-            "A purchase order must contain at least one line."
-        )
+        raise ValidationError("A purchase order must contain at least one line.")
 
     order.status = PurchaseOrderStatus.PENDING_APPROVAL
 
@@ -643,14 +594,13 @@ def submit_purchase_order_for_approval(order_id, user):
 # PURCHASE ORDER APPROVAL
 # ============================================================
 
+
 @transaction.atomic
 def approve_purchase_order(order_id, user):
     order = PurchaseOrder.objects.select_for_update().get(pk=order_id)
 
     if order.status != PurchaseOrderStatus.PENDING_APPROVAL:
-        raise ValidationError(
-            "Only purchase orders pending approval can be approved."
-        )
+        raise ValidationError("Only purchase orders pending approval can be approved.")
 
     if order.created_by_id == user.pk:
         raise ValidationError(
@@ -679,14 +629,13 @@ def approve_purchase_order(order_id, user):
 # SEND PURCHASE ORDER
 # ============================================================
 
+
 @transaction.atomic
 def send_purchase_order(order_id, user):
     order = PurchaseOrder.objects.select_for_update().get(pk=order_id)
 
     if order.status != PurchaseOrderStatus.APPROVED:
-        raise ValidationError(
-            "Only approved purchase orders can be sent."
-        )
+        raise ValidationError("Only approved purchase orders can be sent.")
 
     order.status = PurchaseOrderStatus.SENT
     order.sent_at = timezone.now()
@@ -706,14 +655,13 @@ def send_purchase_order(order_id, user):
 # ACKNOWLEDGE PURCHASE ORDER
 # ============================================================
 
+
 @transaction.atomic
 def acknowledge_purchase_order(order_id, user):
     order = PurchaseOrder.objects.select_for_update().get(pk=order_id)
 
     if order.status != PurchaseOrderStatus.SENT:
-        raise ValidationError(
-            "Only sent purchase orders can be acknowledged."
-        )
+        raise ValidationError("Only sent purchase orders can be acknowledged.")
 
     order.status = PurchaseOrderStatus.ACKNOWLEDGED
 
@@ -725,4 +673,3 @@ def acknowledge_purchase_order(order_id, user):
     )
 
     return order
- 

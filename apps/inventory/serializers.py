@@ -109,10 +109,7 @@ class StockBatchSerializer(serializers.ModelSerializer):
 
         balance = get_stock_balance(obj)
 
-        return {
-            key: str(value)
-            for key, value in balance.items()
-        }
+        return {key: str(value) for key, value in balance.items()}
 
     def validate(self, attrs):
         medicine = attrs.get(
@@ -137,19 +134,19 @@ class StockBatchSerializer(serializers.ModelSerializer):
 
         if presentation and medicine:
             if presentation.medicine_id != medicine.pk:
-                raise serializers.ValidationError({
-                    "presentation": (
-                        "Presentation does not belong to this medicine."
-                    )
-                })
+                raise serializers.ValidationError(
+                    {"presentation": ("Presentation does not belong to this medicine.")}
+                )
 
         if warehouse and location:
             if location.zone.warehouse_id != warehouse.pk:
-                raise serializers.ValidationError({
-                    "location": (
-                        "Storage location does not belong to this warehouse."
-                    )
-                })
+                raise serializers.ValidationError(
+                    {
+                        "location": (
+                            "Storage location does not belong to this warehouse."
+                        )
+                    }
+                )
 
         return attrs
 
@@ -231,8 +228,8 @@ class StockReservationSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs.get("quantity", 0) <= 0:
-            raise serializers.ValidationError({
-                "quantity": "Quantity must be positive."
-            })
+            raise serializers.ValidationError(
+                {"quantity": "Quantity must be positive."}
+            )
 
         return attrs

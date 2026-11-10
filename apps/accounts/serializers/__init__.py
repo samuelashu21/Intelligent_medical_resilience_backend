@@ -1,4 +1,3 @@
-
 from .auth_serializers import (
     CustomTokenObtainPairSerializer,
     UserProfileSerializer,

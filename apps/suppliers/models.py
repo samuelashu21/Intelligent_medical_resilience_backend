@@ -9,8 +9,7 @@ from django.utils import timezone
 
 def supplier_document_upload_path(instance, filename):
     return (
-        f"supplier_documents/{instance.supplier_id}/"
-        f"{uuid.uuid4().hex}_{filename}"
+        f"supplier_documents/{instance.supplier_id}/" f"{uuid.uuid4().hex}_{filename}"
     )
 
 
@@ -136,18 +135,18 @@ class Supplier(models.Model):
         self.name = self.name.strip()
 
         if not self.name:
-            raise ValidationError({
-                "name": "Supplier name is required."
-            })
+            raise ValidationError({"name": "Supplier name is required."})
 
         if self.status == SupplierStatus.APPROVED:
             if not self.approved_by_id or not self.approved_at:
-                raise ValidationError({
-                    "status": (
-                        "An approved supplier must have an approver "
-                        "and approval timestamp."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "status": (
+                            "An approved supplier must have an approver "
+                            "and approval timestamp."
+                        )
+                    }
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -275,15 +274,15 @@ class SupplierAddress(models.Model):
 
         if self.latitude is not None:
             if not -90 <= self.latitude <= 90:
-                raise ValidationError({
-                    "latitude": "Latitude must be between -90 and 90."
-                })
+                raise ValidationError(
+                    {"latitude": "Latitude must be between -90 and 90."}
+                )
 
         if self.longitude is not None:
             if not -180 <= self.longitude <= 180:
-                raise ValidationError({
-                    "longitude": "Longitude must be between -180 and 180."
-                })
+                raise ValidationError(
+                    {"longitude": "Longitude must be between -180 and 180."}
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -374,22 +373,20 @@ class SupplierLicense(models.Model):
         ]
 
     def clean(self):
-        if (
-            self.issue_date
-            and self.expiry_date
-            and self.expiry_date < self.issue_date
-        ):
-            raise ValidationError({
-                "expiry_date": "Expiry cannot be earlier than issue date."
-            })
+        if self.issue_date and self.expiry_date and self.expiry_date < self.issue_date:
+            raise ValidationError(
+                {"expiry_date": "Expiry cannot be earlier than issue date."}
+            )
 
         if self.verification_status == "VERIFIED":
             if not self.verified_by_id or not self.verified_at:
-                raise ValidationError({
-                    "verification_status": (
-                        "Verified licenses require a verifier and timestamp."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "verification_status": (
+                            "Verified licenses require a verifier and timestamp."
+                        )
+                    }
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -397,10 +394,7 @@ class SupplierLicense(models.Model):
 
     @property
     def is_expired(self):
-        return bool(
-            self.expiry_date
-            and self.expiry_date < timezone.localdate()
-        )
+        return bool(self.expiry_date and self.expiry_date < timezone.localdate())
 
     def __str__(self):
         return f"{self.license_type}: {self.license_number}"
@@ -479,10 +473,7 @@ class SupplierMedicine(models.Model):
                 nulls_distinct=False,
             ),
             models.CheckConstraint(
-                condition=(
-                    Q(unit_price__isnull=True)
-                    | Q(unit_price__gte=0)
-                ),
+                condition=(Q(unit_price__isnull=True) | Q(unit_price__gte=0)),
                 name="supplier_unit_price_nonnegative",
             ),
             models.CheckConstraint(
@@ -501,22 +492,22 @@ class SupplierMedicine(models.Model):
         super().clean()
 
         if self.unit_price is not None and self.unit_price < 0:
-            raise ValidationError({
-                "unit_price": "Unit price cannot be negative."
-            })
+            raise ValidationError({"unit_price": "Unit price cannot be negative."})
 
         if self.minimum_order_quantity <= 0:
-            raise ValidationError({
-                "minimum_order_quantity": "Minimum order must be positive."
-            })
+            raise ValidationError(
+                {"minimum_order_quantity": "Minimum order must be positive."}
+            )
 
         if self.presentation_id:
             if self.presentation.medicine_id != self.medicine_id:
-                raise ValidationError({
-                    "presentation": (
-                        "Presentation must belong to the selected medicine."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "presentation": (
+                            "Presentation must belong to the selected medicine."
+                        )
+                    }
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -598,10 +589,7 @@ class SupplierContract(models.Model):
                 name="supplier_contract_valid_dates",
             ),
             models.CheckConstraint(
-                condition=(
-                    Q(contract_value__isnull=True)
-                    | Q(contract_value__gte=0)
-                ),
+                condition=(Q(contract_value__isnull=True) | Q(contract_value__gte=0)),
                 name="supplier_contract_value_nonnegative",
             ),
         ]
@@ -609,9 +597,9 @@ class SupplierContract(models.Model):
     def clean(self):
         if self.end_date and self.start_date:
             if self.end_date < self.start_date:
-                raise ValidationError({
-                    "end_date": "Contract end date must follow its start date."
-                })
+                raise ValidationError(
+                    {"end_date": "Contract end date must follow its start date."}
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -692,9 +680,9 @@ class SupplierPerformanceRecord(models.Model):
         super().clean()
 
         if self.contract_id and self.contract.supplier_id != self.supplier_id:
-            raise ValidationError({
-                "contract": "Contract must belong to this supplier."
-            })
+            raise ValidationError(
+                {"contract": "Contract must belong to this supplier."}
+            )
 
         if (
             self.actual_delivery_date
@@ -709,30 +697,21 @@ class SupplierPerformanceRecord(models.Model):
         if not self.actual_delivery_date:
             return None
 
-        return (
-            self.actual_delivery_date
-            <= self.expected_delivery_date
-        )
+        return self.actual_delivery_date <= self.expected_delivery_date
 
     @property
     def fulfillment_rate(self):
         if not self.ordered_quantity:
             return 0
 
-        return (
-            self.received_quantity
-            / self.ordered_quantity
-        ) * 100
+        return (self.received_quantity / self.ordered_quantity) * 100
 
     @property
     def quality_acceptance_rate(self):
         if not self.received_quantity:
             return 0
 
-        return (
-            self.quality_accepted_quantity
-            / self.received_quantity
-        ) * 100
+        return (self.quality_accepted_quantity / self.received_quantity) * 100
 
     def __str__(self):
         return f"{self.supplier.name} - {self.reference_number}"

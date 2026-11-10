@@ -1,4 +1,3 @@
-
 from decimal import Decimal, ROUND_DOWN
 from math import radians, sin, cos, sqrt, atan2
 from datetime import timedelta
@@ -39,7 +38,6 @@ from apps.redistribution.recommendation_models import (
     RecommendationPriority,
 )
 
-
 ZERO = Decimal("0")
 ONE = Decimal("1")
 THIRTY = Decimal("30")
@@ -69,9 +67,7 @@ def calculate_daily_demand(
         number_of_months=months,
     )
 
-    average = decimal_value(
-        result.get("average")
-    )
+    average = decimal_value(result.get("average"))
 
     months_included = result.get(
         "months_included",
@@ -98,11 +94,7 @@ def calculate_stock_coverage_days(
     if daily_demand <= ZERO:
         return None
 
-    return (
-        decimal_value(available) / daily_demand
-    ).quantize(
-        Decimal("0.01")
-    )
+    return (decimal_value(available) / daily_demand).quantize(Decimal("0.01"))
 
 
 def get_effective_stock_policy(
@@ -124,24 +116,29 @@ def get_effective_stock_policy(
         medicine_id=medicine_id,
         status="ACTIVE",
         effective_from__lte=today,
-    ).filter(
-        Q(effective_until__isnull=True)
-        | Q(effective_until__gte=today)
-    )
+    ).filter(Q(effective_until__isnull=True) | Q(effective_until__gte=today))
 
     # Facility-specific policy takes precedence.
-    facility_policy = active.filter(
-        facility=facility,
-    ).order_by("-effective_from").first()
+    facility_policy = (
+        active.filter(
+            facility=facility,
+        )
+        .order_by("-effective_from")
+        .first()
+    )
 
     if facility_policy:
         return facility_policy
 
     # Fall back to organization-wide default policy.
-    return active.filter(
-        facility__isnull=True,
-        organization=facility.organization,
-    ).order_by("-effective_from").first()
+    return (
+        active.filter(
+            facility__isnull=True,
+            organization=facility.organization,
+        )
+        .order_by("-effective_from")
+        .first()
+    )
 
 
 def get_facility_eligible_stock(
@@ -157,25 +154,17 @@ def get_facility_eligible_stock(
 
     today = timezone.localdate()
 
-    available_expression = (
-        F("quantity_on_hand")
-        - F("quantity_reserved")
-    )
+    available_expression = F("quantity_on_hand") - F("quantity_reserved")
 
     queryset = (
-        InventoryBalance.objects
-        .filter(
+        InventoryBalance.objects.filter(
             batch__medicine_id=medicine_id,
             batch__warehouse__facility_id=facility_id,
             batch__warehouse__is_active=True,
             batch__expiry_date__gte=today,
         )
-        .annotate(
-            available_quantity=available_expression
-        )
-        .filter(
-            available_quantity__gt=ZERO
-        )
+        .annotate(available_quantity=available_expression)
+        .filter(available_quantity__gt=ZERO)
         .select_related(
             "batch",
             "batch__warehouse",
@@ -241,15 +230,9 @@ def get_facility_stock_profile(
     )
 
     if policy:
-        minimum_stock = decimal_value(
-            policy.minimum_stock
-        )
-        maximum_stock = decimal_value(
-            policy.maximum_stock
-        )
-        safety_stock = decimal_value(
-            policy.safety_stock
-        )
+        minimum_stock = decimal_value(policy.minimum_stock)
+        maximum_stock = decimal_value(policy.maximum_stock)
+        safety_stock = decimal_value(policy.safety_stock)
     else:
         minimum_stock = None
         maximum_stock = None
@@ -295,17 +278,11 @@ def calculate_operational_target(profile):
     if daily_demand is None:
         return minimum_stock
 
-    lead_time = Decimal(
-        str(policy.lead_time_days)
-    )
+    lead_time = Decimal(str(policy.lead_time_days))
 
-    review_period = Decimal(
-        str(policy.review_period_days)
-    )
+    review_period = Decimal(str(policy.review_period_days))
 
-    demand_target = (
-        daily_demand * (lead_time + review_period)
-    ) + safety_stock
+    demand_target = (daily_demand * (lead_time + review_period)) + safety_stock
 
     return max(
         minimum_stock,
@@ -395,12 +372,7 @@ def calculate_haversine_distance(
     delta_lat = lat2 - lat1
     delta_lon = lon2 - lon1
 
-    a = (
-        sin(delta_lat / 2) ** 2
-        + cos(lat1)
-        * cos(lat2)
-        * sin(delta_lon / 2) ** 2
-    )
+    a = sin(delta_lat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(delta_lon / 2) ** 2
 
     c = 2 * atan2(
         sqrt(a),
@@ -409,11 +381,7 @@ def calculate_haversine_distance(
 
     earth_radius_km = 6371.0
 
-    return Decimal(
-        str(earth_radius_km * c)
-    ).quantize(
-        Decimal("0.01")
-    )
+    return Decimal(str(earth_radius_km * c)).quantize(Decimal("0.01"))
 
 
 def get_facility_distance(donor, recipient):
@@ -432,6 +400,7 @@ def get_facility_distance(donor, recipient):
 # ==========================================================
 # FEFO BATCH ALLOCATION
 # ==========================================================
+
 
 def allocate_donor_batches_fefo(
     *,
@@ -453,9 +422,7 @@ def allocate_donor_batches_fefo(
 
     today = timezone.localdate()
 
-    remaining = decimal_value(
-        requested_quantity
-    )
+    remaining = decimal_value(requested_quantity)
 
     allocations = []
 
@@ -488,9 +455,7 @@ def allocate_donor_batches_fefo(
             )
         )
 
-        expiry_days = (
-            batch.expiry_date - today
-        ).days
+        expiry_days = (batch.expiry_date - today).days
 
         if batch_available <= ZERO:
             continue
@@ -499,10 +464,7 @@ def allocate_donor_batches_fefo(
             recipient_daily_demand is not None
             and decimal_value(recipient_daily_demand) > ZERO
         ):
-            consumption_days = (
-                remaining
-                / decimal_value(recipient_daily_demand)
-            )
+            consumption_days = remaining / decimal_value(recipient_daily_demand)
 
             if Decimal(expiry_days) < consumption_days:
                 continue
@@ -512,24 +474,22 @@ def allocate_donor_batches_fefo(
             remaining,
         )
 
-        allocations.append({
-            "batch_id": batch_id,
-            "batch_number": batch.batch_number,
-            "expiry_date": batch.expiry_date.isoformat(),
-            "expiry_days_remaining": expiry_days,
-            "quantity": str(allocated),
-        })
+        allocations.append(
+            {
+                "batch_id": batch_id,
+                "batch_number": batch.batch_number,
+                "expiry_date": batch.expiry_date.isoformat(),
+                "expiry_days_remaining": expiry_days,
+                "quantity": str(allocated),
+            }
+        )
 
         # Update the shared batch balance.
-        remaining_by_batch[batch_id] = (
-            batch_available - allocated
-        )
+        remaining_by_batch[batch_id] = batch_available - allocated
 
         remaining -= allocated
 
-    allocated_total = (
-        decimal_value(requested_quantity) - remaining
-    )
+    allocated_total = decimal_value(requested_quantity) - remaining
 
     return {
         "allocations": allocations,
@@ -566,20 +526,20 @@ def calculate_recommendation_priority(
     else:
         urgency_score = 0
 
-    shortage = calculate_recipient_shortage(
-        recipient_profile
-    )
+    shortage = calculate_recipient_shortage(recipient_profile)
 
     available = recipient_profile["available"]
 
     if shortage > ZERO:
         need_score = min(
             float(
-                shortage / max(
+                shortage
+                / max(
                     available + shortage,
                     ONE,
                 )
-            ) * 25,
+            )
+            * 25,
             25,
         )
     else:
@@ -599,10 +559,7 @@ def calculate_recommendation_priority(
         distance_score = 1
 
     total = min(
-        urgency_score
-        + need_score
-        + essential_score
-        + distance_score,
+        urgency_score + need_score + essential_score + distance_score,
         100,
     )
 
@@ -616,9 +573,7 @@ def calculate_recommendation_priority(
         priority = RecommendationPriority.LOW
 
     return {
-        "score": Decimal(
-            str(round(total, 2))
-        ),
+        "score": Decimal(str(round(total, 2))),
         "priority": priority,
         "components": {
             "urgency": urgency_score,
@@ -629,11 +584,10 @@ def calculate_recommendation_priority(
     }
 
 
-def get_visible_facilities_for_recommendations(user):
-    """
-    Get active facilities visible to the current user.
-    """
-
+def get_visible_facilities_for_recommendations(
+    user,
+    permission_code="redistribution.recommendation.view",
+):
     if user.is_superuser:
         return Facility.objects.filter(
             is_active=True
@@ -641,7 +595,7 @@ def get_visible_facilities_for_recommendations(user):
 
     visible_ids = get_user_accessible_facility_ids(
         user,
-        permission_code="redistribution.recommendation.view",
+        permission_code=permission_code,
     )
 
     return Facility.objects.filter(
@@ -681,6 +635,7 @@ def get_recommendation_unit(medicine):
 # GENERATE REDISTRIBUTION RECOMMENDATIONS
 # ==========================================================
 
+
 @transaction.atomic
 def generate_redistribution_recommendations(
     *,
@@ -701,20 +656,12 @@ def generate_redistribution_recommendations(
     medicine and facility pair are not duplicated.
     """
 
-    medicine = Medicine.objects.filter(
-        pk=medicine_id
-    ).first()
+    medicine = Medicine.objects.filter(pk=medicine_id).first()
 
     if medicine is None:
-        raise ValidationError(
-            "Medicine not found."
-        )
+        raise ValidationError("Medicine not found.")
 
-    facilities = list(
-        get_visible_facilities_for_recommendations(
-            user
-        )
-    )
+    facilities = list(get_visible_facilities_for_recommendations(user))
 
     if len(facilities) < 2:
         return []
@@ -730,11 +677,8 @@ def generate_redistribution_recommendations(
         )
 
         # A policy and demand history are required for safe matching.
-        if (
-         not profile["policy_configured"]
-         or profile["daily_demand"] is None
-         ):
-           continue 
+        if not profile["policy_configured"] or profile["daily_demand"] is None:
+            continue
 
         profiles[facility.pk] = profile
 
@@ -748,27 +692,27 @@ def generate_redistribution_recommendations(
         if not profile:
             continue
 
-        transferable = calculate_donor_transferable_quantity(
-            profile
-        )
+        transferable = calculate_donor_transferable_quantity(profile)
 
-        shortage = calculate_recipient_shortage(
-            profile
-        )
+        shortage = calculate_recipient_shortage(profile)
 
         if transferable > ZERO:
-            donors.append({
-                "facility": facility,
-                "profile": profile,
-                "remaining": transferable,
-            })
+            donors.append(
+                {
+                    "facility": facility,
+                    "profile": profile,
+                    "remaining": transferable,
+                }
+            )
 
         if shortage > ZERO:
-            recipients.append({
-                "facility": facility,
-                "profile": profile,
-                "remaining": shortage,
-            })
+            recipients.append(
+                {
+                    "facility": facility,
+                    "profile": profile,
+                    "remaining": shortage,
+                }
+            )
 
     if not donors or not recipients:
         return []
@@ -777,14 +721,9 @@ def generate_redistribution_recommendations(
     # Initialize shared FEFO batch quantities once per donor.
     # ------------------------------------------------------
 
-    donor_batch_remaining = {
-        donor["facility"].pk: {}
-        for donor in donors
-    }
+    donor_batch_remaining = {donor["facility"].pk: {} for donor in donors}
 
-    essential = get_medicine_essential_status(
-        medicine
-    )
+    essential = get_medicine_essential_status(medicine)
 
     # Prioritize recipients with the lowest coverage first.
     recipients.sort(
@@ -826,22 +765,20 @@ def generate_redistribution_recommendations(
             if (
                 maximum_distance_km is not None
                 and distance is not None
-                and distance > Decimal(
-                    str(maximum_distance_km)
-                )
+                and distance > Decimal(str(maximum_distance_km))
             ):
                 continue
 
-            donor_candidates.append({
-                "donor": donor,
-                "distance": distance,
-            })
+            donor_candidates.append(
+                {
+                    "donor": donor,
+                    "distance": distance,
+                }
+            )
 
         donor_candidates.sort(
             key=lambda item: (
-                item["distance"]
-                if item["distance"] is not None
-                else Decimal("999999")
+                item["distance"] if item["distance"] is not None else Decimal("999999")
             )
         )
 
@@ -851,10 +788,7 @@ def generate_redistribution_recommendations(
             donor_facility = donor["facility"]
             donor_profile = donor["profile"]
 
-            if (
-                donor["remaining"] <= ZERO
-                or recipient["remaining"] <= ZERO
-            ):
+            if donor["remaining"] <= ZERO or recipient["remaining"] <= ZERO:
                 continue
 
             # --------------------------------------------------
@@ -885,17 +819,11 @@ def generate_redistribution_recommendations(
                 donor_facility_id=donor_facility.pk,
                 medicine_id=medicine.pk,
                 requested_quantity=proposed_quantity,
-                recipient_daily_demand=(
-                    recipient_profile["daily_demand"]
-                ),
-                remaining_by_batch=donor_batch_remaining[
-                    donor_facility.pk
-                ],
+                recipient_daily_demand=(recipient_profile["daily_demand"]),
+                remaining_by_batch=donor_batch_remaining[donor_facility.pk],
             )
 
-            actual_quantity = batch_result[
-                "allocated_quantity"
-            ]
+            actual_quantity = batch_result["allocated_quantity"]
 
             if actual_quantity <= ZERO:
                 continue
@@ -913,13 +841,9 @@ def generate_redistribution_recommendations(
                 essential_medicine=essential,
             )
 
-            donor_after = (
-                donor_profile["available"] - actual_quantity
-            )
+            donor_after = donor_profile["available"] - actual_quantity
 
-            recipient_after = (
-                recipient_profile["available"] + actual_quantity
-            )
+            recipient_after = recipient_profile["available"] + actual_quantity
 
             donor_coverage_after = calculate_stock_coverage_days(
                 available=donor_after,
@@ -931,56 +855,42 @@ def generate_redistribution_recommendations(
                 daily_demand=recipient_profile["daily_demand"],
             )
 
-            recommendation = (
-                RedistributionRecommendation.objects.create(
-                    medicine=medicine,
-                    donor_facility=donor_facility,
-                    recipient_facility=recipient_facility,
-                    donor_organization=donor_facility.organization,
-                    recipient_organization=recipient_facility.organization,
-                    recommended_quantity=actual_quantity,
-                    unit_code=get_recommendation_unit(medicine),
-                    donor_available_before=donor_profile["available"],
-                    recipient_available_before=recipient_profile["available"],
-                    donor_available_after=donor_after,
-                    recipient_available_after=recipient_after,
-                    donor_coverage_days_before=(
-                        donor_profile["coverage_days"]
+            recommendation = RedistributionRecommendation.objects.create(
+                medicine=medicine,
+                donor_facility=donor_facility,
+                recipient_facility=recipient_facility,
+                donor_organization=donor_facility.organization,
+                recipient_organization=recipient_facility.organization,
+                recommended_quantity=actual_quantity,
+                unit_code=get_recommendation_unit(medicine),
+                donor_available_before=donor_profile["available"],
+                recipient_available_before=recipient_profile["available"],
+                donor_available_after=donor_after,
+                recipient_available_after=recipient_after,
+                donor_coverage_days_before=(donor_profile["coverage_days"]),
+                recipient_coverage_days_before=(recipient_profile["coverage_days"]),
+                donor_coverage_days_after=donor_coverage_after,
+                recipient_coverage_days_after=recipient_coverage_after,
+                priority=priority_result["priority"],
+                priority_score=priority_result["score"],
+                distance_km=distance,
+                explanation={
+                    "reason": (
+                        "Recipient stock is below its operational "
+                        "target and donor stock is above its own target."
                     ),
-                    recipient_coverage_days_before=(
-                        recipient_profile["coverage_days"]
-                    ),
-                    donor_coverage_days_after=donor_coverage_after,
-                    recipient_coverage_days_after=recipient_coverage_after,
-                    priority=priority_result["priority"],
-                    priority_score=priority_result["score"],
-                    distance_km=distance,
-                    explanation={
-                        "reason": (
-                            "Recipient stock is below its operational "
-                            "target and donor stock is above its own target."
-                        ),
-                        "priority_components": (
-                            priority_result["components"]
-                        ),
-                        "donor_policy_configured": True,
-                        "recipient_policy_configured": True,
-                        "batch_allocations": (
-                            batch_result["allocations"]
-                        ),
-                        "expiry_aware": True,
-                        "distance_method": "haversine_straight_line",
-                        "algorithm_version": "redistribution-v1",
-                    },
-                    expires_at=(
-                        timezone.now() + timedelta(days=2)
-                    ),
-                )
+                    "priority_components": (priority_result["components"]),
+                    "donor_policy_configured": True,
+                    "recipient_policy_configured": True,
+                    "batch_allocations": (batch_result["allocations"]),
+                    "expiry_aware": True,
+                    "distance_method": "haversine_straight_line",
+                    "algorithm_version": "redistribution-v1",
+                },
+                expires_at=(timezone.now() + timedelta(days=2)),
             )
 
-            recommendations.append(
-                recommendation
-            )
+            recommendations.append(recommendation)
 
             # --------------------------------------------------
             # Update in-memory quantities.
@@ -992,12 +902,8 @@ def generate_redistribution_recommendations(
             donor_profile["available"] -= actual_quantity
             recipient_profile["available"] += actual_quantity
 
-            donor_profile["coverage_days"] = (
-                donor_coverage_after
-            )
+            donor_profile["coverage_days"] = donor_coverage_after
 
-            recipient_profile["coverage_days"] = (
-                recipient_coverage_after
-            )
+            recipient_profile["coverage_days"] = recipient_coverage_after
 
     return recommendations

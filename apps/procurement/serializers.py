@@ -10,9 +10,7 @@ from apps.procurement.models import (
 )
 
 
-class PurchaseRequisitionLineSerializer(
-    serializers.ModelSerializer
-):
+class PurchaseRequisitionLineSerializer(serializers.ModelSerializer):
 
     medicine_name = serializers.CharField(
         source="medicine.generic_name",
@@ -42,9 +40,7 @@ class PurchaseRequisitionLineSerializer(
         read_only_fields = fields
 
 
-class PurchaseRequisitionSerializer(
-    serializers.ModelSerializer
-):
+class PurchaseRequisitionSerializer(serializers.ModelSerializer):
 
     items = PurchaseRequisitionLineSerializer(
         many=True,
@@ -87,9 +83,7 @@ class PurchaseRequisitionSerializer(
         read_only_fields = fields
 
 
-class PurchaseRequisitionCreateSerializer(
-    serializers.Serializer
-):
+class PurchaseRequisitionCreateSerializer(serializers.Serializer):
 
     replenishment_request = serializers.UUIDField()
 
@@ -104,9 +98,7 @@ class PurchaseRequisitionCreateSerializer(
     )
 
 
-class QuotationLineInputSerializer(
-    serializers.Serializer
-):
+class QuotationLineInputSerializer(serializers.Serializer):
 
     requisition_line_id = serializers.UUIDField()
 
@@ -128,9 +120,7 @@ class QuotationLineInputSerializer(
     )
 
 
-class SupplierQuotationCreateSerializer(
-    serializers.Serializer
-):
+class SupplierQuotationCreateSerializer(serializers.Serializer):
 
     requisition = serializers.UUIDField()
 
@@ -170,9 +160,7 @@ class SupplierQuotationCreateSerializer(
     )
 
 
-class SupplierQuotationLineSerializer(
-    serializers.ModelSerializer
-):
+class SupplierQuotationLineSerializer(serializers.ModelSerializer):
 
     medicine_name = serializers.CharField(
         source="requisition_line.medicine.generic_name",
@@ -201,9 +189,7 @@ class SupplierQuotationLineSerializer(
         read_only_fields = fields
 
 
-class SupplierQuotationSerializer(
-    serializers.ModelSerializer
-):
+class SupplierQuotationSerializer(serializers.ModelSerializer):
 
     supplier_name = serializers.CharField(
         source="supplier.name",
@@ -249,9 +235,7 @@ class SupplierQuotationSerializer(
         return str(calculate_quotation_total(obj))
 
 
-class PurchaseOrderLineSerializer(
-    serializers.ModelSerializer
-):
+class PurchaseOrderLineSerializer(serializers.ModelSerializer):
 
     medicine_name = serializers.CharField(
         source="medicine.generic_name",
@@ -275,9 +259,7 @@ class PurchaseOrderLineSerializer(
         read_only_fields = fields
 
 
-class PurchaseOrderSerializer(
-    serializers.ModelSerializer
-):
+class PurchaseOrderSerializer(serializers.ModelSerializer):
 
     supplier_name = serializers.CharField(
         source="supplier.name",
@@ -323,9 +305,7 @@ class PurchaseOrderSerializer(
         read_only_fields = fields
 
 
-class PurchaseOrderCreateSerializer(
-    serializers.Serializer
-):
+class PurchaseOrderCreateSerializer(serializers.Serializer):
 
     quotation = serializers.UUIDField()
 

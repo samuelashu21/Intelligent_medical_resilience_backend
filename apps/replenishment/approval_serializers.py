@@ -8,9 +8,7 @@ from apps.replenishment.models import (
 )
 
 
-class ApprovalWorkflowStageSerializer(
-    serializers.ModelSerializer
-):
+class ApprovalWorkflowStageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ApprovalWorkflowStage
@@ -30,9 +28,7 @@ class ApprovalWorkflowStageSerializer(
         read_only_fields = ["id"]
 
 
-class ApprovalWorkflowSerializer(
-    serializers.ModelSerializer
-):
+class ApprovalWorkflowSerializer(serializers.ModelSerializer):
 
     stages = ApprovalWorkflowStageSerializer(
         many=True,
@@ -67,9 +63,7 @@ class ApprovalWorkflowSerializer(
         ]
 
 
-class ReplenishmentApprovalSerializer(
-    serializers.ModelSerializer
-):
+class ReplenishmentApprovalSerializer(serializers.ModelSerializer):
 
     request_number = serializers.CharField(
         source="request.request_number",
@@ -113,9 +107,7 @@ class ReplenishmentApprovalSerializer(
         read_only_fields = fields
 
 
-class ApprovalDecisionSerializer(
-    serializers.ModelSerializer
-):
+class ApprovalDecisionSerializer(serializers.ModelSerializer):
 
     decided_by_email = serializers.CharField(
         source="decided_by.email",

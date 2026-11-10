@@ -5,4 +5,8 @@ urlpatterns = [
         "recommendations/",
         include("apps.redistribution.recommendation_urls"),
     ),
+    path(
+        "optimization/",
+        include("apps.redistribution.optimization_urls"),
+    ),
 ]

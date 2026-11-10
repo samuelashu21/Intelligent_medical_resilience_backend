@@ -72,17 +72,13 @@ class MedicineViewSet(viewsets.ModelViewSet):
         essential = None
         if essential_param is not None:
             if essential_param.lower() not in ["true", "false"]:
-                raise ValidationError({
-                    "essential": "Use true or false."
-                })
+                raise ValidationError({"essential": "Use true or false."})
             essential = essential_param.lower() == "true"
 
         active = True
         if active_param is not None:
             if active_param.lower() not in ["true", "false"]:
-                raise ValidationError({
-                    "active": "Use true or false."
-                })
+                raise ValidationError({"active": "Use true or false."})
             active = active_param.lower() == "true"
 
         return search_medicines(
@@ -106,8 +102,7 @@ class MedicineViewSet(viewsets.ModelViewSet):
                     target_type="Medicine",
                     target_id=medicine.pk,
                     description=(
-                        f"Created medicine catalog entry "
-                        f"{medicine.generic_name}."
+                        f"Created medicine catalog entry " f"{medicine.generic_name}."
                     ),
                     request=self.request,
                 )
@@ -118,9 +113,9 @@ class MedicineViewSet(viewsets.ModelViewSet):
             )
 
         except IntegrityError:
-            raise ValidationError({
-                "detail": "A medicine with this code already exists."
-            })
+            raise ValidationError(
+                {"detail": "A medicine with this code already exists."}
+            )
 
     def perform_update(self, serializer):
         instance = self.get_object()
@@ -161,9 +156,7 @@ class MedicineViewSet(viewsets.ModelViewSet):
                         action="MEDICINE_UPDATED",
                         target_type="Medicine",
                         target_id=medicine.pk,
-                        description=(
-                            f"Updated medicine {medicine.generic_name}."
-                        ),
+                        description=(f"Updated medicine {medicine.generic_name}."),
                         changes=changes,
                         request=self.request,
                     )
@@ -174,9 +167,9 @@ class MedicineViewSet(viewsets.ModelViewSet):
             )
 
         except IntegrityError:
-            raise ValidationError({
-                "detail": "The update conflicts with an existing record."
-            })
+            raise ValidationError(
+                {"detail": "The update conflicts with an existing record."}
+            )
 
     def destroy(self, request, *args, **kwargs):
         return Response(
@@ -194,9 +187,7 @@ class MedicineViewSet(viewsets.ModelViewSet):
         medicine = self.get_object()
 
         if not medicine.is_active:
-            return Response({
-                "detail": "Medicine is already inactive."
-            })
+            return Response({"detail": "Medicine is already inactive."})
 
         medicine.is_active = False
         medicine.save(update_fields=["is_active", "updated_at"])
@@ -211,18 +202,14 @@ class MedicineViewSet(viewsets.ModelViewSet):
             request=request,
         )
 
-        return Response({
-            "detail": "Medicine deactivated successfully."
-        })
+        return Response({"detail": "Medicine deactivated successfully."})
 
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
         medicine = self.get_object()
 
         if medicine.is_active:
-            return Response({
-                "detail": "Medicine is already active."
-            })
+            return Response({"detail": "Medicine is already active."})
 
         medicine.is_active = True
         medicine.save(update_fields=["is_active", "updated_at"])
@@ -237,9 +224,7 @@ class MedicineViewSet(viewsets.ModelViewSet):
             request=request,
         )
 
-        return Response({
-            "detail": "Medicine activated successfully."
-        })
+        return Response({"detail": "Medicine activated successfully."})
 
 
 class TherapeuticCategoryViewSet(viewsets.ReadOnlyModelViewSet):

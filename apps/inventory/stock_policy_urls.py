@@ -6,7 +6,6 @@ from apps.inventory.stock_policy_views import (
     StockPolicyViewSet,
 )
 
-
 router = DefaultRouter()
 
 router.register(

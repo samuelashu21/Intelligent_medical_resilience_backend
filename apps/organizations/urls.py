@@ -7,7 +7,7 @@ from apps.organizations.views import (
 
 router = DefaultRouter()
 
-router.register( 
+router.register(
     "types",
     OrganizationUnitTypeViewSet,
     basename="organization-type",
@@ -15,7 +15,7 @@ router.register(
 
 router.register(
     "",
-    OrganizationViewSet, 
+    OrganizationViewSet,
     basename="organization",
 )
 

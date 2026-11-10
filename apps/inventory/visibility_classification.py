@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 
 from django.db.models import Q
@@ -29,10 +28,7 @@ def get_active_stock_policy(
             status="ACTIVE",
             effective_from__lte=today,
         )
-        .filter(
-            Q(effective_until__isnull=True)
-            | Q(effective_until__gte=today)
-        )
+        .filter(Q(effective_until__isnull=True) | Q(effective_until__gte=today))
         .order_by("-effective_from")
         .first()
     )
@@ -48,7 +44,8 @@ def get_active_stock_policy(
         __import__(
             "apps.facilities.models",
             fromlist=["Facility"],
-        ).Facility.objects.select_related("organization")
+        )
+        .Facility.objects.select_related("organization")
         .get(pk=facility_id)
     )
 
@@ -64,10 +61,7 @@ def get_active_stock_policy(
             status="ACTIVE",
             effective_from__lte=today,
         )
-        .filter(
-            Q(effective_until__isnull=True)
-            | Q(effective_until__gte=today)
-        )
+        .filter(Q(effective_until__isnull=True) | Q(effective_until__gte=today))
         .order_by("-effective_from")
         .first()
     )

@@ -13,198 +13,535 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('medicines', '0002_country_atcclassification_and_more'),
-        ('organizations', '0001_initial'),
-        ('replenishment', '0003_remove_replenishmentapproval_unique_request_approval_stage_and_more'),
-        ('suppliers', '0001_initial'),
+        ("medicines", "0002_country_atcclassification_and_more"),
+        ("organizations", "0001_initial"),
+        (
+            "replenishment",
+            "0003_remove_replenishmentapproval_unique_request_approval_stage_and_more",
+        ),
+        ("suppliers", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PurchaseRequisition',
+            name="PurchaseRequisition",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('requisition_number', models.CharField(editable=False, max_length=40, unique=True)),
-                ('status', models.CharField(choices=[('DRAFT', 'Draft'), ('SUBMITTED', 'Submitted'), ('APPROVED', 'Approved'), ('CONVERTED', 'Converted to Purchase Order'), ('REJECTED', 'Rejected'), ('CANCELLED', 'Cancelled')], db_index=True, default='DRAFT', max_length=30)),
-                ('justification', models.TextField()),
-                ('submitted_at', models.DateTimeField(blank=True, null=True)),
-                ('approved_at', models.DateTimeField(blank=True, null=True)),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('approved_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='approved_purchase_requisitions', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_requisitions', to='organizations.organization')),
-                ('replenishment_request', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_requisition', to='replenishment.replenishmentrequest')),
-                ('requested_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='created_purchase_requisitions', to=settings.AUTH_USER_MODEL)),
-                ('submitted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='submitted_purchase_requisitions', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "requisition_number",
+                    models.CharField(editable=False, max_length=40, unique=True),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("DRAFT", "Draft"),
+                            ("SUBMITTED", "Submitted"),
+                            ("APPROVED", "Approved"),
+                            ("CONVERTED", "Converted to Purchase Order"),
+                            ("REJECTED", "Rejected"),
+                            ("CANCELLED", "Cancelled"),
+                        ],
+                        db_index=True,
+                        default="DRAFT",
+                        max_length=30,
+                    ),
+                ),
+                ("justification", models.TextField()),
+                ("submitted_at", models.DateTimeField(blank=True, null=True)),
+                ("approved_at", models.DateTimeField(blank=True, null=True)),
+                ("notes", models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "approved_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="approved_purchase_requisitions",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "organization",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="purchase_requisitions",
+                        to="organizations.organization",
+                    ),
+                ),
+                (
+                    "replenishment_request",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="purchase_requisition",
+                        to="replenishment.replenishmentrequest",
+                    ),
+                ),
+                (
+                    "requested_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="created_purchase_requisitions",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "submitted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="submitted_purchase_requisitions",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='PurchaseOrder',
+            name="PurchaseOrder",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('order_number', models.CharField(editable=False, max_length=40, unique=True)),
-                ('currency', models.CharField(max_length=3)),
-                ('order_date', models.DateField(default=django.utils.timezone.localdate)),
-                ('expected_delivery_date', models.DateField(blank=True, null=True)),
-                ('status', models.CharField(choices=[('DRAFT', 'Draft'), ('PENDING_APPROVAL', 'Pending Approval'), ('APPROVED', 'Approved'), ('SENT', 'Sent to Supplier'), ('ACKNOWLEDGED', 'Acknowledged'), ('PARTIALLY_RECEIVED', 'Partially Received'), ('COMPLETED', 'Completed'), ('CANCELLED', 'Cancelled')], db_index=True, default='DRAFT', max_length=30)),
-                ('subtotal', models.DecimalField(decimal_places=4, default=Decimal('0'), max_digits=20)),
-                ('tax_amount', models.DecimalField(decimal_places=4, default=Decimal('0'), max_digits=20)),
-                ('shipping_amount', models.DecimalField(decimal_places=4, default=Decimal('0'), max_digits=20)),
-                ('total_amount', models.DecimalField(decimal_places=4, default=Decimal('0'), max_digits=20)),
-                ('payment_terms', models.CharField(blank=True, max_length=200)),
-                ('delivery_terms', models.CharField(blank=True, max_length=200)),
-                ('approved_at', models.DateTimeField(blank=True, null=True)),
-                ('sent_at', models.DateTimeField(blank=True, null=True)),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('approved_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='approved_purchase_orders', to=settings.AUTH_USER_MODEL)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='created_purchase_orders', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_orders', to='organizations.organization')),
-                ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_orders', to='suppliers.supplier')),
-                ('requisition', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_orders', to='procurement.purchaserequisition')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "order_number",
+                    models.CharField(editable=False, max_length=40, unique=True),
+                ),
+                ("currency", models.CharField(max_length=3)),
+                (
+                    "order_date",
+                    models.DateField(default=django.utils.timezone.localdate),
+                ),
+                ("expected_delivery_date", models.DateField(blank=True, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("DRAFT", "Draft"),
+                            ("PENDING_APPROVAL", "Pending Approval"),
+                            ("APPROVED", "Approved"),
+                            ("SENT", "Sent to Supplier"),
+                            ("ACKNOWLEDGED", "Acknowledged"),
+                            ("PARTIALLY_RECEIVED", "Partially Received"),
+                            ("COMPLETED", "Completed"),
+                            ("CANCELLED", "Cancelled"),
+                        ],
+                        db_index=True,
+                        default="DRAFT",
+                        max_length=30,
+                    ),
+                ),
+                (
+                    "subtotal",
+                    models.DecimalField(
+                        decimal_places=4, default=Decimal("0"), max_digits=20
+                    ),
+                ),
+                (
+                    "tax_amount",
+                    models.DecimalField(
+                        decimal_places=4, default=Decimal("0"), max_digits=20
+                    ),
+                ),
+                (
+                    "shipping_amount",
+                    models.DecimalField(
+                        decimal_places=4, default=Decimal("0"), max_digits=20
+                    ),
+                ),
+                (
+                    "total_amount",
+                    models.DecimalField(
+                        decimal_places=4, default=Decimal("0"), max_digits=20
+                    ),
+                ),
+                ("payment_terms", models.CharField(blank=True, max_length=200)),
+                ("delivery_terms", models.CharField(blank=True, max_length=200)),
+                ("approved_at", models.DateTimeField(blank=True, null=True)),
+                ("sent_at", models.DateTimeField(blank=True, null=True)),
+                ("notes", models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "approved_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="approved_purchase_orders",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="created_purchase_orders",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "organization",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="purchase_orders",
+                        to="organizations.organization",
+                    ),
+                ),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="purchase_orders",
+                        to="suppliers.supplier",
+                    ),
+                ),
+                (
+                    "requisition",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="purchase_orders",
+                        to="procurement.purchaserequisition",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='PurchaseRequisitionLine',
+            name="PurchaseRequisitionLine",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('quantity', models.DecimalField(decimal_places=3, max_digits=18)),
-                ('unit_code', models.CharField(max_length=30)),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('medicine', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_requisition_lines', to='medicines.medicine')),
-                ('replenishment_line', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_requisition_line', to='replenishment.replenishmentrequestline')),
-                ('requisition', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='items', to='procurement.purchaserequisition')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("quantity", models.DecimalField(decimal_places=3, max_digits=18)),
+                ("unit_code", models.CharField(max_length=30)),
+                ("notes", models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "medicine",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="purchase_requisition_lines",
+                        to="medicines.medicine",
+                    ),
+                ),
+                (
+                    "replenishment_line",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="purchase_requisition_line",
+                        to="replenishment.replenishmentrequestline",
+                    ),
+                ),
+                (
+                    "requisition",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="items",
+                        to="procurement.purchaserequisition",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PurchaseOrderLine',
+            name="PurchaseOrderLine",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('quantity', models.DecimalField(decimal_places=3, max_digits=18)),
-                ('unit_code', models.CharField(max_length=30)),
-                ('unit_price', models.DecimalField(decimal_places=4, max_digits=18)),
-                ('line_total', models.DecimalField(decimal_places=4, max_digits=20)),
-                ('medicine', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_order_lines', to='medicines.medicine')),
-                ('purchase_order', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='items', to='procurement.purchaseorder')),
-                ('requisition_line', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_order_lines', to='procurement.purchaserequisitionline')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("quantity", models.DecimalField(decimal_places=3, max_digits=18)),
+                ("unit_code", models.CharField(max_length=30)),
+                ("unit_price", models.DecimalField(decimal_places=4, max_digits=18)),
+                ("line_total", models.DecimalField(decimal_places=4, max_digits=20)),
+                (
+                    "medicine",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="purchase_order_lines",
+                        to="medicines.medicine",
+                    ),
+                ),
+                (
+                    "purchase_order",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="items",
+                        to="procurement.purchaseorder",
+                    ),
+                ),
+                (
+                    "requisition_line",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="purchase_order_lines",
+                        to="procurement.purchaserequisitionline",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='SupplierQuotation',
+            name="SupplierQuotation",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('quotation_number', models.CharField(max_length=100)),
-                ('currency', models.CharField(default='USD', max_length=3)),
-                ('quotation_date', models.DateField(default=django.utils.timezone.localdate)),
-                ('valid_until', models.DateField()),
-                ('payment_terms', models.CharField(blank=True, max_length=200)),
-                ('delivery_days', models.PositiveIntegerField()),
-                ('delivery_terms', models.CharField(blank=True, max_length=200)),
-                ('status', models.CharField(choices=[('RECEIVED', 'Received'), ('UNDER_REVIEW', 'Under Review'), ('SELECTED', 'Selected'), ('REJECTED', 'Rejected'), ('EXPIRED', 'Expired')], db_index=True, default='RECEIVED', max_length=20)),
-                ('document', models.FileField(blank=True, null=True, upload_to='procurement/quotations/')),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('requisition', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='quotations', to='procurement.purchaserequisition')),
-                ('submitted_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='submitted_supplier_quotations', to=settings.AUTH_USER_MODEL)),
-                ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='procurement_quotations', to='suppliers.supplier')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("quotation_number", models.CharField(max_length=100)),
+                ("currency", models.CharField(default="USD", max_length=3)),
+                (
+                    "quotation_date",
+                    models.DateField(default=django.utils.timezone.localdate),
+                ),
+                ("valid_until", models.DateField()),
+                ("payment_terms", models.CharField(blank=True, max_length=200)),
+                ("delivery_days", models.PositiveIntegerField()),
+                ("delivery_terms", models.CharField(blank=True, max_length=200)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("RECEIVED", "Received"),
+                            ("UNDER_REVIEW", "Under Review"),
+                            ("SELECTED", "Selected"),
+                            ("REJECTED", "Rejected"),
+                            ("EXPIRED", "Expired"),
+                        ],
+                        db_index=True,
+                        default="RECEIVED",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "document",
+                    models.FileField(
+                        blank=True, null=True, upload_to="procurement/quotations/"
+                    ),
+                ),
+                ("notes", models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "requisition",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="quotations",
+                        to="procurement.purchaserequisition",
+                    ),
+                ),
+                (
+                    "submitted_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="submitted_supplier_quotations",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="procurement_quotations",
+                        to="suppliers.supplier",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='purchaseorder',
-            name='quotation',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_orders', to='procurement.supplierquotation'),
+            model_name="purchaseorder",
+            name="quotation",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="purchase_orders",
+                to="procurement.supplierquotation",
+            ),
         ),
         migrations.CreateModel(
-            name='SupplierQuotationLine',
+            name="SupplierQuotationLine",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('quantity', models.DecimalField(decimal_places=3, max_digits=18)),
-                ('unit_price', models.DecimalField(decimal_places=4, max_digits=18)),
-                ('notes', models.TextField(blank=True)),
-                ('quotation', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='items', to='procurement.supplierquotation')),
-                ('requisition_line', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='supplier_quotation_lines', to='procurement.purchaserequisitionline')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("quantity", models.DecimalField(decimal_places=3, max_digits=18)),
+                ("unit_price", models.DecimalField(decimal_places=4, max_digits=18)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "quotation",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="items",
+                        to="procurement.supplierquotation",
+                    ),
+                ),
+                (
+                    "requisition_line",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="supplier_quotation_lines",
+                        to="procurement.purchaserequisitionline",
+                    ),
+                ),
             ],
         ),
         migrations.AddIndex(
-            model_name='purchaserequisition',
-            index=models.Index(fields=['organization', 'status'], name='proc_req_org_status_idx'),
+            model_name="purchaserequisition",
+            index=models.Index(
+                fields=["organization", "status"], name="proc_req_org_status_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='purchaserequisition',
-            index=models.Index(fields=['status', 'created_at'], name='proc_req_status_date_idx'),
+            model_name="purchaserequisition",
+            index=models.Index(
+                fields=["status", "created_at"], name="proc_req_status_date_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='purchaserequisitionline',
-            constraint=models.CheckConstraint(condition=models.Q(('quantity__gt', 0)), name='proc_req_line_qty_positive'),
+            model_name="purchaserequisitionline",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("quantity__gt", 0)),
+                name="proc_req_line_qty_positive",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='purchaseorderline',
-            constraint=models.CheckConstraint(condition=models.Q(('quantity__gt', 0)), name='po_line_qty_positive'),
+            model_name="purchaseorderline",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("quantity__gt", 0)), name="po_line_qty_positive"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='purchaseorderline',
-            constraint=models.CheckConstraint(condition=models.Q(('unit_price__gte', 0)), name='po_line_price_nonnegative'),
+            model_name="purchaseorderline",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("unit_price__gte", 0)),
+                name="po_line_price_nonnegative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='purchaseorderline',
-            constraint=models.CheckConstraint(condition=models.Q(('line_total__gte', 0)), name='po_line_total_nonnegative'),
+            model_name="purchaseorderline",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("line_total__gte", 0)),
+                name="po_line_total_nonnegative",
+            ),
         ),
         migrations.AddIndex(
-            model_name='supplierquotation',
-            index=models.Index(fields=['requisition', 'status'], name='quotation_req_status_idx'),
+            model_name="supplierquotation",
+            index=models.Index(
+                fields=["requisition", "status"], name="quotation_req_status_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierquotation',
-            constraint=models.UniqueConstraint(fields=('requisition', 'supplier', 'quotation_number'), name='unique_supplier_quotation_number'),
+            model_name="supplierquotation",
+            constraint=models.UniqueConstraint(
+                fields=("requisition", "supplier", "quotation_number"),
+                name="unique_supplier_quotation_number",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierquotation',
-            constraint=models.CheckConstraint(condition=models.Q(('delivery_days__gte', 0)), name='quotation_delivery_days_valid'),
+            model_name="supplierquotation",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("delivery_days__gte", 0)),
+                name="quotation_delivery_days_valid",
+            ),
         ),
         migrations.AddIndex(
-            model_name='purchaseorder',
-            index=models.Index(fields=['organization', 'status'], name='po_org_status_idx'),
+            model_name="purchaseorder",
+            index=models.Index(
+                fields=["organization", "status"], name="po_org_status_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='purchaseorder',
-            index=models.Index(fields=['supplier', 'status'], name='po_supplier_status_idx'),
+            model_name="purchaseorder",
+            index=models.Index(
+                fields=["supplier", "status"], name="po_supplier_status_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='purchaseorder',
-            constraint=models.CheckConstraint(condition=models.Q(('subtotal__gte', 0)), name='po_subtotal_nonnegative'),
+            model_name="purchaseorder",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("subtotal__gte", 0)), name="po_subtotal_nonnegative"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='purchaseorder',
-            constraint=models.CheckConstraint(condition=models.Q(('tax_amount__gte', 0)), name='po_tax_nonnegative'),
+            model_name="purchaseorder",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("tax_amount__gte", 0)), name="po_tax_nonnegative"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='purchaseorder',
-            constraint=models.CheckConstraint(condition=models.Q(('shipping_amount__gte', 0)), name='po_shipping_nonnegative'),
+            model_name="purchaseorder",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("shipping_amount__gte", 0)),
+                name="po_shipping_nonnegative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='purchaseorder',
-            constraint=models.CheckConstraint(condition=models.Q(('total_amount__gte', 0)), name='po_total_nonnegative'),
+            model_name="purchaseorder",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("total_amount__gte", 0)),
+                name="po_total_nonnegative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierquotationline',
-            constraint=models.UniqueConstraint(fields=('quotation', 'requisition_line'), name='unique_quotation_requisition_line'),
+            model_name="supplierquotationline",
+            constraint=models.UniqueConstraint(
+                fields=("quotation", "requisition_line"),
+                name="unique_quotation_requisition_line",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierquotationline',
-            constraint=models.CheckConstraint(condition=models.Q(('quantity__gt', 0)), name='quotation_line_qty_positive'),
+            model_name="supplierquotationline",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("quantity__gt", 0)),
+                name="quotation_line_qty_positive",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='supplierquotationline',
-            constraint=models.CheckConstraint(condition=models.Q(('unit_price__gte', 0)), name='quotation_line_price_nonnegative'),
+            model_name="supplierquotationline",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("unit_price__gte", 0)),
+                name="quotation_line_price_nonnegative",
+            ),
         ),
     ]

@@ -3,7 +3,7 @@ from django.db import transaction
 
 from apps.organizations.models import Organization
 
- 
+
 @transaction.atomic
 def create_organization(
     *,
@@ -41,9 +41,9 @@ def get_organization_descendant_ids(organization):
 
     while pending:
         children = list(
-            Organization.objects.filter(
-                parent_id__in=pending
-            ).values_list("id", flat=True)
+            Organization.objects.filter(parent_id__in=pending).values_list(
+                "id", flat=True
+            )
         )
 
         new_ids = set(children) - result
@@ -64,7 +64,7 @@ def validate_organization_parent_change(organization, new_parent):
 
     if new_parent is None:
         return
- 
+
     if organization.pk == new_parent.pk:
         raise ValidationError("An organization cannot be its own parent.")
 
@@ -73,4 +73,4 @@ def validate_organization_parent_change(organization, new_parent):
     if new_parent.pk in descendants:
         raise ValidationError(
             "An organization cannot be moved beneath one of its descendants."
-        ) 
+        )

@@ -42,6 +42,7 @@ from apps.inventory.reconciliation_reports import (
     get_reconciliation_summary,
 )
 
+
 class StockCountViewSet(viewsets.ModelViewSet):
     serializer_class = StockCountSerializer
     permission_classes = [HasInventoryPermission]
@@ -62,9 +63,7 @@ class StockCountViewSet(viewsets.ModelViewSet):
             permission_code="inventory.view",
         )
 
-        return queryset.filter(
-            warehouse__organization_id__in=organization_ids
-        )
+        return queryset.filter(warehouse__organization_id__in=organization_ids)
 
     def get_permissions(self):
         permissions = {
@@ -93,15 +92,11 @@ class StockCountViewSet(viewsets.ModelViewSet):
             "inventory.adjust",
             organization=warehouse.organization,
         ):
-            raise ValidationError(
-                "You cannot create stock counts for this warehouse."
-            )
+            raise ValidationError("You cannot create stock counts for this warehouse.")
 
         stock_count = create_stock_count(
             warehouse_id=warehouse.pk,
-            reference_number=serializer.validated_data[
-                "reference_number"
-            ],
+            reference_number=serializer.validated_data["reference_number"],
             created_by=self.request.user,
             count_method=serializer.validated_data.get(
                 "count_method",
@@ -121,9 +116,7 @@ class StockCountViewSet(viewsets.ModelViewSet):
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            self.get_serializer(stock_count).data
-        )
+        return Response(self.get_serializer(stock_count).data)
 
     @action(detail=True, methods=["post"])
     def submit(self, request, pk=None):
@@ -137,9 +130,7 @@ class StockCountViewSet(viewsets.ModelViewSet):
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            self.get_serializer(stock_count).data
-        )
+        return Response(self.get_serializer(stock_count).data)
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
@@ -150,9 +141,7 @@ class StockCountViewSet(viewsets.ModelViewSet):
             "inventory.reconcile",
             organization=stock_count.warehouse.organization,
         ):
-            raise ValidationError(
-                "You cannot approve stock counts for this warehouse."
-            )
+            raise ValidationError("You cannot approve stock counts for this warehouse.")
 
         try:
             stock_count = approve_stock_count(
@@ -162,9 +151,7 @@ class StockCountViewSet(viewsets.ModelViewSet):
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            self.get_serializer(stock_count).data
-        )
+        return Response(self.get_serializer(stock_count).data)
 
     @action(detail=True, methods=["post"])
     def reject(self, request, pk=None):
@@ -175,9 +162,7 @@ class StockCountViewSet(viewsets.ModelViewSet):
             "inventory.reconcile",
             organization=stock_count.warehouse.organization,
         ):
-            raise ValidationError(
-                "You cannot reject stock counts for this warehouse."
-            )
+            raise ValidationError("You cannot reject stock counts for this warehouse.")
 
         try:
             stock_count = reject_stock_count(
@@ -188,9 +173,7 @@ class StockCountViewSet(viewsets.ModelViewSet):
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            self.get_serializer(stock_count).data
-        )
+        return Response(self.get_serializer(stock_count).data)
 
     @action(detail=True, methods=["post"])
     def post(self, request, pk=None):
@@ -201,9 +184,7 @@ class StockCountViewSet(viewsets.ModelViewSet):
             "inventory.reconcile",
             organization=stock_count.warehouse.organization,
         ):
-            raise ValidationError(
-                "You cannot post reconciliation for this warehouse."
-            )
+            raise ValidationError("You cannot post reconciliation for this warehouse.")
 
         try:
             stock_count = post_stock_reconciliation(
@@ -213,9 +194,7 @@ class StockCountViewSet(viewsets.ModelViewSet):
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
 
-        return Response(
-            self.get_serializer(stock_count).data
-        )
+        return Response(self.get_serializer(stock_count).data)
 
 
 class StockCountLineViewSet(viewsets.GenericViewSet):
@@ -245,9 +224,7 @@ class StockCountLineViewSet(viewsets.GenericViewSet):
 
     def get_permissions(self):
         self.required_permissions = (
-            ["inventory.adjust"]
-            if self.action == "record"
-            else ["inventory.view"]
+            ["inventory.adjust"] if self.action == "record" else ["inventory.view"]
         )
         return super().get_permissions()
 
@@ -260,9 +237,7 @@ class StockCountLineViewSet(viewsets.GenericViewSet):
             "inventory.adjust",
             organization=line.stock_count.warehouse.organization,
         ):
-            raise ValidationError(
-                "You cannot record counts for this warehouse."
-            )
+            raise ValidationError("You cannot record counts for this warehouse.")
 
         serializer = RecordPhysicalCountSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -270,14 +245,10 @@ class StockCountLineViewSet(viewsets.GenericViewSet):
         try:
             line = record_physical_count(
                 line_id=line.pk,
-                physical_quantity=serializer.validated_data[
-                    "physical_quantity"
-                ],
+                physical_quantity=serializer.validated_data["physical_quantity"],
                 counted_by=request.user,
                 reason=serializer.validated_data.get("reason", ""),
-                explanation=serializer.validated_data.get(
-                    "explanation", ""
-                ),
+                explanation=serializer.validated_data.get("explanation", ""),
             )
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages)
@@ -312,7 +283,6 @@ class StockReconciliationViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset.filter(
             stock_count__warehouse__organization_id__in=organization_ids
         )
-
 
 
 class ReconciliationSummaryView(APIView):

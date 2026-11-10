@@ -42,20 +42,14 @@ def record_consumption(
     quantity = Decimal(str(quantity))
 
     if quantity < 0:
-        raise ValidationError(
-            "Consumption quantity cannot be negative."
-        )
+        raise ValidationError("Consumption quantity cannot be negative.")
 
     if consumption_date > timezone.localdate():
-        raise ValidationError(
-            "Future-dated consumption cannot be recorded."
-        )
+        raise ValidationError("Future-dated consumption cannot be recorded.")
 
     if batch:
         if batch.medicine_id != medicine.pk:
-            raise ValidationError(
-                "The batch does not belong to the selected medicine."
-            )
+            raise ValidationError("The batch does not belong to the selected medicine.")
 
         if batch.warehouse.organization_id != facility.organization_id:
             raise ValidationError(
@@ -91,9 +85,7 @@ def calculate_monthly_consumption(
         medicine_id=medicine_id,
         consumption_date__gte=start_date,
         consumption_date__lte=end_date,
-    ).aggregate(
-        total=Sum("quantity")
-    )
+    ).aggregate(total=Sum("quantity"))
 
     return result["total"] or Decimal("0")
 
@@ -105,9 +97,7 @@ def calculate_average_monthly_consumption(
     as_of=None,
 ):
     if number_of_months < 1:
-        raise ValidationError(
-            "The number of months must be at least one."
-        )
+        raise ValidationError("The number of months must be at least one.")
 
     as_of = as_of or timezone.localdate()
 
@@ -141,9 +131,7 @@ def calculate_average_monthly_consumption(
             year -= 1
 
     return {
-        "average_monthly_consumption": (
-            total / Decimal(complete_months)
-        ),
+        "average_monthly_consumption": (total / Decimal(complete_months)),
         "months_included": complete_months,
         "total_consumption": total,
     }
@@ -191,9 +179,7 @@ def generate_monthly_report(
 
     if not created:
         if report.status != ConsumptionRecordStatus.DRAFT:
-            raise ValidationError(
-                "Only draft reports can be regenerated."
-            )
+            raise ValidationError("Only draft reports can be regenerated.")
 
         report.opening_balance = opening_balance
         report.received_quantity = received_quantity
@@ -210,14 +196,10 @@ def generate_monthly_report(
 
 @transaction.atomic
 def submit_monthly_report(report_id, submitted_by):
-    report = MonthlyConsumptionReport.objects.select_for_update().get(
-        pk=report_id
-    )
+    report = MonthlyConsumptionReport.objects.select_for_update().get(pk=report_id)
 
     if report.status != ConsumptionRecordStatus.DRAFT:
-        raise ValidationError(
-            "Only draft reports can be submitted."
-        )
+        raise ValidationError("Only draft reports can be submitted.")
 
     report.status = ConsumptionRecordStatus.SUBMITTED
     report.submitted_by = submitted_by
@@ -229,19 +211,13 @@ def submit_monthly_report(report_id, submitted_by):
 
 @transaction.atomic
 def approve_monthly_report(report_id, approved_by):
-    report = MonthlyConsumptionReport.objects.select_for_update().get(
-        pk=report_id
-    )
+    report = MonthlyConsumptionReport.objects.select_for_update().get(pk=report_id)
 
     if report.status != ConsumptionRecordStatus.SUBMITTED:
-        raise ValidationError(
-            "Only submitted reports can be approved."
-        )
+        raise ValidationError("Only submitted reports can be approved.")
 
     if report.submitted_by_id == approved_by.pk:
-        raise ValidationError(
-            "The submitter cannot approve their own report."
-        )
+        raise ValidationError("The submitter cannot approve their own report.")
 
     report.status = ConsumptionRecordStatus.APPROVED
     report.approved_by = approved_by
@@ -255,23 +231,15 @@ def approve_monthly_report(report_id, approved_by):
 @transaction.atomic
 def reject_monthly_report(report_id, rejected_by, reason):
     if not reason or not reason.strip():
-        raise ValidationError(
-            "A rejection reason is required."
-        )
+        raise ValidationError("A rejection reason is required.")
 
-    report = MonthlyConsumptionReport.objects.select_for_update().get(
-        pk=report_id
-    )
+    report = MonthlyConsumptionReport.objects.select_for_update().get(pk=report_id)
 
     if report.status != ConsumptionRecordStatus.SUBMITTED:
-        raise ValidationError(
-            "Only submitted reports can be rejected."
-        )
+        raise ValidationError("Only submitted reports can be rejected.")
 
     if report.submitted_by_id == rejected_by.pk:
-        raise ValidationError(
-            "The submitter cannot reject their own report."
-        )
+        raise ValidationError("The submitter cannot reject their own report.")
 
     report.status = ConsumptionRecordStatus.REJECTED
     report.rejection_reason = reason.strip()

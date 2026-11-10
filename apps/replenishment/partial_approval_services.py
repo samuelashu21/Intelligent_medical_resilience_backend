@@ -17,9 +17,7 @@ def validate_and_apply_partial_approval(
     stage = approval.workflow_stage
 
     if not stage.allow_partial_approval:
-        raise ValidationError(
-            "Partial approval is not permitted at this stage."
-        )
+        raise ValidationError("Partial approval is not permitted at this stage.")
 
     lines = list(
         ReplenishmentRequestLine.objects.select_for_update().filter(
@@ -27,31 +25,22 @@ def validate_and_apply_partial_approval(
         )
     )
 
-    line_map = {
-        str(line.pk): line
-        for line in lines
-    }
+    line_map = {str(line.pk): line for line in lines}
 
     unknown_ids = set(approved_quantities.keys()) - set(line_map.keys())
 
     if unknown_ids:
-        raise ValidationError(
-            "One or more line IDs do not belong to this request."
-        )
+        raise ValidationError("One or more line IDs do not belong to this request.")
 
     for line_id, raw_quantity in approved_quantities.items():
         line = line_map[line_id]
         quantity = Decimal(str(raw_quantity))
 
         if quantity < 0:
-            raise ValidationError(
-                "Approved quantities cannot be negative."
-            )
+            raise ValidationError("Approved quantities cannot be negative.")
 
         if quantity > line.requested_quantity:
-            raise ValidationError(
-                "Approved quantity cannot exceed requested quantity."
-            )
+            raise ValidationError("Approved quantity cannot exceed requested quantity.")
 
         line.approved_quantity = quantity
 
@@ -63,8 +52,7 @@ def validate_and_apply_partial_approval(
         )
 
     if not any(
-        line.approved_quantity is not None
-        and line.approved_quantity > 0
+        line.approved_quantity is not None and line.approved_quantity > 0
         for line in lines
     ):
         raise ValidationError(

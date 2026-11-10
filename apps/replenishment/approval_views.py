@@ -52,27 +52,19 @@ class ApprovalWorkflowViewSet(viewsets.ReadOnlyModelViewSet):
             permission_code="replenishment.workflow.view",
         )
 
-        return queryset.filter(
-            organization_id__in=organization_ids
-        )
+        return queryset.filter(organization_id__in=organization_ids)
 
 
-class ReplenishmentApprovalViewSet(
-    viewsets.ReadOnlyModelViewSet
-):
+class ReplenishmentApprovalViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = ReplenishmentApprovalSerializer
     permission_classes = [HasSystemPermission]
 
     def get_permissions(self):
         if self.action == "decide":
-            self.required_permissions = [
-                "replenishment.approve"
-            ]
+            self.required_permissions = ["replenishment.approve"]
         else:
-            self.required_permissions = [
-                "replenishment.approval.view"
-            ]
+            self.required_permissions = ["replenishment.approval.view"]
 
         return super().get_permissions()
 
@@ -87,18 +79,14 @@ class ReplenishmentApprovalViewSet(
         user = self.request.user
 
         if user.is_superuser:
-            return queryset.order_by(
-                "workflow_stage__sequence"
-            )
+            return queryset.order_by("workflow_stage__sequence")
 
         organization_ids = get_user_accessible_organization_ids(
             user,
             permission_code="replenishment.approval.view",
         )
 
-        return queryset.filter(
-            organization_id__in=organization_ids
-        ).order_by(
+        return queryset.filter(organization_id__in=organization_ids).order_by(
             "workflow_stage__sequence"
         )
 
@@ -106,9 +94,7 @@ class ReplenishmentApprovalViewSet(
     def decide(self, request, pk=None):
         approval = self.get_object()
 
-        serializer = ApprovalActionSerializer(
-            data=request.data
-        )
+        serializer = ApprovalActionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
@@ -127,17 +113,13 @@ class ReplenishmentApprovalViewSet(
         )
 
 
-class ApprovalDecisionViewSet(
-    viewsets.ReadOnlyModelViewSet
-):
+class ApprovalDecisionViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = ApprovalDecisionSerializer
     permission_classes = [HasSystemPermission]
 
     def get_permissions(self):
-        self.required_permissions = [
-            "replenishment.approval.view"
-        ]
+        self.required_permissions = ["replenishment.approval.view"]
 
         return super().get_permissions()
 
@@ -156,6 +138,4 @@ class ApprovalDecisionViewSet(
             permission_code="replenishment.approval.view",
         )
 
-        return queryset.filter(
-            approval__organization_id__in=organization_ids
-        )
+        return queryset.filter(approval__organization_id__in=organization_ids)

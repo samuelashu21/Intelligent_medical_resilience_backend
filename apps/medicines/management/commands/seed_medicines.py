@@ -8,7 +8,6 @@ from apps.medicines.models import (
     TherapeuticCategory,
 )
 
-
 DOSAGE_FORMS = [
     ("TABLET", "Tablet"),
     ("CAPSULE", "Capsule"),
@@ -138,7 +137,5 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(
-            self.style.SUCCESS(
-                "Medicine reference data seeded successfully."
-            )
+            self.style.SUCCESS("Medicine reference data seeded successfully.")
         )

@@ -1,4 +1,3 @@
-
 from django.test import TestCase
 from django.utils import timezone
 from datetime import timedelta
@@ -180,9 +179,7 @@ class RBACTests(TestCase):
             role=self.role,
         )
 
-        assignment.valid_until = (
-            timezone.now() - timedelta(days=1)
-        )
+        assignment.valid_until = timezone.now() - timedelta(days=1)
 
         assignment.save()
 
