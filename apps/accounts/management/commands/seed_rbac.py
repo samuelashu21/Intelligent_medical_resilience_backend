@@ -42,6 +42,7 @@ PERMISSIONS = {
         ("policy.create", "Create Stock Policies"),
         ("policy.update", "Update Stock Policies"),
         ("policy.manage", "Activate and Deactivate Stock Policies"),
+        ("visibility.view", "View Inter-Facility Stock"),
     ],
     "consumption": [
         ("view", "View Medicine Consumption"),
@@ -219,6 +220,9 @@ PERMISSION_DESCRIPTIONS = {
     ),
     "inventory.reconcile": (
         "Approve and post physical stock reconciliation."
+    ),
+    "inventory.visibility.view": (
+        "View eligible medicine availability across authorized facilities."
     ),
 
     "inventory.policy.view": (
@@ -856,8 +860,6 @@ ROLES = {
 # APPLY PROCUREMENT ROLE ASSIGNMENTS
 # ==========================================================
 
-# This is the important correction.
-#
 # The procurement assignment policy is the source of truth.
 # Add the expected granular procurement permissions to each
 # role before validation and database synchronization.
@@ -898,6 +900,78 @@ INVENTORY_VIEW_ROLES = [
     "DATA_ANALYST",
     "AUDITOR",
 ]
+
+
+# ==========================================================
+# INTER-FACILITY STOCK VISIBILITY PERMISSION
+# ==========================================================
+
+INVENTORY_VISIBILITY_PERMISSION = "inventory.visibility.view"
+
+
+# ==========================================================
+# INTER-FACILITY STOCK VISIBILITY ROLE ASSIGNMENTS
+# ==========================================================
+
+# Every non-Super-Admin system role receives permission to
+# access the inter-facility stock visibility feature.
+#
+# Actual facility-level data access must still be restricted
+# by get_user_accessible_facility_ids() and the user's scope.
+#
+# SUPER_ADMIN is intentionally omitted because it receives
+# every permission through ["*"].
+
+INVENTORY_VISIBILITY_ROLE_ASSIGNMENTS = {
+    "MINISTRY_ADMIN": [
+        INVENTORY_VISIBILITY_PERMISSION,
+    ],
+    "REGIONAL_ADMIN": [
+        INVENTORY_VISIBILITY_PERMISSION,
+    ],
+    "DISTRICT_OFFICER": [
+        INVENTORY_VISIBILITY_PERMISSION,
+    ],
+    "DISTRICT_PHARMACIST": [
+        INVENTORY_VISIBILITY_PERMISSION,
+    ],
+    "FACILITY_ADMIN": [
+        INVENTORY_VISIBILITY_PERMISSION,
+    ],
+    "FACILITY_PHARMACIST": [
+        INVENTORY_VISIBILITY_PERMISSION,
+    ],
+    "SUPPLY_CHAIN_OFFICER": [
+        INVENTORY_VISIBILITY_PERMISSION,
+    ],
+    "DATA_ANALYST": [
+        INVENTORY_VISIBILITY_PERMISSION,
+    ],
+    "AUDITOR": [
+        INVENTORY_VISIBILITY_PERMISSION,
+    ],
+}
+
+
+# ==========================================================
+# APPLY INTER-FACILITY STOCK VISIBILITY ROLE ASSIGNMENTS
+# ==========================================================
+
+for role_code, visibility_permissions in (
+    INVENTORY_VISIBILITY_ROLE_ASSIGNMENTS.items()
+):
+    if role_code not in ROLES:
+        raise ValueError(
+            f"Inventory visibility role '{role_code}' "
+            "does not exist in ROLES."
+        )
+
+    role_permissions = ROLES[role_code]["permissions"]
+
+    if role_permissions != ["*"]:
+        for permission_code in visibility_permissions:
+            if permission_code not in role_permissions:
+                role_permissions.append(permission_code)
 
 
 # ==========================================================
@@ -1061,6 +1135,27 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
+        # 3A. VALIDATE INTER-FACILITY VISIBILITY PERMISSION
+        # --------------------------------------------------
+
+        visibility_permission = permission_map.get(
+            INVENTORY_VISIBILITY_PERMISSION
+        )
+
+        if visibility_permission is None:
+            raise ValueError(
+                "Required permission "
+                "'inventory.visibility.view' is missing "
+                "from the permission catalog."
+            )
+
+        if not visibility_permission.is_active:
+            raise ValueError(
+                "Permission 'inventory.visibility.view' "
+                "must be active."
+            )
+
+        # --------------------------------------------------
         # 4. VALIDATE STOCK POLICY PERMISSIONS
         # --------------------------------------------------
 
@@ -1114,6 +1209,53 @@ class Command(BaseCommand):
                 raise ValueError(
                     f"Required procurement permission "
                     f"'{permission_code}' is missing."
+                )
+
+        # --------------------------------------------------
+        # 6A. VALIDATE INVENTORY VISIBILITY ROLE ASSIGNMENTS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Validating inter-facility stock visibility assignments..."
+            )
+        )
+
+        for role_code, expected_permissions in (
+            INVENTORY_VISIBILITY_ROLE_ASSIGNMENTS.items()
+        ):
+
+            if role_code not in ROLES:
+                raise ValueError(
+                    f"Inventory visibility role '{role_code}' "
+                    "does not exist in ROLES."
+                )
+
+            actual_permissions = set(
+                ROLES[role_code]["permissions"]
+            )
+
+            expected_permissions = set(expected_permissions)
+
+            for permission_code in expected_permissions:
+                if permission_code not in actual_permissions:
+                    raise ValueError(
+                        f"Role '{role_code}' must include "
+                        f"'{permission_code}'."
+                    )
+
+            actual_visibility_permissions = (
+                actual_permissions
+                & {INVENTORY_VISIBILITY_PERMISSION}
+            )
+
+            if actual_visibility_permissions != expected_permissions:
+                raise ValueError(
+                    f"Inventory visibility permissions for role "
+                    f"'{role_code}' do not match the configured "
+                    f"role assignment policy. "
+                    f"Expected: {sorted(expected_permissions)}. "
+                    f"Found: {sorted(actual_visibility_permissions)}."
                 )
 
         # --------------------------------------------------
@@ -1365,6 +1507,68 @@ class Command(BaseCommand):
             )
 
         # --------------------------------------------------
+        # 13A. VERIFY INTER-FACILITY STOCK VISIBILITY ASSIGNMENTS
+        # --------------------------------------------------
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verifying inter-facility stock visibility assignments..."
+            )
+        )
+
+        for role_code, expected_permissions in (
+            INVENTORY_VISIBILITY_ROLE_ASSIGNMENTS.items()
+        ):
+
+            role = Role.objects.get(code=role_code)
+
+            assigned_codes = set(
+                role.permissions.filter(
+                    code=INVENTORY_VISIBILITY_PERMISSION
+                ).values_list(
+                    "code",
+                    flat=True,
+                )
+            )
+
+            expected_codes = set(expected_permissions)
+
+            if assigned_codes != expected_codes:
+                raise ValueError(
+                    f"Inventory visibility permission verification "
+                    f"failed for role '{role_code}'. "
+                    f"Expected: {sorted(expected_codes)}. "
+                    f"Found: {sorted(assigned_codes)}."
+                )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{role_code}: inter-facility stock visibility verified."
+                )
+            )
+
+        # --------------------------------------------------
+        # 13B. VERIFY SUPER ADMIN VISIBILITY PERMISSION
+        # --------------------------------------------------
+
+        super_admin_role = Role.objects.get(
+            code="SUPER_ADMIN"
+        )
+
+        if not super_admin_role.permissions.filter(
+            code=INVENTORY_VISIBILITY_PERMISSION
+        ).exists():
+            raise ValueError(
+                "SUPER_ADMIN is missing inventory.visibility.view."
+            )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "SUPER_ADMIN: inter-facility stock visibility verified."
+            )
+        )
+
+        # --------------------------------------------------
         # 14. VERIFY STOCK POLICY PERMISSION ASSIGNMENTS
         # --------------------------------------------------
 
@@ -1589,6 +1793,36 @@ class Command(BaseCommand):
         self.stdout.write(f"Active: {inventory_view.is_active}")
 
         # --------------------------------------------------
+        # 20A. VERIFY INTER-FACILITY VISIBILITY PERMISSION METADATA
+        # --------------------------------------------------
+
+        visibility_permission.refresh_from_db()
+
+        if (
+            visibility_permission.code != INVENTORY_VISIBILITY_PERMISSION
+            or visibility_permission.module != "inventory"
+            or not visibility_permission.is_active
+        ):
+            raise ValueError(
+                "Inventory visibility permission metadata verification "
+                "failed."
+            )
+
+        self.stdout.write(
+            self.style.NOTICE(
+                "Verified inventory.visibility.view permission metadata:"
+            )
+        )
+
+        self.stdout.write(f"Code: {visibility_permission.code}")
+        self.stdout.write(f"Name: {visibility_permission.name}")
+        self.stdout.write(f"Module: {visibility_permission.module}")
+        self.stdout.write(
+            f"Description: {visibility_permission.description}"
+        )
+        self.stdout.write(f"Active: {visibility_permission.is_active}")
+
+        # --------------------------------------------------
         # 21. VERIFY SUPPLY CHAIN OFFICER HAS EXACTLY 11
         #     GRANULAR PROCUREMENT PERMISSIONS
         # --------------------------------------------------
@@ -1648,6 +1882,12 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 "All 10 system roles have inventory.view."
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "All 10 system roles have inventory.visibility.view."
             )
         )
 

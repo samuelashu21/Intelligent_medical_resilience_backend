@@ -105,6 +105,11 @@ urlpatterns = [
 ),
 
 path(
+    "visibility/",
+    include("apps.inventory.visibility_urls"),
+),
+
+path(
     "policies/",
     include("apps.inventory.stock_policy_urls"),
 ),
