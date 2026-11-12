@@ -403,6 +403,23 @@ LOGGING = {
 }
 
 
+ML_SERVICE_URL = env(
+    "ML_SERVICE_URL",
+    default="http://127.0.0.1:8001",
+)
+
+ML_SERVICE_API_KEY = env(
+    "ML_SERVICE_API_KEY",
+    default="",
+)
+ 
+ML_SERVICE_TIMEOUT = env.int(
+    "ML_SERVICE_TIMEOUT",
+    default=30,
+)
+
+
+
 # =====================================================
 # CUSTOM USER MODEL
 # =====================================================
