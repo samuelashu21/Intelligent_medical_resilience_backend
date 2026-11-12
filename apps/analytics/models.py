@@ -4,6 +4,160 @@ from django.conf import settings
 from django.db import models
 
 
+class AIModelEvaluation(models.Model):
+
+    class EvaluationStatus(models.TextChoices):
+        PASSED = "PASSED", "Passed"
+        DEGRADED = "DEGRADED", "Degraded"
+        FAILED = "FAILED", "Failed"
+        REVIEW_REQUIRED = "REVIEW_REQUIRED", "Review Required"
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    model_name = models.CharField(
+        max_length=150,
+        db_index=True,
+    )
+
+    model_version = models.CharField(
+        max_length=50,
+    )
+
+    evaluation_type = models.CharField(
+        max_length=100,
+    )
+
+    metrics = models.JSONField(
+        default=dict,
+    )
+
+    warnings = models.JSONField(
+        default=list,
+    )
+
+    evaluation_status = models.CharField(
+        max_length=30,
+        choices=EvaluationStatus.choices,
+        default=EvaluationStatus.REVIEW_REQUIRED,
+        db_index=True,
+    )
+
+    dataset_reference = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    evaluated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ai_model_evaluations",
+    )
+
+    evaluated_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    class Meta:
+        ordering = ["-evaluated_at"]
+        indexes = [
+            models.Index(
+                fields=["model_name", "model_version"]
+            ),
+            models.Index(
+                fields=["evaluation_status", "evaluated_at"]
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.model_name} "
+            f"{self.model_version} "
+            f"{self.evaluation_status}"
+        )
+
+
+class AIModelDriftEvent(models.Model):
+
+    class Status(models.TextChoices):
+        DETECTED = "DETECTED", "Detected"
+        INVESTIGATING = "INVESTIGATING", "Investigating"
+        RESOLVED = "RESOLVED", "Resolved"
+        FALSE_ALARM = "FALSE_ALARM", "False Alarm"
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    model_name = models.CharField(
+        max_length=150,
+        db_index=True,
+    )
+
+    model_version = models.CharField(
+        max_length=50,
+    )
+
+    feature_name = models.CharField(
+        max_length=150,
+    )
+
+    drift_statistics = models.JSONField(
+        default=dict,
+    )
+
+    status = models.CharField(
+        max_length=30,
+        choices=Status.choices,
+        default=Status.DETECTED,
+        db_index=True,
+    )
+
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ai_model_drift_events",
+    )
+
+    review_notes = models.TextField(
+        blank=True,
+    )
+
+    detected_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    resolved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ["-detected_at"]
+        indexes = [
+            models.Index(
+                fields=["model_name", "model_version"]
+            ),
+            models.Index(
+                fields=["status", "detected_at"]
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.model_name} ({self.model_version}) - Feature: {self.feature_name} [{self.status}]"
+
+
 class MedicineSupplyChainRisk(models.Model):
 
     class RiskCategory(models.TextChoices):
@@ -49,7 +203,7 @@ class MedicineSupplyChainRisk(models.Model):
 
     component_scores = models.JSONField(default=dict)
 
-    reasons = models.JSONField(default=list)
+    warnings = models.JSONField(default=list)
 
     recommended_actions = models.JSONField(default=list)
 
@@ -105,7 +259,7 @@ class MedicineSupplyChainRisk(models.Model):
 
     def __str__(self):
         return (
-            f"{self.facility_id} - "
-            f"{self.medicine_id} - "
-            f"{self.risk_category}"
+            f"Facility {self.facility_id} - "
+            f"Medicine {self.medicine_id} "
+            f"({self.risk_category})"
         )
