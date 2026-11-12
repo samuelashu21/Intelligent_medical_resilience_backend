@@ -30,4 +30,8 @@ urlpatterns = [
         "api/<str:version>/",
         include("config.api_urls"),
     ),
+    path(
+        "api/notifications/",
+        include("apps.notifications.urls"),
+    ),
 ]

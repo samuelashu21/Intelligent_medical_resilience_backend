@@ -118,7 +118,6 @@ ASGI_APPLICATION = "config.asgi.application"
 # 8. DATABASE CONFIGURATION
 # =====================================================
 
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -135,29 +134,25 @@ DATABASES = {
     }
 }
 
-
 # =====================================================
 # 9. PASSWORD VALIDATION
 # =====================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": (
-            "django.contrib.auth.password_validation."
-            "UserAttributeSimilarityValidator"
-        ),
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        "NAME": ("django.contrib.auth.password_validation." "MinimumLengthValidator"),
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
         "OPTIONS": {
             "min_length": 10,
         },
     },
     {
-        "NAME": ("django.contrib.auth.password_validation." "CommonPasswordValidator"),
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        "NAME": ("django.contrib.auth.password_validation." "NumericPasswordValidator"),
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -192,7 +187,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # 13. DJANGO REST FRAMEWORK
 # =====================================================
 
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -205,14 +199,14 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
-    "DEFAULT_PAGINATION_CLASS": ("config.api.pagination.StandardResultsPagination"),
+    "DEFAULT_PAGINATION_CLASS": "config.api.pagination.StandardResultsPagination",
     "PAGE_SIZE": env.int("API_PAGE_SIZE", default=20),
-    "DEFAULT_SCHEMA_CLASS": ("drf_spectacular.openapi.AutoSchema"),
-    "DEFAULT_VERSIONING_CLASS": ("rest_framework.versioning.URLPathVersioning"),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
     "DEFAULT_VERSION": "v1",
     "ALLOWED_VERSIONS": ["v1"],
     "VERSION_PARAM": "version",
-    "EXCEPTION_HANDLER": ("config.api.exceptions.custom_exception_handler"),
+    "EXCEPTION_HANDLER": "config.api.exceptions.custom_exception_handler",
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
@@ -228,15 +222,11 @@ REST_FRAMEWORK = {
     ],
 }
 
-
 API_MAX_PAGE_SIZE = env.int("API_MAX_PAGE_SIZE", default=100)
-
 
 # =====================================================
 # 14. JWT CONFIGURATION
 # =====================================================
-
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
@@ -246,7 +236,7 @@ SIMPLE_JWT = {
         days=env.int("JWT_REFRESH_TOKEN_DAYS", default=7)
     ),
     "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,  # Set to True if using token_blacklist
+    "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
@@ -279,93 +269,65 @@ CORS_ALLOW_CREDENTIALS = True
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "MediResilience AI API",
-    "DESCRIPTION": (
-        "Healthcare Medicine Supply Chain " "Management and AI Prediction Platform"
-    ),
+    "DESCRIPTION": "Healthcare Medicine Supply Chain Management and AI Prediction Platform",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-
 # =====================================================
-# LOGGING CONFIGURATION
-# =====================================================
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "standard": {
-            "format": ("{levelname} {asctime} " "{name} {message}"),
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "standard",
-        },
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs" / "application.log",
-            "formatter": "standard",
-        },
-    },
-    "loggers": {
-        "mediresilience.api": {
-            "handlers": ["console", "file"],
-            "level": env("LOG_LEVEL", default="INFO"),
-            "propagate": False,
-        },
-        "django": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-    },
-}
-
-
-# =====================================================
-# 17. APPLICATION SETTINGS
+# 17. APPLICATION SETTINGS & CELERY/NOTIFICATIONS
 # =====================================================
 
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
-REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
+REDIS_URL = env("REDIS_URL", default="redis://127.0.0.1:6379/0")
 
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/1")
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="redis://127.0.0.1:6379/2")
+
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@mediresilience.local")
+
+NOTIFICATION_MAX_RETRIES = env.int("NOTIFICATION_MAX_RETRIES", default=5)
+NOTIFICATION_RETRY_DELAY = env.int("NOTIFICATION_RETRY_DELAY", default=60)
+
+ML_SERVICE_URL = env("ML_SERVICE_URL", default="http://127.0.0.1:8001")
+ML_SERVICE_API_KEY = env("ML_SERVICE_API_KEY", default="")
+ML_SERVICE_TIMEOUT = env.int("ML_SERVICE_TIMEOUT", default=30)
+
+
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 
 # =====================================================
-# SECURITY SETTINGS
+# 18. SECURITY SETTINGS
 # =====================================================
 
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=False)
-
 SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=False)
-
 CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=False)
 
 SESSION_COOKIE_HTTPONLY = True
-
 CSRF_COOKIE_HTTPONLY = False
 
 X_FRAME_OPTIONS = "DENY"
-
 SECURE_CONTENT_TYPE_NOSNIFF = True
-
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
 if not DEBUG:
-
     SECURE_HSTS_SECONDS = 31536000
-
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-
     SECURE_HSTS_PRELOAD = True
 
-
 # =====================================================
-# LOGGING CONFIGURATION1
+# 19. LOGGING CONFIGURATION
 # =====================================================
 
 LOGGING = {
@@ -373,7 +335,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "standard": {
-            "format": ("{levelname} {asctime} " "{name} {message}"),
+            "format": "{levelname} {asctime} {name} {message}",
             "style": "{",
         },
     },
@@ -402,26 +364,8 @@ LOGGING = {
     },
 }
 
-
-ML_SERVICE_URL = env(
-    "ML_SERVICE_URL",
-    default="http://127.0.0.1:8001",
-)
-
-ML_SERVICE_API_KEY = env(
-    "ML_SERVICE_API_KEY",
-    default="",
-)
- 
-ML_SERVICE_TIMEOUT = env.int(
-    "ML_SERVICE_TIMEOUT",
-    default=30,
-)
-
-
-
 # =====================================================
-# CUSTOM USER MODEL
+# 20. CUSTOM USER MODEL
 # =====================================================
 
 AUTH_USER_MODEL = "accounts.User"
